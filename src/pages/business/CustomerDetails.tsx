@@ -161,7 +161,7 @@ function TransactionsTab({ customerId }: { customerId: string }) {
                 <TableRow key={transaction.id}>
                   <TableCell>{formatDate(transaction.payment_date)}</TableCell>
                   <TableCell>Payment</TableCell>
-                  <TableCell>{formatCurrency(transaction.amount, transaction.invoice.currency)}</TableCell>
+                  <TableCell>{formatCurrency(transaction.amount, transaction.currency)}</TableCell>
                   <TableCell>
                     <Badge variant="success">Completed</Badge>
                   </TableCell>
@@ -196,7 +196,7 @@ function TransactionsTab({ customerId }: { customerId: string }) {
                 </div>
                 <div className="text-right">
                   <p className="text-muted-foreground">Amount</p>
-                  <p className="font-medium">{formatCurrency(transaction.amount)}</p>
+                  <p className="font-medium">{formatCurrency(transaction.amount, transaction.currency)}</p>
                 </div>
               </div>
               {transaction.notes && (

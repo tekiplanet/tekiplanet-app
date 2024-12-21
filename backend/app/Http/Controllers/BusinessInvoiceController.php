@@ -522,7 +522,7 @@ class BusinessInvoiceController extends Controller
                 $query->where('business_id', $businessProfile->id)
                     ->where('customer_id', $customerId);
             })
-            ->with(['invoice:id,invoice_number'])
+            ->with(['invoice:id,invoice_number,currency'])
             ->orderBy('payment_date', 'desc')
             ->get()
             ->map(function ($payment) {
@@ -531,6 +531,7 @@ class BusinessInvoiceController extends Controller
                     'date' => $payment->payment_date,
                     'type' => 'payment',
                     'amount' => $payment->amount,
+                    'currency' => $payment->invoice->currency,
                     'status' => 'completed',
                     'notes' => $payment->notes,
                     'invoice_number' => $payment->invoice->invoice_number
