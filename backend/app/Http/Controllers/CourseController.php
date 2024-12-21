@@ -76,10 +76,25 @@ class CourseController extends Controller
      * @param int $courseId The ID of the course.
      * @return \Illuminate\Http\JsonResponse A JSON response containing the course features.
      */
-    public function getCourseFeatures($courseId)
+    public function getFeatures($courseId)
     {
-        $features = CourseFeature::where('course_id', $courseId)->get();
-        return response()->json($features);
+        try {
+            $course = Course::findOrFail($courseId);
+            $features = $course->features;  // Using the relationship
+
+            return response()->json($features);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching course features:', [
+                'course_id' => $courseId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to fetch course features',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getCurriculum($courseId)

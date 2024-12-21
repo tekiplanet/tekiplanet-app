@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { comparePlans } from "@/lib/utils";
+import { settingsService } from "@/services/settingsService";
+import { useQuery } from "@tanstack/react-query";
 
 interface SubscriptionDialogProps {
   plan: WorkstationPlan | null;
@@ -44,6 +46,11 @@ export const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
   const walletBalance = user?.wallet_balance || 0;
   const paymentAmount = paymentType === 'full' ? plan?.price : plan?.installment_amount;
   const hasEnoughBalance = walletBalance >= (paymentAmount || 0);
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
 
   if (!plan) return null;
 
@@ -201,18 +208,18 @@ export const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
                                 <span>New Plan Cost:</span>
-                                <span>{formatCurrency(calculation.newPlanCost)}</span>
+                                <span>{formatCurrency(calculation.newPlanCost, settings?.default_currency)}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span>Current Plan Remaining Value:</span>
                                 <span className="text-red-500">
-                                  -{formatCurrency(calculation.remainingValue)}
+                                  -{formatCurrency(calculation.remainingValue, settings?.default_currency)}
                                 </span>
                               </div>
                               <div className="border-t pt-2 font-medium flex justify-between">
                                 <span>{calculation.finalAmount > 0 ? 'Amount to Pay:' : 'Amount to Refund:'}</span>
                                 <span className={calculation.finalAmount > 0 ? '' : 'text-green-500'}>
-                                  {formatCurrency(Math.abs(calculation.finalAmount))}
+                                  {formatCurrency(Math.abs(calculation.finalAmount), settings?.default_currency)}
                                 </span>
                               </div>
                             </div>
@@ -234,7 +241,7 @@ export const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
                         <div className="flex-1">
                           <Label htmlFor="full" className="font-medium">Full Payment</Label>
                           <p className="text-sm text-muted-foreground">
-                            One-time payment of {formatCurrency(plan.price)}
+                            One-time payment of {formatCurrency(plan.price, settings?.default_currency)}
                           </p>
                         </div>
                       </div>
@@ -244,7 +251,7 @@ export const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
                           <div className="flex-1">
                             <Label htmlFor="installment" className="font-medium">Monthly Installments</Label>
                             <p className="text-sm text-muted-foreground">
-                              {plan.installment_months} payments of {formatCurrency(plan.installment_amount)}/month
+                              {plan.installment_months} payments of {formatCurrency(plan.installment_amount, settings?.default_currency)}/month
                             </p>
                           </div>
                         </div>
@@ -316,7 +323,7 @@ export const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
                   <div className="mt-6 p-4 rounded-lg border bg-muted/50">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium">Wallet Balance:</span>
-                      <span className="font-medium">{formatCurrency(user?.wallet_balance || 0)}</span>
+                      <span className="font-medium">{formatCurrency(user?.wallet_balance || 0, settings?.default_currency)}</span>
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-sm font-medium">Amount to Pay:</span>
@@ -324,7 +331,8 @@ export const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
                         {formatCurrency(
                           currentSubscription && plan
                             ? Math.max(0, calculatePlanChange(currentSubscription, plan)?.finalAmount || 0)
-                            : paymentAmount || 0
+                            : paymentAmount || 0,
+                          settings?.default_currency
                         )}
                       </span>
                     </div>

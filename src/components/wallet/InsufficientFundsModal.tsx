@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settingsService";
 
 interface InsufficientFundsModalProps {
   open: boolean;
@@ -26,6 +28,13 @@ export const InsufficientFundsModal = ({
   currentBalance,
   type = 'enrollment'
 }: InsufficientFundsModalProps) => {
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
+
+  const shortfall = requiredAmount - currentBalance;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -39,16 +48,16 @@ export const InsufficientFundsModal = ({
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Required Amount:</span>
-              <span className="font-medium">{formatCurrency(requiredAmount)}</span>
+              <span className="font-medium">{formatCurrency(requiredAmount, settings?.default_currency)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Current Balance:</span>
-              <span className="font-medium">{formatCurrency(currentBalance)}</span>
+              <span className="font-medium">{formatCurrency(currentBalance, settings?.default_currency)}</span>
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="text-sm text-muted-foreground">Shortfall:</span>
               <span className="font-medium text-destructive">
-                {formatCurrency(requiredAmount - currentBalance)}
+                {formatCurrency(shortfall, settings?.default_currency)}
               </span>
             </div>
           </div>

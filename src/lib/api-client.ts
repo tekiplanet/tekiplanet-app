@@ -1,14 +1,13 @@
 import axios from 'axios';
 import useAuthStore from '@/store/useAuthStore';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-
-export const apiClient = axios.create({
-  baseURL: BASE_URL,
+const apiClient = axios.create({
+  baseURL: 'http://192.168.43.190:8000/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  }
+  },
+  withCredentials: true
 });
 
 // Request interceptor to add auth token
@@ -29,13 +28,12 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle specific error scenarios
     if (error.response?.status === 401) {
-      // Logout user if token is invalid
       useAuthStore.getState().logout();
     }
     return Promise.reject(error);
   }
 );
 
+export { apiClient };
 export default apiClient;

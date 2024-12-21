@@ -13,12 +13,18 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { comparePlans } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { settingsService } from "@/services/settingsService";
 
 const Plans = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
 
   const { data: plans, isLoading, error } = useQuery({
     queryKey: ['workstation-plans'],
@@ -206,7 +212,7 @@ const Plans = () => {
                     <h3 className="text-xl font-bold">{plan.name}</h3>
                     <div className="mt-2">
                       <span className="text-3xl font-bold">
-                        {formatCurrency(plan.price)}
+                        {formatCurrency(plan.price, settings?.default_currency)}
                       </span>
                       <span className="text-muted-foreground">
                         /{plan.duration_days === 1 ? 'day' : 
@@ -249,7 +255,7 @@ const Plans = () => {
                         <Info className="h-4 w-4 shrink-0" />
                         <span>
                           Available in {plan.installment_months} installments of{' '}
-                          {formatCurrency(plan.installment_amount)}/month
+                          {formatCurrency(plan.installment_amount, settings?.default_currency)}/month
                         </span>
                       </div>
                     </div>

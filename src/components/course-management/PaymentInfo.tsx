@@ -22,9 +22,13 @@ interface Installment {
 
 interface PaymentInfoProps {
   courseId: string;
+  settings?: {
+    default_currency?: string;
+    currency_symbol?: string;
+  };
 }
 
-const PaymentInfo: React.FC<PaymentInfoProps> = ({ courseId }) => {
+const PaymentInfo: React.FC<PaymentInfoProps> = ({ courseId, settings }) => {
 
   const navigate = useNavigate();
 
@@ -103,7 +107,7 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ courseId }) => {
                 <p className="text-sm text-muted-foreground">
                   Installment {installment.id}
                 </p>
-                <p className="font-medium">{formatCurrency(installment.amount)}</p>
+                <p className="font-medium">{formatCurrency(installment.amount, settings?.default_currency)}</p>
                 <p className="text-xs text-muted-foreground">
                   Due: {new Date(installment.due_date).toLocaleDateString()}
                 </p>

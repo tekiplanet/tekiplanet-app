@@ -416,6 +416,20 @@ class EnrollmentController extends Controller
         // Find the installment
         $installment = Installment::findOrFail($validated['installment_id']);
 
+        // Find the earliest unpaid installment for this enrollment
+        $earliestUnpaidInstallment = Installment::where('enrollment_id', $installment->enrollment_id)
+            ->where('status', '!=', 'paid')
+            ->orderBy('due_date', 'asc')
+            ->first();
+
+        // Check if trying to pay an installment out of order
+        if ($earliestUnpaidInstallment->id !== $installment->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please pay the earliest due installment first'
+            ], 400);
+        }
+
         // Verify amount matches installment amount
         if (abs($installment->amount - $validated['amount']) > 0.01) {
             return response()->json([

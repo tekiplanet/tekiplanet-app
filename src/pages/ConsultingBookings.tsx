@@ -21,6 +21,7 @@ import PagePreloader from '@/components/ui/PagePreloader';
 import { format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
+import { settingsService } from "@/services/settingsService";
 
 const statusColors = {
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -178,6 +179,11 @@ export default function ConsultingBookings() {
     queryFn: consultingService.getUserBookings
   });
 
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
+
   const groupedBookings = React.useMemo(() => {
     return bookings.reduce((acc, booking) => {
       const status = booking.status;
@@ -247,7 +253,7 @@ export default function ConsultingBookings() {
                   {booking.hours} hour{booking.hours > 1 ? 's' : ''}
                 </Badge>
                 <Badge variant="secondary" className="font-medium">
-                  {formatCurrency(booking.total_cost)}
+                  {formatCurrency(booking.total_cost, settings?.default_currency)}
                 </Badge>
               </div>
             </div>

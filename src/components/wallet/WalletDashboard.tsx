@@ -60,6 +60,8 @@ import { addDays, subDays } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { Calendar } from "@/components/ui/calendar";
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settingsService";
 
 // Create a transaction service for API calls
 const transactionService = {
@@ -227,6 +229,12 @@ export default function WalletDashboard() {
   const [isStatementExporting, setIsStatementExporting] = useState(false);
 
   const navigate = useNavigate();
+
+  // Add settings query
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
 
   // Fetch transactions on component mount
   useEffect(() => {
@@ -541,7 +549,7 @@ export default function WalletDashboard() {
               <div className="min-w-0">
                 <p className="text-xs md:text-sm font-medium opacity-80 truncate">Current Balance</p>
                 <h2 className="text-xl md:text-2xl font-bold truncate">
-                  {formatCurrency(user?.wallet_balance || 0)}
+                  {formatCurrency(user?.wallet_balance || 0, settings?.default_currency)}
                 </h2>
               </div>
               <div className="p-2 md:p-3 bg-white/10 rounded-full shrink-0">
@@ -569,7 +577,7 @@ export default function WalletDashboard() {
                              t.type === 'debit' &&
                              t.status === 'completed';
                     })
-                    .reduce((acc, t) => acc + parseFloat(t.amount), 0))}
+                    .reduce((acc, t) => acc + parseFloat(t.amount), 0), settings?.default_currency)}
                 </h2>
               </div>
               <div className="p-2 md:p-3 bg-destructive/10 rounded-full shrink-0">
@@ -590,7 +598,7 @@ export default function WalletDashboard() {
                 <h2 className="text-xl md:text-2xl font-bold truncate">
                   {formatCurrency(transactions
                     .filter(t => t.type === 'credit' && t.status === 'completed')
-                    .reduce((acc, t) => acc + parseFloat(t.amount), 0))}
+                    .reduce((acc, t) => acc + parseFloat(t.amount), 0), settings?.default_currency)}
                 </h2>
               </div>
               <div className="p-2 md:p-3 bg-green-500/10 rounded-full shrink-0">
@@ -731,7 +739,7 @@ export default function WalletDashboard() {
                           </p>
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium">
-                              {formatCurrency(parseFloat(transaction.amount))}
+                              {formatCurrency(parseFloat(transaction.amount), settings?.default_currency)}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {new Date(transaction.created_at).toLocaleString('en-US', {
@@ -754,7 +762,7 @@ export default function WalletDashboard() {
                             : 'text-red-600'}
                         `}>
                           {transaction.type === 'credit' ? '+' : '-'}
-                          {formatCurrency(transaction.amount)}
+                          {formatCurrency(transaction.amount, settings?.default_currency)}
                         </p>
                       </div>
                     </div>

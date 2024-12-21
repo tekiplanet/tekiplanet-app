@@ -1,7 +1,7 @@
 import { EnrollmentRequest, EnrollmentResponse } from '@/types';
-import apiClient from '@/lib/axios';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWalletStore } from '@/store/useWalletStore';
+import { apiClient } from '@/lib/api-client';
 
 class CourseService {
   async enrollInCourse(data: EnrollmentRequest): Promise<EnrollmentResponse> {
@@ -15,27 +15,32 @@ class CourseService {
 
   async getCourseDetails(courseId: string) {
     try {
+      // First, get the basic course details
       const courseResponse = await apiClient.get(`/courses/${courseId}`);
-      const featuresResponse = await apiClient.get(`/courses/${courseId}/features`);
+      
+      // Get curriculum
       const curriculumResponse = await apiClient.get(`/courses/${courseId}/curriculum`);
       
-      // Get current user ID from auth store
-      const userId = useAuthStore.getState().user?.id;
+      // Try to get features, but don't fail if unavailable
+      let features = [];
+      try {
+        const featuresResponse = await apiClient.get(`/courses/${courseId}/features`);
+        features = featuresResponse.data;
+      } catch (error) {
+        console.warn('Could not fetch course features:', error);
+      }
       
-      // Get wallet balance from wallet store
-      const walletBalance = userId 
-        ? useWalletStore.getState().getBalance(userId) 
-        : 0;
-
-      return {
-        ...courseResponse.data.course,
-        instructor: courseResponse.data.instructor,
-        features: featuresResponse.data.map((feature: any) => feature.feature),
-        curriculum: curriculumResponse.data,
-        user: { wallet_balance: walletBalance }
+      // Combine all data
+      const courseData = {
+        ...courseResponse.data,
+        features: features,
+        curriculum: curriculumResponse.data
       };
+      
+      console.log('Course API Response:', courseData);
+      return courseData;
     } catch (error) {
-      console.error('Failed to fetch course details', error);
+      console.error('Course API Error:', error);
       throw error;
     }
   }

@@ -36,6 +36,7 @@ import { enrollmentService } from '@/services/enrollmentService';
 import { Loader2 } from 'lucide-react';
 import InsufficientFundsModal from '@/components/modals/InsufficientFundsModal';
 import { settingsService } from '@/services/settingsService';
+import { useQuery } from "@tanstack/react-query";
 
 interface EnrolledCourse {
   enrollment_id: string;
@@ -146,6 +147,12 @@ export default function MyCourses() {
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Add settings query
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
 
   useEffect(() => {
     // Ensure authentication is initialized before fetching courses
@@ -465,13 +472,13 @@ export default function MyCourses() {
             <div className="flex justify-between">
               <span>Total Tuition:</span>
               <span className="font-bold text-primary">
-                {formatCurrency(numTotalTuition)}
+                {formatCurrency(numTotalTuition, settings?.default_currency)}
               </span>
             </div>
             <div className="flex justify-between">
               <span>Current Wallet Balance:</span>
               <span className={`font-bold ${numBalance < numTotalTuition ? 'text-destructive' : 'text-primary'}`}>
-                {formatCurrency(numBalance)}
+                {formatCurrency(numBalance, settings?.default_currency)}
               </span>
             </div>
           </div>
@@ -512,8 +519,6 @@ export default function MyCourses() {
       </Dialog>
     );
   };
-
-  const currencySymbol = settingsService.getDefaultCurrency() === 'NGN' ? '₦' : '$';
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
@@ -717,63 +722,72 @@ export default function MyCourses() {
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="text-sm">Total Tuition</p>
-                          <p className="text-lg font-bold">{formatCurrency(enrollment.total_tuition)}</p>
+                          <p className="text-lg font-bold">{formatCurrency(enrollment.total_tuition, settings?.default_currency)}</p>
                         </div>
                         <Badge variant="destructive">Payment Required</Badge>
                       </div>
                       
                       {enrollment.installments && enrollment.installments.length > 0 ? (
                         <div className="space-y-3">
-                          {enrollment.installments?.map((installment, index) => {
-                            // Check if previous installments are paid
-                            const previousInstallmentsPaid = 
-                              enrollment.installments?.slice(0, index).every(
-                                inst => inst.status === 'paid'
-                              ) ?? true;
+                          {[...enrollment.installments]
+                            .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+                            .map((installment, index) => {
+                              // Get sorted installments
+                              const sortedInstallments = [...enrollment.installments]
+                                .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+                              
+                              // Find current installment's index in sorted array
+                              const currentInstallmentIndex = sortedInstallments
+                                .findIndex(inst => inst.id === installment.id);
+                              
+                              // Check if previous installments in sorted order are paid
+                              const previousInstallmentsPaid = sortedInstallments
+                                .slice(0, currentInstallmentIndex)
+                                .every(inst => inst.status === 'paid');
 
-                            return (
-                              <div key={installment.id} className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <p className="text-sm">Installment {index + 1}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      Due: {new Date(installment.due_date).toLocaleDateString('en-US', { 
-                                              weekday: 'long', 
-                                              year: 'numeric', 
-                                              month: 'long', 
-                                              day: 'numeric' 
-                                            })}
-                                    </p>
+                              return (
+                                <div key={installment.id} className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <p className="text-sm">Installment {index + 1}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Due: {new Date(installment.due_date).toLocaleDateString('en-US', { 
+                                                weekday: 'long', 
+                                                year: 'numeric', 
+                                                month: 'long', 
+                                                day: 'numeric' 
+                                              })}
+                                      </p>
+                                    </div>
+                                    <Badge 
+                                      variant={
+                                        installment.status === 'paid' ? "default" : 
+                                        (new Date(installment.due_date) < new Date() && installment.status !== 'paid') ? "destructive" : 
+                                        "secondary"
+                                      }
+                                    >
+                                      {installment.status === 'paid' ? "Paid" : 
+                                       (new Date(installment.due_date) < new Date() && installment.status !== 'paid') ? "Overdue" : 
+                                       "Pending"}
+                                    </Badge>
                                   </div>
-                                  <Badge 
-                                    variant={
-                                      installment.status === 'paid' ? "default" : 
-                                      (new Date(installment.due_date) < new Date() && installment.status !== 'paid') ? "destructive" : 
-                                      "secondary"
-                                    }
-                                  >
-                                    {installment.status === 'paid' ? "Paid" : 
-                                     (new Date(installment.due_date) < new Date() && installment.status !== 'paid') ? "Overdue" : 
-                                     "Pending"}
-                                  </Badge>
+                                  {installment.status !== 'paid' && (
+                                    <Button 
+                                      className="w-full text-white"
+                                      onClick={() => handleInstallmentPayment(enrollment, installment.id)}
+                                      disabled={
+                                        installment.status === 'paid' || 
+                                        !previousInstallmentsPaid
+                                      }
+                                    >
+                                      {installment.status === 'paid' 
+                                        ? 'Paid' 
+                                        : `Pay ${formatCurrency(installment.amount, settings?.default_currency)}`}
+                                    </Button>
+                                  )}
                                 </div>
-                                {installment.status !== 'paid' && (
-                                  <Button 
-                                    className="w-full text-white"
-                                    onClick={() => handleInstallmentPayment(enrollment, installment.id)}
-                                    disabled={
-                                      installment.status === 'paid' || 
-                                      !previousInstallmentsPaid
-                                    }
-                                  >
-                                    {installment.status === 'paid' 
-                                      ? 'Paid' 
-                                      : `Pay ${formatCurrency(installment.amount)}`}
-                                  </Button>
-                                )}
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
                         </div>
                       ) : (
                         <Button 
@@ -851,7 +865,7 @@ export default function MyCourses() {
             : (selectedCourse?.installments?.[0]?.amount || 0)
         }
         currentBalance={balance}
-        currencySymbol={currencySymbol}
+        currencySymbol={settings?.currency_symbol}
         selectedPaymentPlan={selectedPaymentPlan}
         courseName={selectedCourse?.course_title || ''}
         onConfirmPayment={() => {

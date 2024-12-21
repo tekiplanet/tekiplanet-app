@@ -1,24 +1,42 @@
 import axios from 'axios';
 
-const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
+const apiClient = axios.create({
+  baseURL: 'http://192.168.43.190:8000/api',
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  }
+  },
+  withCredentials: true
 });
 
-// Add token to every request
-instance.interceptors.request.use((config) => {
+// Add request interceptor to add token
+apiClient.interceptors.request.use((config) => {
+  console.log('Request Config:', {
+    url: config.url,
+    baseURL: config.baseURL,
+    fullPath: config.baseURL + config.url,
+    method: config.method,
+    headers: config.headers
+  });
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Export both named and default for backward compatibility
-export const apiClient = instance;
-export { instance as axios };
-export default instance;
+// Add response interceptor to handle errors
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized error (e.g., redirect to login)
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Export both named and default exports
+export { apiClient };
+export default apiClient;

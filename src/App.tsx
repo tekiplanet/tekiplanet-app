@@ -31,12 +31,6 @@ const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
 const TransactionDetails = React.lazy(() => import('@/pages/TransactionDetails'));
 const Login = React.lazy(() => import('@/pages/Login'));
 const Register = React.lazy(() => import('@/pages/Register'));
-const CourseManagement = React.lazy(() => import('@/pages/CourseManagement'));
-const Services = React.lazy(() => import('@/pages/Services'));
-const ServiceQuoteRequest = React.lazy(() => import('@/pages/ServiceQuoteRequest'));
-const Settings = React.lazy(() => import('@/pages/Settings'));
-const PaymentConfirmation = React.lazy(() => import('@/pages/PaymentConfirmation'));
-const PaystackCallback = React.lazy(() => import('@/pages/PaystackCallback'));
 const CourseDetails = React.lazy(() => import('@/components/academy/CourseDetails'));
 const Academy = React.lazy(() => import('@/pages/Academy'));
 const OrderTracking = React.lazy(() => import('@/pages/OrderTracking'));
@@ -65,6 +59,12 @@ const DashboardHome = React.lazy(() => import('@/pages/DashboardHome'));
 const Hustles = React.lazy(() => import('@/pages/hustles/Hustles'));
 const HustleDetails = React.lazy(() => import('@/pages/hustles/HustleDetails'));
 const MyHustleApplications = React.lazy(() => import('@/pages/hustles/MyApplications'));
+const CourseManagement = React.lazy(() => import('@/pages/CourseManagement'));
+const Services = React.lazy(() => import('@/pages/Services'));
+const ServiceQuoteRequest = React.lazy(() => import('@/pages/ServiceQuoteRequest'));
+const Settings = React.lazy(() => import('@/pages/Settings'));
+const PaymentConfirmation = React.lazy(() => import('@/pages/PaymentConfirmation'));
+const PaystackCallback = React.lazy(() => import('@/pages/PaystackCallback'));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -95,7 +95,10 @@ const AppContent = () => {
             <Route path="checkout" element={<Checkout />} />
             <Route path="academy" element={<Academy />} />
             <Route path="academy/my-courses" element={<MyCourses />} />
-            <Route path="academy/:courseId" element={<CourseDetails />} />
+            <Route 
+              path="academy/:courseId" 
+              element={<CourseDetails />}
+            />
             <Route path="academy/:courseId/manage" element={<CourseManagement />} />
             <Route path="wallet" element={<WalletDashboard />} />
             <Route path="wallet/transactions/:transactionId" element={<TransactionDetails />} />
@@ -152,12 +155,9 @@ const AppContent = () => {
             />
           </Route>
 
-          <Route path="/academy/course/:courseId" element={<ProtectedRoute><CourseDetails /></ProtectedRoute>} />
-          
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/courses/:courseId/manage" element={<CourseManagement />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/services/quote/:category/:serviceId" element={<ServiceQuoteRequest />} />
           <Route path="/" element={<Navigate to="/dashboard" />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/*" element={

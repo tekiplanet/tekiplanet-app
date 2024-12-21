@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/axios';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -24,6 +24,7 @@ import { format } from 'date-fns';
 import Dashboard from './Dashboard';
 import { motion } from 'framer-motion';
 import PagePreloader from '@/components/ui/PagePreloader';
+import axios from 'axios';
 
 interface Quote {
   id: number;
@@ -42,6 +43,20 @@ interface Quote {
 const NotificationBadge = () => (
   <span className="absolute h-3 w-3 rounded-full bg-destructive animate-fade-pulse" />
 );
+
+const testApiClient = axios.create({
+  baseURL: 'http://192.168.43.190:8000/api',
+  withCredentials: true
+});
+
+const testFetch = async () => {
+  try {
+    const response = await testApiClient.get('/quotes');
+    console.log('Test response:', response);
+  } catch (error) {
+    console.error('Test error:', error);
+  }
+};
 
 const QuoteRequestsList: React.FC = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);

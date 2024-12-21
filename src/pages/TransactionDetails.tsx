@@ -22,6 +22,8 @@ import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import axios from 'axios';
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settingsService";
 
 interface TransactionDetails {
   transaction: {
@@ -47,6 +49,11 @@ const TransactionDetails: React.FC = () => {
   const [transaction, setTransaction] = useState<TransactionDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(false);
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
@@ -234,7 +241,7 @@ const TransactionDetails: React.FC = () => {
                   : 'text-red-600'
               }`}>
                 {transaction.transaction.type === 'credit' ? '+' : '-'}
-                {formatCurrency(transaction.transaction.amount)}
+                {formatCurrency(transaction.transaction.amount, settings?.default_currency)}
               </div>
               <div className="text-sm text-muted-foreground">
                 {transaction.transaction.description}

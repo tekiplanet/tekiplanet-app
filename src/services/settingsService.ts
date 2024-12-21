@@ -17,8 +17,7 @@ class SettingsService {
   async fetchSettings(): Promise<Settings> {
     try {
       const response = await apiClient.get('/settings');
-      this.settings = response.data;
-      return this.settings;
+      return response.data;
     } catch (error) {
       console.error('Failed to fetch settings', error);
       return {};
@@ -28,7 +27,8 @@ class SettingsService {
   async getAllSettings(): Promise<Settings> {
     // If settings are not fetched yet, fetch them first
     if (Object.keys(this.settings).length === 0) {
-      await this.fetchSettings();
+      const settings = await this.fetchSettings();
+      this.settings = settings;
     }
     return this.settings;
   }
@@ -36,7 +36,8 @@ class SettingsService {
   async getSetting(key: string): Promise<any> {
     // If settings are not fetched yet, fetch them first
     if (Object.keys(this.settings).length === 0) {
-      await this.fetchSettings();
+      const settings = await this.fetchSettings();
+      this.settings = settings;
     }
     return this.settings[key];
   }

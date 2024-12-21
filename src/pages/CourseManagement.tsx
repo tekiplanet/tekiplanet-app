@@ -5,6 +5,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import enrollmentService from '@/services/enrollmentService';
 import { courseManagementService } from '@/services/courseManagementService';
 import apiClient, { isAxiosError } from '@/lib/axios';
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settingsService";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +28,12 @@ const CourseManagement: React.FC = () => {
   const { courseId } = useParams();
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
+
+  // Add settings query at the top with other queries
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
 
   const [courseIdState, setCourseId] = React.useState<string | null>(courseId || null);
   const [courseDetails, setCourseDetails] = React.useState<{
@@ -84,11 +92,16 @@ const CourseManagement: React.FC = () => {
         return examDate >= nowDate;
       });
   
-      // Set the count of upcoming exams
-      setUpcomingExamsCount(upcomingExams.length);
-  
       return upcomingExams.length;
     }, []);
+
+  // Move the state update to useEffect
+  React.useEffect(() => {
+    if (courseDetails?.exams) {
+      const count = calculateUpcomingExams(courseDetails.exams);
+      setUpcomingExamsCount(count);
+    }
+  }, [courseDetails?.exams, calculateUpcomingExams]);
 
   // Add this method near other React.useCallback methods
   const refreshExams = React.useCallback(async () => {
@@ -140,15 +153,22 @@ const CourseManagement: React.FC = () => {
         const examsResponse = await apiClient.get(`/courses/${courseIdState}/exams`);
         const exams = examsResponse.data;
 
-        // Calculate upcoming exams immediately
-        calculateUpcomingExams(exams);
+        // Update course details with exams
+        setCourseDetails(prevDetails => ({
+          ...prevDetails!,
+          exams: exams
+        }));
+        
+        // Calculate and set upcoming exams count
+        const count = calculateUpcomingExams(exams);
+        setUpcomingExamsCount(count);
       } catch (error) {
         console.error('Error fetching exams:', error);
       }
     };
 
     fetchCourseExams();
-  }, [courseIdState, calculateUpcomingExams]);
+  }, [courseIdState]);
 
   // React.useEffect(() => {
   //   const fetchCourseDetails = async () => {
@@ -421,7 +441,7 @@ const CourseManagement: React.FC = () => {
                 </div>
                 <div className="text-sm">
                   <p className="text-muted-foreground">Total Cost</p>
-                  <p className="text-sm font-medium">{formatCurrency(Number(course.price))}</p>
+                  <p className="text-sm font-medium">{formatCurrency(Number(course.price), settings?.default_currency)}</p>
                 </div>
               </div>
             </div>
@@ -488,7 +508,7 @@ const CourseManagement: React.FC = () => {
             </TabsContent>
             <TabsContent value="payment">
             {courseIdState && (
-  <PaymentInfo courseId={courseIdState} />
+  <PaymentInfo courseId={courseIdState} settings={settings} />
 )}            </TabsContent>
           </div>
         </Tabs>

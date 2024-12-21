@@ -33,6 +33,8 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 import PagePreloader from '@/components/ui/PagePreloader';
 import { consultingService } from '@/services/consultingService';
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settingsService";
 import type { TimeSlot, ConsultingSettings } from '@/services/consultingService';
 
 interface SlotData {
@@ -76,6 +78,12 @@ export default function ITConsulting() {
   const balance = user?.wallet_balance ?? 0;
   const hourlyRate = settings?.hourly_rate ?? 10000;
   const totalCost = hours * hourlyRate;
+
+  // Add settings query
+  const { data: settingsData } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
 
   // Fetch available slots
   useEffect(() => {
@@ -472,17 +480,23 @@ function PriceContent({
   const navigate = useNavigate();
   const isTimeSlotSelected = selectedDate && selectedTime;
 
+  // Add settings query
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">{formatCurrency(totalCost)}</h2>
+        <h2 className="text-2xl font-bold">{formatCurrency(totalCost, settings?.default_currency)}</h2>
         <p className="text-sm text-muted-foreground">Total Cost</p>
       </div>
 
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span>Rate per Hour:</span>
-          <span>{formatCurrency(hourlyRate)}</span>
+          <span>{formatCurrency(hourlyRate, settings?.default_currency)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span>Duration:</span>
@@ -491,7 +505,7 @@ function PriceContent({
         <Separator className="my-2" />
         <div className="flex justify-between text-sm font-medium">
           <span>Total:</span>
-          <span>{formatCurrency(totalCost)}</span>
+          <span>{formatCurrency(totalCost, settings?.default_currency)}</span>
         </div>
       </div>
 
@@ -516,7 +530,7 @@ function PriceContent({
 
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
           <Wallet className="h-4 w-4" />
-          <span>Wallet Balance: {formatCurrency(balance)}</span>
+          <span>Wallet Balance: {formatCurrency(balance, settings?.default_currency)}</span>
         </div>
 
         {balance < totalCost && (
@@ -525,7 +539,7 @@ function PriceContent({
               <div>
                 <p className="font-medium text-destructive">Insufficient Balance</p>
                 <p className="text-muted-foreground">
-                  You need {formatCurrency(totalCost - balance)} more to book this session
+                  You need {formatCurrency(totalCost - balance, settings?.default_currency)} more to book this session
                 </p>
               </div>
             </div>

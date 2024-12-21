@@ -52,6 +52,7 @@ Route::post('/login', [LoginController::class, 'login']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
+    Route::get('/user/wallet-balance', [UserController::class, 'getWalletBalance']);
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/transactions', [TransactionController::class, 'index']);
@@ -155,7 +156,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('/courses', [CourseController::class, 'index']);
 Route::get('/courses/{courseId}', [CourseController::class, 'show']);
-Route::get('/courses/{courseId}/features', [CourseController::class, 'getCourseFeatures']);
+Route::get('/courses/{courseId}/features', [CourseController::class, 'getFeatures']);
 Route::get('/courses/{courseId}/features/{featureId}', [CourseController::class, 'getCourseFeature']);
 Route::get('/courses/{courseId}/curriculum', [CourseController::class, 'getCurriculum']);
 

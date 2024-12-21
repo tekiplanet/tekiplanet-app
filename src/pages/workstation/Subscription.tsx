@@ -50,6 +50,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useNavigate } from "react-router-dom";
 import PagePreloader from "@/components/ui/PagePreloader";
 import { Dialog, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { settingsService } from "@/services/settingsService";
 
 const CANCELLATION_REASONS = [
   { label: 'No longer need the service', value: 'no_need' },
@@ -64,6 +65,11 @@ const Subscription = () => {
   const { data: subscription, isLoading } = useQuery({
     queryKey: ['workstation-subscription'],
     queryFn: workstationService.getCurrentSubscription
+  });
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
   });
 
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
@@ -419,7 +425,7 @@ const Subscription = () => {
                       <div className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
                         <div>
                           <p className="text-sm text-muted-foreground">Total Amount</p>
-                          <p className="font-semibold">{formatCurrency(subscription.total_amount)}</p>
+                          <p className="font-semibold">{formatCurrency(subscription.total_amount, settings?.default_currency)}</p>
                         </div>
                         <Badge variant="secondary">{subscription.payment_type}</Badge>
                       </div>
@@ -433,7 +439,7 @@ const Subscription = () => {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold">{formatCurrency(payment.amount)}</p>
+                            <p className="font-semibold">{formatCurrency(payment.amount, settings?.default_currency)}</p>
                             <Badge 
                               variant="secondary" 
                               className={payment.status === 'paid' ? 'bg-green-500/10 text-green-500' : ''}
@@ -481,7 +487,7 @@ const Subscription = () => {
                                 <p className="text-sm text-muted-foreground mb-4">
                                   {plan.duration_days} days access
                                 </p>
-                                <p className="font-medium">{formatCurrency(plan.price)}</p>
+                                <p className="font-medium">{formatCurrency(plan.price, settings?.default_currency)}</p>
                               </CardContent>
                             </Card>
                           );
@@ -516,10 +522,10 @@ const Subscription = () => {
                                 {plan.duration_days} days access
                               </p>
                               <div className="flex items-baseline gap-2">
-                                <p className="font-medium">{formatCurrency(plan.price)}</p>
+                                <p className="font-medium">{formatCurrency(plan.price, settings?.default_currency)}</p>
                                 {isUpgrade && (
                                   <span className="text-xs text-muted-foreground">
-                                    (+{formatCurrency(plan.price - subscription.plan.price)})
+                                    (+{formatCurrency(plan.price - subscription.plan.price, settings?.default_currency)})
                                   </span>
                                 )}
                               </div>
@@ -780,7 +786,7 @@ const Subscription = () => {
             label: 'Choose Plan',
             placeholder: 'Select plan',
             options: plans?.map(plan => ({
-              label: `${plan.name} (${plan.duration_days} days) - ${formatCurrency(plan.price)}`,
+              label: `${plan.name} (${plan.duration_days} days) - ${formatCurrency(plan.price, settings?.default_currency)}`,
               value: plan.id
             })) || [],
             required: true
@@ -817,7 +823,7 @@ const Subscription = () => {
                 {[
                   { label: 'Plan Name', value: subscription.plan.name },
                   { label: 'Current End Date', value: format(new Date(subscription.end_date), "MMM d, yyyy") },
-                  { label: 'Base Amount', value: formatCurrency(subscription.plan.price) }
+                  { label: 'Base Amount', value: formatCurrency(subscription.plan.price, settings?.default_currency) }
                 ].map((item, i) => (
                   <div key={i} className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{item.label}</span>

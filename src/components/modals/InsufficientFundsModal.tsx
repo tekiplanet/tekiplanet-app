@@ -11,13 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { Loader2 } from 'lucide-react';
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settingsService";
 
 interface InsufficientFundsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   requiredAmount: number;
   currentBalance: number;
-  currencySymbol?: string;
   onConfirmPayment?: () => void;
   isProcessingPayment?: boolean;
   selectedPaymentPlan: string;
@@ -29,13 +30,17 @@ const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
   onOpenChange,
   requiredAmount,
   currentBalance,
-  currencySymbol = '₦',
   onConfirmPayment,
   isProcessingPayment = false,
   selectedPaymentPlan,
   courseName
 }) => {
   const navigate = useNavigate();
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
+
   const amountNeeded = requiredAmount - currentBalance;
   const isBalanceSufficient = currentBalance >= requiredAmount;
 
@@ -56,20 +61,20 @@ const InsufficientFundsModal: React.FC<InsufficientFundsModalProps> = ({
           <div className="flex justify-between">
             <span>Required Amount:</span>
             <span className="font-bold text-primary">
-              {formatCurrency(requiredAmount)}
+              {formatCurrency(requiredAmount, settings?.default_currency)}
             </span>
           </div>
           <div className="flex justify-between">
             <span>Current Wallet Balance:</span>
             <span className={`font-bold ${!isBalanceSufficient ? 'text-destructive' : 'text-primary'}`}>
-              {formatCurrency(currentBalance)}
+              {formatCurrency(currentBalance, settings?.default_currency)}
             </span>
           </div>
           {!isBalanceSufficient && (
             <div className="flex justify-between">
               <span>Additional Amount Needed:</span>
               <span className="font-bold text-destructive">
-                {formatCurrency(amountNeeded)}
+                {formatCurrency(amountNeeded, settings?.default_currency)}
               </span>
             </div>
           )}

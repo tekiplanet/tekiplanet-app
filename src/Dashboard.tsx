@@ -1,0 +1,1 @@
+- import CourseDetails from "@/components/academy/CourseDetails"; 

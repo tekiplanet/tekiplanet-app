@@ -44,6 +44,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { format, formatDistanceToNow, isFuture } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { settingsService } from "@/services/settingsService";
 
 const statusColors = {
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -358,6 +359,11 @@ export default function ConsultingBookingDetails() {
     queryFn: () => consultingService.getBookingDetails(id!)
   });
 
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
+
   const sessionDate = React.useMemo(() => {
     if (!booking) return new Date();
     
@@ -560,7 +566,7 @@ export default function ConsultingBookingDetails() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Rate per Hour</span>
-                  <span>{formatCurrency(booking.total_cost / booking.hours)}</span>
+                  <span>{formatCurrency(booking.total_cost / booking.hours, settings?.default_currency)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Duration</span>
@@ -569,7 +575,7 @@ export default function ConsultingBookingDetails() {
                 <Separator />
                 <div className="flex justify-between font-medium">
                   <span>Total Paid</span>
-                  <span>{formatCurrency(booking.total_cost)}</span>
+                  <span>{formatCurrency(booking.total_cost, settings?.default_currency)}</span>
                 </div>
               </div>
 

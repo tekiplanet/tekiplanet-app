@@ -91,4 +91,12 @@ class UserController extends Controller
             'message' => 'User type updated successfully'
         ]);
     }
+
+    public function getWalletBalance()
+    {
+        $user = auth()->user();
+        return response()->json([
+            'balance' => $user->wallet_balance
+        ]);
+    }
 }
