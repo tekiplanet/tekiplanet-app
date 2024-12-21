@@ -34,6 +34,14 @@ return [
     'paystack' => [
         'secret_key' => env('PAYSTACK_SECRET_KEY', 'sk_test_fabcb6e8bd17eb048d7938c7f6c9811f993de259'),
         'public_key' => env('PAYSTACK_PUBLIC_KEY', 'pk_test_51e5d2b8af20887e10869784aacac4effd0421bf'),
-    ],    
+    ], 
+    
+    'exchangerate' => [
+        'key' => env('EXCHANGERATE_API_KEY'),
+        'base_url' => 'https://v6.exchangerate-api.com/v6/'
+
+    ],
+
+
 
 ];

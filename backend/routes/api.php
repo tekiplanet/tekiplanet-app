@@ -33,6 +33,7 @@ use App\Http\Controllers\HustleMessageController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessCustomerController;
 use App\Http\Controllers\BusinessInvoiceController;
+use App\Http\Controllers\BusinessMetricsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -279,4 +280,9 @@ Route::middleware('auth:sanctum')->prefix('business')->group(function () {
     // Customer invoice routes
     Route::get('/customers/{customer}/invoices', [BusinessInvoiceController::class, 'getCustomerInvoices']);
     Route::get('/customers/{customer}/transactions', [BusinessInvoiceController::class, 'getCustomerTransactions']);
+});
+
+// Business Metrics
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/business/metrics', [BusinessMetricsController::class, 'getMetrics']);
 });
