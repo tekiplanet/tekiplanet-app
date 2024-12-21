@@ -306,6 +306,109 @@ class BusinessInvoiceController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
+            // Generate PDF
+            $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+            
+            // Set document information
+            $pdf->SetCreator(PDF_CREATOR);
+            $pdf->SetAuthor($invoice->business->business_name);
+            $pdf->SetTitle('Invoice #' . $invoice->invoice_number);
+
+            // Remove default header/footer
+            $pdf->setPrintHeader(false);
+            $pdf->setPrintFooter(false);
+
+            // Set margins
+            $pdf->SetMargins(15, 15, 15);
+
+            // Add a page
+            $pdf->AddPage();
+
+            // Set font
+            $pdf->SetFont('helvetica', '', 10);
+
+            // Add business logo if exists
+            if ($invoice->business->logo_url) {
+                $pdf->Image($invoice->business->logo_url, 15, 15, 40);
+                $pdf->Ln(20);
+            }
+
+            // Invoice Title with theme color
+            $themeColor = $invoice->theme_color ?? '#0000FF';
+            list($r, $g, $b) = sscanf($themeColor, "#%02x%02x%02x");
+            $pdf->SetTextColor($r, $g, $b);
+            $pdf->SetFont('helvetica', 'B', 20);
+            $pdf->Cell(0, 10, 'INVOICE', 0, 1, 'R');
+            $pdf->SetTextColor(0, 0, 0);
+
+            // Business Information
+            $pdf->SetFont('helvetica', '', 10);
+            $pdf->SetXY(120, 45);
+            $pdf->MultiCell(75, 5, 
+                $invoice->business->business_name . "\n" .
+                $invoice->business->address . "\n" .
+                $invoice->business->email . "\n" .
+                $invoice->business->phone,
+                0, 'R');
+
+            // Invoice Details
+            $pdf->SetXY(15, 45);
+            $pdf->MultiCell(90, 5,
+                "Invoice #: " . $invoice->invoice_number . "\n" .
+                "Date: " . $invoice->created_at->format('M d, Y') . "\n" .
+                "Due Date: " . $invoice->due_date->format('M d, Y') . "\n" .
+                "Status: " . ucwords(str_replace('_', ' ', $invoice->status)),
+                0, 'L');
+
+            // Customer Information
+            $pdf->Ln(10);
+            $pdf->SetFont('helvetica', 'B', 11);
+            $pdf->Cell(0, 8, 'Bill To:', 0, 1, 'L');
+            $pdf->SetFont('helvetica', '', 10);
+            $pdf->MultiCell(0, 5,
+                $invoice->customer->name . "\n" .
+                ($invoice->customer->address ? $invoice->customer->address . "\n" : '') .
+                "Email: " . $invoice->customer->email . "\n" .
+                "Phone: " . $invoice->customer->phone,
+                0, 'L');
+
+            // Items Table
+            $pdf->Ln(10);
+            $pdf->SetFillColor($r, $g, $b);
+            $pdf->SetTextColor(255, 255, 255);
+            $pdf->SetFont('helvetica', 'B', 10);
+            
+            // Table Header
+            $pdf->Cell(90, 8, 'Description', 1, 0, 'L', true);
+            $pdf->Cell(30, 8, 'Quantity', 1, 0, 'C', true);
+            $pdf->Cell(30, 8, 'Unit Price', 1, 0, 'R', true);
+            $pdf->Cell(30, 8, 'Amount', 1, 1, 'R', true);
+            
+            // Reset text color
+            $pdf->SetTextColor(0, 0, 0);
+            
+            // Table Content
+            $pdf->SetFont('helvetica', '', 10);
+            foreach ($invoice->items as $item) {
+                $pdf->Cell(90, 8, $item->description, 1, 0, 'L');
+                $pdf->Cell(30, 8, $item->quantity, 1, 0, 'C');
+                $pdf->Cell(30, 8, $invoice->currency . ' ' . number_format($item->unit_price, 2), 1, 0, 'R');
+                $pdf->Cell(30, 8, $invoice->currency . ' ' . number_format($item->amount, 2), 1, 1, 'R');
+            }
+
+            // Total
+            $pdf->SetFont('helvetica', 'B', 10);
+            $pdf->Cell(150, 8, 'Total:', 1, 0, 'R', true);
+            $pdf->Cell(30, 8, $invoice->currency . ' ' . number_format($invoice->amount, 2), 1, 1, 'R', true);
+
+            if ($invoice->notes) {
+                $pdf->Ln(10);
+                $pdf->SetFont('helvetica', 'B', 11);
+                $pdf->Cell(0, 8, 'Notes:', 0, 1, 'L');
+                $pdf->SetFont('helvetica', '', 10);
+                $pdf->MultiCell(0, 5, $invoice->notes, 0, 'L');
+            }
+
             // Send email with PDF attachment
             Mail::send('emails.invoice', ['invoice' => $invoice], function ($message) use ($invoice, $pdf) {
                 $message->to($invoice->customer->email, $invoice->customer->name)
