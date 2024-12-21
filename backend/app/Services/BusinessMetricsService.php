@@ -27,7 +27,8 @@ class BusinessMetricsService
             'total_customers' => $totalCustomers,
             'customers_this_month' => $customersThisMonth,
             'customer_growth' => $this->calculateCustomerGrowth($totalCustomers, $customersThisMonth),
-            'revenueData' => $this->getRevenueChartData($businessId)
+            'revenueData' => $this->getRevenueChartData($businessId),
+            'recent_activities' => $this->getRecentActivities($businessId)
         ];
     }
 
@@ -101,5 +102,83 @@ class BusinessMetricsService
         if ($total === 0) return "0%";
         $percentage = ($thisMonth / $total) * 100;
         return number_format($percentage, 0) . '%';
+    }
+
+    protected function getRecentActivities($businessId, $limit = 20)
+    {
+        Log::info('Fetching recent activities for business:', ['business_id' => $businessId]);
+
+        // Get recent customers
+        $customers = BusinessCustomer::where('business_id', $businessId)
+            ->select('id', 'name', 'created_at')
+            ->latest()
+            ->limit($limit)
+            ->get();
+
+        Log::info('Recent customers:', ['count' => $customers->count()]);
+
+        $customers = $customers->map(function($customer) {
+            return [
+                'type' => 'customer_added',
+                'title' => "New customer added: {$customer->name}",
+                'time' => $customer->created_at,
+                'amount' => null,
+                'currency' => null
+            ];
+        });
+
+        // Get recent invoices
+        $invoices = BusinessInvoice::where('business_id', $businessId)
+            ->select('id', 'invoice_number', 'amount', 'currency', 'created_at', 'customer_id')
+            ->with('customer:id,name')
+            ->latest()
+            ->limit($limit)
+            ->get();
+
+        Log::info('Recent invoices:', ['count' => $invoices->count()]);
+
+        $invoices = $invoices->map(function($invoice) {
+            return [
+                'type' => 'invoice_created',
+                'title' => "Invoice #{$invoice->invoice_number} created for {$invoice->customer->name}",
+                'time' => $invoice->created_at,
+                'amount' => $invoice->amount,
+                'currency' => $invoice->currency
+            ];
+        });
+
+        // Get recent payments
+        $payments = BusinessInvoicePayment::whereHas('invoice', function($query) use ($businessId) {
+            $query->where('business_id', $businessId);
+        })
+        ->with(['invoice:id,invoice_number,customer_id', 'invoice.customer:id,name'])
+        ->select('id', 'invoice_id', 'amount', 'currency', 'created_at')
+        ->latest()
+        ->limit($limit)
+        ->get();
+
+        Log::info('Recent payments:', ['count' => $payments->count()]);
+
+        $payments = $payments->map(function($payment) {
+            return [
+                'type' => 'payment_received',
+                'title' => "Payment received for Invoice #{$payment->invoice->invoice_number} from {$payment->invoice->customer->name}",
+                'time' => $payment->created_at,
+                'amount' => $payment->amount,
+                'currency' => $payment->currency
+            ];
+        });
+
+        // Combine all activities and sort by time
+        $activities = $customers->concat($invoices)
+            ->concat($payments)
+            ->sortByDesc('time')
+            ->take($limit)
+            ->values()
+            ->all();
+
+        Log::info('Combined activities:', ['count' => count($activities)]);
+
+        return $activities;
     }
 }

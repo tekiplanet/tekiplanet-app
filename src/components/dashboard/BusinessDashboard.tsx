@@ -44,6 +44,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatDistanceToNow } from 'date-fns';
 
 // Helper function for formatting currency
 const formatAmount = (amount: number) => {
@@ -140,30 +141,48 @@ const MetricCard = ({ title, value, trend, icon: Icon, trendValue, isLoading, co
   </motion.div>
 );
 
-// Recent Activity Item
-const ActivityItem = ({ icon: Icon, title, time, amount, status }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    className="flex items-center gap-4 p-3 hover:bg-muted/50 rounded-lg cursor-pointer border border-transparent hover:border-border transition-colors"
-  >
-    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
-      <Icon className="h-4 w-4 text-primary" />
+// Add this interface for activities
+interface Activity {
+  type: 'customer_added' | 'invoice_created' | 'payment_received';
+  title: string;
+  time: string;
+  amount: number | null;
+  currency: string | null;
+}
+
+// Update the ActivityItem component
+const ActivityItem = ({ 
+  icon: Icon, 
+  title, 
+  time, 
+  amount, 
+  currency, 
+  status 
+}: { 
+  icon: LucideIcon; 
+  title: string; 
+  time: string; 
+  amount?: string; 
+  currency?: string;
+  status?: string; 
+}) => (
+  <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
+    <div className={cn(
+      "p-2 rounded-full",
+      status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-primary/10 text-primary'
+    )}>
+      <Icon className="h-4 w-4" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="font-medium text-sm truncate">{title}</p>
-      <p className="text-xs text-muted-foreground">{time}</p>
+      <p className="text-sm font-medium">{title}</p>
+      <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(time))} ago</p>
     </div>
-    <div className="text-right shrink-0">
-      <p className="font-medium text-sm">{amount}</p>
-      <Badge 
-        variant={status === 'completed' ? 'success' : 'secondary'} 
-        className="text-xs"
-      >
-        {status}
-      </Badge>
-    </div>
-  </motion.div>
+    {amount && (
+      <div className="text-right">
+        <p className="text-sm font-medium">{currency}{amount}</p>
+      </div>
+    )}
+  </div>
 );
 
 export default function BusinessDashboard() {
@@ -180,7 +199,7 @@ export default function BusinessDashboard() {
     queryFn: () => businessService.getMetrics(),
     enabled: !!profileData?.has_profile,
     onSuccess: (data) => {
-      console.log('Metrics data:', data);
+      console.log('Metrics data:', data, 'Recent activities:', data.recent_activities);
     },
     onError: (error) => {
       console.error('Metrics error:', error);
@@ -390,28 +409,39 @@ export default function BusinessDashboard() {
               <CardContent>
                 <ScrollArea className="h-[250px] md:h-[300px]">
                   <div className="space-y-1 pr-4">
-                    <ActivityItem
-                      icon={CircleDollarSign}
-                      title="Payment from John Doe"
-                      time="2 minutes ago"
-                      amount={formatAmount(45000)}
-                      status="completed"
-                    />
-                    <ActivityItem
-                      icon={CircleDollarSign}
-                      title="Invoice sent to Sarah Williams"
-                      time="1 hour ago"
-                      amount="₦120,000"
-                      status="pending"
-                    />
-                    <ActivityItem
-                      icon={CircleDollarSign}
-                      title="Payment from Tech Solutions Ltd"
-                      time="3 hours ago"
-                      amount="₦250,000"
-                      status="completed"
-                    />
-                    {/* Add more activity items */}
+                    {console.log('Rendering activities:', metrics?.recent_activities)}
+                    {metrics?.recent_activities?.map((activity: Activity, index) => {
+                      let icon = CircleDollarSign;
+                      switch (activity.type) {
+                        case 'customer_added':
+                          icon = Users;
+                          break;
+                        case 'invoice_created':
+                          icon = FileText;
+                          break;
+                        case 'payment_received':
+                          icon = CircleDollarSign;
+                          break;
+                      }
+
+                      return (
+                        <ActivityItem
+                          key={index}
+                          icon={icon}
+                          title={activity.title}
+                          time={activity.time}
+                          amount={activity.amount ? formatAmount(activity.amount) : undefined}
+                          currency={activity.currency}
+                          status={activity.type === 'payment_received' ? 'completed' : undefined}
+                        />
+                      );
+                    })}
+
+                    {(!metrics?.recent_activities || metrics.recent_activities.length === 0) && (
+                      <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
+                        <p>No recent activities</p>
+                      </div>
+                    )}
                   </div>
                 </ScrollArea>
               </CardContent>

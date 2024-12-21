@@ -131,4 +131,5 @@ export interface BusinessMetrics {
     name: string;
     value: number;
   }[];
+  recent_activities: Activity[];
 } 
