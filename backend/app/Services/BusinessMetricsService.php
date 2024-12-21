@@ -6,6 +6,7 @@ use App\Models\BusinessInvoice;
 use App\Models\BusinessInvoicePayment;
 use App\Models\BusinessCustomer;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class BusinessMetricsService
 {
@@ -35,10 +36,17 @@ class BusinessMetricsService
         $businessInvoices = BusinessInvoice::where('business_id', $businessId)
             ->pluck('id');
 
-        return BusinessInvoicePayment::whereIn('invoice_id', $businessInvoices)
+        $totalRevenue = BusinessInvoicePayment::whereIn('invoice_id', $businessInvoices)
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('converted_amount');
+
+        Log::info('Monthly revenue calculation:', [
+            'business_id' => $businessId,
+            'total_revenue' => $totalRevenue
+        ]);
+
+        return $totalRevenue;
     }
 
     protected function getRevenueChartData($businessId)
@@ -62,21 +70,10 @@ class BusinessMetricsService
         $businessInvoices = BusinessInvoice::where('business_id', $businessId)
             ->pluck('id');
 
-        $totalNGN = 0;
-        
-        BusinessInvoicePayment::whereIn('invoice_id', $businessInvoices)
+        return BusinessInvoicePayment::whereIn('invoice_id', $businessInvoices)
             ->whereMonth('created_at', $month->month)
             ->whereYear('created_at', $month->year)
-            ->chunk(100, function($payments) use (&$totalNGN) {
-                foreach($payments as $payment) {
-                    $totalNGN += $this->currencyService->convertToNGN(
-                        $payment->amount, 
-                        $payment->currency
-                    );
-                }
-            });
-
-        return $totalNGN;
+            ->sum('converted_amount');
     }
 
     protected function getTotalCustomers($businessId)
