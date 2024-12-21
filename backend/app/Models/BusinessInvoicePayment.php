@@ -12,6 +12,7 @@ class BusinessInvoicePayment extends Model
     protected $fillable = [
         'invoice_id',
         'amount',
+        'converted_amount',
         'currency',
         'payment_date',
         'notes'
@@ -19,6 +20,7 @@ class BusinessInvoicePayment extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'converted_amount' => 'decimal:2',
         'payment_date' => 'datetime'
     ];
 

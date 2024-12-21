@@ -12,6 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('invoice_id')->constrained('business_invoices')->onDelete('cascade');
             $table->decimal('amount', 10, 2);
+            $table->decimal('converted_amount', 10, 2)->nullable();
             $table->timestamp('payment_date');
             $table->text('notes')->nullable();
             $table->timestamps();
