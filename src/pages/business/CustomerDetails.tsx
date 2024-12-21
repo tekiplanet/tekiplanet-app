@@ -403,8 +403,11 @@ export default function CustomerDetails() {
       await businessService.deleteCustomer(customer.id);
       toast.success('Customer deleted successfully');
       navigate('/dashboard/business/customers');
-    } catch (error) {
-      toast.error('Failed to delete customer');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.type === 'has_invoices' 
+        ? 'Cannot delete customer with existing invoices. Please delete all invoices first.'
+        : 'Failed to delete customer';
+      toast.error(errorMessage);
     } finally {
       setIsDeleting(false);
     }

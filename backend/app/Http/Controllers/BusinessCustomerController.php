@@ -246,6 +246,15 @@ class BusinessCustomerController extends Controller
                 ], 404);
             }
 
+            // Check if customer has any invoices
+            $hasInvoices = $customer->invoices()->exists();
+            if ($hasInvoices) {
+                return response()->json([
+                    'message' => 'Cannot delete customer with existing invoices. Please delete all invoices first.',
+                    'type' => 'has_invoices'
+                ], 422);
+            }
+
             \Log::info('Deleting customer:', [
                 'customer_id' => $id,
                 'business_id' => $businessProfile->id,
