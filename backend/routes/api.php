@@ -266,6 +266,7 @@ Route::middleware('auth:sanctum')->prefix('business')->group(function () {
 
     // All invoice routes under /business prefix
     Route::prefix('invoices')->group(function () {
+        Route::post('/', [BusinessInvoiceController::class, 'store']);
         Route::get('/{id}', [BusinessInvoiceController::class, 'show'])
             ->name('business.invoices.show');
         Route::get('/{invoice}/download', [BusinessInvoiceController::class, 'downloadPDF']);

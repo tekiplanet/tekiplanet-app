@@ -43,7 +43,7 @@ class BusinessInvoiceController extends Controller
             }
 
             // Get business profile
-            $businessProfile = BusinessProfile::where('user_id', Auth::id())->first();
+            $businessProfile = auth()->user()->business_profile;
             if (!$businessProfile) {
                 return response()->json(['message' => 'Business profile not found'], 404);
             }
@@ -55,12 +55,12 @@ class BusinessInvoiceController extends Controller
             $invoice = BusinessInvoice::create([
                 'business_id' => $businessProfile->id,
                 'customer_id' => $request->customer_id,
-                'invoice_number' => $request->invoice_number ?? 'INV-' . time(),
+                'invoice_number' => $request->invoice_number ?? 'INV-' . str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT),
                 'amount' => $request->amount,
                 'currency' => $customer->currency,
                 'paid_amount' => 0,
                 'due_date' => $request->due_date,
-                'status' => 'pending',
+                'status' => 'draft',
                 'payment_reminder_sent' => false,
                 'theme_color' => $request->theme_color,
                 'notes' => $request->notes
