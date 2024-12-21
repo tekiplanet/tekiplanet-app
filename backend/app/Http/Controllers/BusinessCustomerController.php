@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BusinessCustomer;
 use App\Models\BusinessProfile;
+use App\Models\BusinessInvoicePayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -137,50 +138,25 @@ class BusinessCustomerController extends Controller
     public function show($id)
     {
         try {
-            // Get the business profile first
-            $businessProfile = BusinessProfile::where('user_id', Auth::id())->first();
-
-            if (!$businessProfile) {
-                return response()->json([
-                    'message' => 'Business profile not found'
-                ], 404);
-            }
-
-            $customer = BusinessCustomer::where('business_id', $businessProfile->id)
+            $customer = BusinessCustomer::with(['business'])
                 ->where('id', $id)
-                ->first();
+                ->firstOrFail();
 
-            if (!$customer) {
-                return response()->json([
-                    'message' => 'Customer not found'
-                ], 404);
+            // Check if user owns the business
+            if ($customer->business->user_id !== Auth::id()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            return response()->json([
-                'id' => $customer->id,
-                'name' => $customer->name,
-                'email' => $customer->email,
-                'phone' => $customer->phone,
-                'address' => $customer->address,
-                'city' => $customer->city,
-                'state' => $customer->state,
-                'country' => $customer->country,
-                'currency' => $customer->currency,
-                'tags' => $customer->tags,
-                'notes' => $customer->notes,
-                'status' => $customer->status,
-                'total_spent' => $customer->getTotalSpent(),
-                'last_order_date' => null,
-                'created_at' => $customer->created_at,
-                'updated_at' => $customer->updated_at
-            ]);
+            // Calculate total spent from invoice payments
+            $totalSpent = BusinessInvoicePayment::whereHas('invoice', function ($query) use ($customer) {
+                $query->where('customer_id', $customer->id);
+            })->sum('amount');
 
+            // Add total spent to customer data
+            $customer->total_spent = $totalSpent;
+
+            return response()->json($customer);
         } catch (\Exception $e) {
-            \Log::error('Error fetching customer:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
             return response()->json([
                 'message' => 'Failed to fetch customer',
                 'error' => $e->getMessage()

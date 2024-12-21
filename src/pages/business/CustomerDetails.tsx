@@ -457,7 +457,9 @@ export default function CustomerDetails() {
           <CardContent className="pt-4">
             <div className="flex flex-col gap-1">
               <span className="text-sm text-muted-foreground">Total Spent</span>
-              <span className="text-2xl font-bold">{formatCurrency(customer.total_spent, customer.currency)}</span>
+              <span className="text-2xl font-bold">
+                {formatCurrency(customer.total_spent, customer.currency)}
+              </span>
             </div>
           </CardContent>
         </Card>

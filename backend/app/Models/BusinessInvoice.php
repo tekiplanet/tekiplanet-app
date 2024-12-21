@@ -52,18 +52,18 @@ class BusinessInvoice extends Model
 
     public function getEffectiveStatus()
     {
-        // If the invoice is paid, it's always "paid" regardless of due date
-        if ($this->status === 'paid') {
+        // If the invoice is fully paid (paid_amount equals amount), it's always "paid"
+        if ($this->paid_amount >= $this->amount) {
             return 'paid';
         }
 
         // If there are payments but not fully paid, it's "partially_paid"
-        if ($this->payments()->exists() && $this->status !== 'paid') {
+        if ($this->paid_amount > 0) {
             return 'partially_paid';
         }
 
         // If the due date has passed and it's not paid or partially paid, it's "overdue"
-        if ($this->due_date < Carbon::now() && !in_array($this->status, ['paid', 'partially_paid'])) {
+        if ($this->due_date < Carbon::now() && $this->paid_amount < $this->amount) {
             return 'overdue';
         }
 
@@ -74,15 +74,16 @@ class BusinessInvoice extends Model
     public function getStatusDetails()
     {
         $effectiveStatus = $this->getEffectiveStatus();
-        $paidAmount = $this->payments()->sum('amount');
+        $paidAmount = $this->paid_amount;
         $remainingAmount = $this->amount - $paidAmount;
-        $daysOverdue = $this->due_date < Carbon::now() ? Carbon::now()->diffInDays($this->due_date) : 0;
+        $daysOverdue = ($this->due_date < Carbon::now() && $remainingAmount > 0) ? 
+            Carbon::now()->diffInDays($this->due_date) : 0;
 
         $details = [
             'status' => $effectiveStatus,
             'paid_amount' => $paidAmount,
             'remaining_amount' => $remainingAmount,
-            'is_overdue' => $effectiveStatus === 'overdue',
+            'is_overdue' => $effectiveStatus === 'overdue' && $remainingAmount > 0,
             'days_overdue' => $daysOverdue,
         ];
 
@@ -98,9 +99,16 @@ class BusinessInvoice extends Model
                 $details['description'] = 'Partial payment received';
                 break;
             case 'overdue':
-                $details['label'] = 'Overdue';
-                $details['color'] = 'destructive';
-                $details['description'] = $daysOverdue . ' days overdue';
+                // Don't show overdue if there's no remaining balance
+                if ($remainingAmount <= 0) {
+                    $details['label'] = 'Paid';
+                    $details['color'] = 'success';
+                    $details['description'] = 'Payment completed';
+                } else {
+                    $details['label'] = 'Overdue';
+                    $details['color'] = 'destructive';
+                    $details['description'] = $daysOverdue . ' days overdue';
+                }
                 break;
             case 'sent':
                 $details['label'] = 'Sent';
