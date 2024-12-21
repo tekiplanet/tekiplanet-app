@@ -24,7 +24,8 @@ import {
   BarChart3,
   Calendar,
   CircleDollarSign,
-  Wallet
+  Wallet,
+  UserPlus
 } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import { businessService } from '@/services/businessService';
@@ -170,6 +171,19 @@ export default function BusinessDashboard() {
     enabled: !!profileData?.has_profile
   });
 
+  // Calculate customers added this month
+  const customersThisMonth = React.useMemo(() => {
+    if (!metrics?.customers_data) return 0;
+    
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    return metrics.customers_data.filter(customer => {
+      const createdAt = new Date(customer.created_at);
+      return createdAt >= startOfMonth && createdAt <= now;
+    }).length;
+  }, [metrics?.customers_data]);
+
   if (profileLoading) {
     return <LoadingSkeleton />;
   }
@@ -272,7 +286,7 @@ export default function BusinessDashboard() {
         <div className="grid grid-cols-2 gap-4">
           <MetricCard
             title="Total Customers"
-            value={metrics?.customers || "0"}
+            value={metrics?.total_customers || "0"}
             trend="up"
             trendValue="8%"
             icon={Users}
@@ -280,13 +294,13 @@ export default function BusinessDashboard() {
             color="blue"
           />
           <MetricCard
-            title="Inventory Items"
-            value={metrics?.inventory || "0"}
-            trend="down"
-            trendValue="3%"
-            icon={Package}
+            title="This Month"
+            value={customersThisMonth.toString()}
+            trend="up"
+            trendValue={`${((customersThisMonth / (metrics?.total_customers || 1)) * 100).toFixed(0)}%`}
+            icon={UserPlus}
             isLoading={metricsLoading}
-            color="orange"
+            color="green"
           />
         </div>
       </div>
@@ -310,13 +324,6 @@ export default function BusinessDashboard() {
                 >
                   <CircleDollarSign className="h-4 w-4" />
                   Transactions
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="inventory" 
-                  className="flex items-center gap-1 px-3 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none whitespace-nowrap text-sm"
-                >
-                  <Package className="h-4 w-4" />
-                  Inventory
                 </TabsTrigger>
               </TabsList>
             </div>
