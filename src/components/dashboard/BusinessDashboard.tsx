@@ -45,6 +45,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+// Helper function for formatting currency
+const formatAmount = (amount: number) => {
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+};
+
 // Quick Action Component
 const QuickAction = ({ icon: Icon, title, onClick, variant = "default" }) => (
   <motion.div
@@ -266,7 +276,7 @@ export default function BusinessDashboard() {
         <div className="w-full">
           <MetricCard
             title="Monthly Revenue"
-            value={metrics?.revenue ? `₦${metrics.revenue.toLocaleString()}` : "₦0"}
+            value={metrics?.revenue ? formatAmount(metrics.revenue) : formatAmount(0)}
             trend="up"
             trendValue="12%"
             icon={DollarSign}
@@ -357,6 +367,8 @@ export default function BusinessDashboard() {
                         stroke="hsl(var(--primary))"
                         fillOpacity={1}
                         fill="url(#revenue)"
+                        name="Revenue"
+                        formatter={(value: number) => formatAmount(value)}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -382,7 +394,7 @@ export default function BusinessDashboard() {
                       icon={CircleDollarSign}
                       title="Payment from John Doe"
                       time="2 minutes ago"
-                      amount="₦45,000"
+                      amount={formatAmount(45000)}
                       status="completed"
                     />
                     <ActivityItem

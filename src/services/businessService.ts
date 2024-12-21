@@ -1,6 +1,13 @@
 import { apiClient } from '@/lib/axios';
 import { CreateCustomerDto } from '@/types/business';
 
+// Add this interface for payment data
+interface RecordPaymentDto {
+  amount: number;
+  payment_date: string;
+  notes?: string;
+}
+
 export const businessService = {
   checkProfile: async () => {
     const { data } = await apiClient.get('/business/profile/check');
@@ -82,9 +89,13 @@ export const businessService = {
     return data;
   },
 
-  recordPayment: async (id: string, data: any) => {
-    const { data: response } = await apiClient.post(`/business/invoices/${id}/payments`, data);
-    return response;
+  recordPayment: async (invoiceId: string, data: RecordPaymentDto) => {
+    const response = await apiClient.post(`/business/invoices/${invoiceId}/payments`, {
+      amount: data.amount,
+      payment_date: data.payment_date,
+      notes: data.notes
+    });
+    return response.data;
   },
 
   updateInvoiceStatus: async (id: string, status: string) => {

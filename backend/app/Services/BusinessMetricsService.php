@@ -35,21 +35,10 @@ class BusinessMetricsService
         $businessInvoices = BusinessInvoice::where('business_id', $businessId)
             ->pluck('id');
 
-        $totalNGN = 0;
-        
-        BusinessInvoicePayment::whereIn('invoice_id', $businessInvoices)
+        return BusinessInvoicePayment::whereIn('invoice_id', $businessInvoices)
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
-            ->chunk(100, function($payments) use (&$totalNGN) {
-                foreach($payments as $payment) {
-                    $totalNGN += $this->currencyService->convertToNGN(
-                        $payment->amount, 
-                        $payment->currency
-                    );
-                }
-            });
-
-        return $totalNGN;
+            ->sum('converted_amount');
     }
 
     protected function getRevenueChartData($businessId)

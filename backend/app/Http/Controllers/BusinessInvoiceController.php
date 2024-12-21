@@ -12,10 +12,19 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use TCPDF;
+use App\Services\CurrencyService;
 
 class BusinessInvoiceController extends Controller
 {
+    protected $currencyService;
+
+    public function __construct(CurrencyService $currencyService)
+    {
+        $this->currencyService = $currencyService;
+    }
+
     public function store(Request $request)
     {
         try {
@@ -433,101 +442,56 @@ class BusinessInvoiceController extends Controller
         }
     }
 
-    public function recordPayment(Request $request, $id)
+    public function recordPayment(Request $request, $invoiceId)
     {
-        \Log::info('Recording payment:', [
-            'invoice_id' => $id,
-            'data' => $request->all()
-        ]);
-
         try {
-            $invoice = BusinessInvoice::with(['business', 'customer'])->findOrFail($id);
-
-            // Check if the user owns the business
-            if ($invoice->business_id !== auth()->user()->business_profile->id) {
-                return response()->json([
-                    'message' => 'You are not authorized to record payments for this invoice'
-                ], 403);
-            }
+            Log::info('Recording payment:', [
+                'invoice_id' => $invoiceId,
+                'request_data' => $request->all()
+            ]);
 
             $request->validate([
-                'amount' => 'required|numeric|min:0.01',
+                'amount' => 'required|numeric|min:0',
                 'payment_date' => 'required|date',
                 'notes' => 'nullable|string'
             ]);
 
-            // Validate that amount doesn't exceed remaining balance
-            $remainingBalance = $invoice->amount - $invoice->payments()->sum('amount');
-            if ($request->amount > $remainingBalance) {
-                return response()->json([
-                    'message' => 'Payment amount cannot exceed the remaining balance',
-                    'errors' => [
-                        'amount' => ['Payment amount cannot exceed the remaining balance']
-                    ]
-                ], 422);
-            }
+            $invoice = BusinessInvoice::findOrFail($invoiceId);
 
-            // Create the payment record
-            $payment = $invoice->payments()->create([
+            // Convert amount to NGN at the time of payment
+            $convertedAmount = $this->currencyService->convertToNGN(
+                $request->amount,
+                $invoice->currency
+            );
+
+            Log::info('Payment conversion:', [
+                'original_amount' => $request->amount,
+                'currency' => $invoice->currency,
+                'converted_amount' => $convertedAmount
+            ]);
+
+            // Create payment record with both original and converted amounts
+            $payment = BusinessInvoicePayment::create([
+                'invoice_id' => $invoiceId,
                 'amount' => $request->amount,
                 'currency' => $invoice->currency,
+                'converted_amount' => $convertedAmount,
                 'payment_date' => $request->payment_date,
                 'notes' => $request->notes
             ]);
 
-            // Calculate total paid amount and update invoice status
-            $totalPaid = $invoice->payments()->sum('amount');
-            $invoice->update([
-                'paid_amount' => $totalPaid,
-                'status' => $totalPaid >= $invoice->amount ? 'paid' : 
-                           ($totalPaid > 0 ? 'partially_paid' : $invoice->status)
-            ]);
-
-            // Send payment receipt email
-            try {
-                Mail::send('emails.payment-received', [
-                    'invoice' => $invoice,
-                    'payment' => $payment,
-                    'business' => $invoice->business,
-                    'customer' => $invoice->customer
-                ], function ($message) use ($invoice, $payment) {
-                    $message->to($invoice->customer->email, $invoice->customer->name)
-                        ->subject('Payment Receipt for Invoice #' . $invoice->invoice_number);
-                });
-
-                \Log::info('Payment receipt email sent successfully', [
-                    'invoice_id' => $invoice->id,
-                    'customer_email' => $invoice->customer->email
-                ]);
-            } catch (\Exception $emailError) {
-                \Log::error('Failed to send payment receipt email:', [
-                    'error' => $emailError->getMessage(),
-                    'invoice_id' => $invoice->id
-                ]);
-                // Don't throw the error - just log it and continue
-            }
-
-            \Log::info('Payment recorded successfully:', [
-                'payment_id' => $payment->id,
-                'invoice_id' => $id,
-                'new_status' => $invoice->status,
-                'total_paid' => $totalPaid,
-                'invoice_amount' => $invoice->amount
-            ]);
-
             return response()->json([
                 'message' => 'Payment recorded successfully',
-                'payment' => $payment,
-                'invoice' => $invoice->fresh()
+                'payment' => $payment
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Failed to record payment:', [
-                'invoice_id' => $id,
+            Log::error('Error recording invoice payment:', [
+                'invoice_id' => $invoiceId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'message' => 'Failed to record payment',
                 'error' => $e->getMessage()
