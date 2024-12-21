@@ -165,6 +165,18 @@ export default function Customers() {
     initialData: [],
   });
 
+  const customersThisMonth = React.useMemo(() => {
+    if (!customers) return 0;
+    
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    return customers.filter(customer => {
+      const createdAt = new Date(customer.created_at);
+      return createdAt >= startOfMonth && createdAt <= now;
+    }).length;
+  }, [customers]);
+
   const queryClient = useQueryClient();
 
   const handleAddCustomer = () => {
@@ -173,7 +185,7 @@ export default function Customers() {
 
   const stats = [
     { label: 'Total Customers', value: customers?.length || '0', icon: Users },
-    { label: 'Active This Month', value: '0', icon: UserPlus },
+    { label: 'Active This Month', value: customersThisMonth.toString(), icon: UserPlus },
   ];
 
   const handleDelete = async () => {
@@ -211,7 +223,7 @@ export default function Customers() {
             </div>
             <div className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
-              <span>0 this month</span>
+              <span>{customersThisMonth} this month</span>
             </div>
           </div>
         </div>
