@@ -631,7 +631,7 @@ class BusinessInvoiceController extends Controller
             ->map(function ($payment) {
                 return [
                     'id' => $payment->id,
-                    'date' => $payment->payment_date,
+                    'payment_date' => $payment->payment_date->format('Y-m-d\TH:i:s.u\Z'),
                     'type' => 'payment',
                     'amount' => $payment->amount,
                     'currency' => $payment->invoice->currency,

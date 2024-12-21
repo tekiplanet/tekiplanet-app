@@ -123,6 +123,15 @@ function TransactionsTab({ customerId }: { customerId: string }) {
     queryFn: () => businessService.getCustomerTransactions(customerId),
   });
 
+  const formatTransactionDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "PPP");
+    } catch (error) {
+      console.error('Invalid date:', dateString);
+      return 'Invalid date';
+    }
+  };
+
   if (isLoading) {
     return <div className="space-y-4">
       <Skeleton className="h-12 w-full" />
@@ -159,7 +168,7 @@ function TransactionsTab({ customerId }: { customerId: string }) {
             <TableBody>
               {transactions.map((transaction) => (
                 <TableRow key={transaction.id}>
-                  <TableCell>{formatDate(transaction.payment_date)}</TableCell>
+                  <TableCell>{formatTransactionDate(transaction.payment_date)}</TableCell>
                   <TableCell>Payment</TableCell>
                   <TableCell>{formatCurrency(transaction.amount, transaction.currency)}</TableCell>
                   <TableCell>
@@ -182,7 +191,7 @@ function TransactionsTab({ customerId }: { customerId: string }) {
                     Invoice #{transaction.invoice_number}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(transaction.date), "PPP")}
+                    {formatTransactionDate(transaction.payment_date)}
                   </p>
                 </div>
                 <Badge variant={getStatusVariant(transaction.status)}>
