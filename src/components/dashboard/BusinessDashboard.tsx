@@ -56,6 +56,16 @@ const formatAmount = (amount: number) => {
   }).format(amount);
 };
 
+// Helper function for formatting currency with specific currency code
+const formatAmountWithCurrency = (amount: number, currency: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency || 'NGN',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+};
+
 // Quick Action Component
 const QuickAction = ({ icon: Icon, title, onClick, variant = "default" }) => (
   <motion.div
@@ -162,7 +172,7 @@ const ActivityItem = ({
   icon: LucideIcon; 
   title: string; 
   time: string; 
-  amount?: string; 
+  amount?: number;
   currency?: string;
   status?: string; 
 }) => (
@@ -177,9 +187,9 @@ const ActivityItem = ({
       <p className="text-sm font-medium">{title}</p>
       <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(time))} ago</p>
     </div>
-    {amount && (
+    {amount && currency && (
       <div className="text-right">
-        <p className="text-sm font-medium">{currency}{amount}</p>
+        <p className="text-sm font-medium">{formatAmountWithCurrency(amount, currency)}</p>
       </div>
     )}
   </div>
@@ -430,8 +440,8 @@ export default function BusinessDashboard() {
                           icon={icon}
                           title={activity.title}
                           time={activity.time}
-                          amount={activity.amount ? formatAmount(activity.amount) : undefined}
-                          currency={activity.currency}
+                          amount={activity.amount || undefined}
+                          currency={activity.currency || undefined}
                           status={activity.type === 'payment_received' ? 'completed' : undefined}
                         />
                       );
@@ -448,18 +458,6 @@ export default function BusinessDashboard() {
             </Card>
           </div>
 
-          {/* Low Stock Alert */}
-          <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/10">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-orange-500" />
-                <CardTitle className="text-orange-500">Low Stock Alert</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Low stock items list */}
-            </CardContent>
-          </Card>
         </TabsContent>
 
         {/* Add other tab contents */}
