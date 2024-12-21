@@ -1,4 +1,4 @@
-import apiClient from '@/lib/axios';
+import { apiClient } from '@/lib/axios';
 
 interface Settings {
   site_name?: string;

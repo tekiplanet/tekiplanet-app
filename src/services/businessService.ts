@@ -97,5 +97,27 @@ export const businessService = {
     return data;
   },
 
+  async getMetrics() {
+    try {
+      const response = await apiClient.get('/business/metrics');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching business metrics:', error);
+      throw error;
+    }
+  },
+
   // Add other business-related API calls
 }; 
+
+// Add TypeScript interface for the metrics response
+export interface BusinessMetrics {
+  revenue: number;
+  total_customers: number;
+  customers_this_month: number;
+  customer_growth: string;
+  revenueData: {
+    name: string;
+    value: number;
+  }[];
+} 

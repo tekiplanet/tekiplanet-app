@@ -18,10 +18,14 @@ class BusinessMetricsService
 
     public function getBusinessMetrics($businessId)
     {
+        $totalCustomers = $this->getTotalCustomers($businessId);
+        $customersThisMonth = $this->getCustomersThisMonth($businessId);
+        
         return [
             'revenue' => $this->calculateMonthlyRevenue($businessId),
-            'total_customers' => $this->getTotalCustomers($businessId),
-            'customers_data' => $this->getCustomersData($businessId),
+            'total_customers' => $totalCustomers,
+            'customers_this_month' => $customersThisMonth,
+            'customer_growth' => $this->calculateCustomerGrowth($totalCustomers, $customersThisMonth),
             'revenueData' => $this->getRevenueChartData($businessId)
         ];
     }
@@ -96,5 +100,20 @@ class BusinessMetricsService
         return BusinessCustomer::where('business_id', $businessId)
             ->select('id', 'created_at')
             ->get();
+    }
+
+    protected function getCustomersThisMonth($businessId)
+    {
+        return BusinessCustomer::where('business_id', $businessId)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+    }
+
+    protected function calculateCustomerGrowth($total, $thisMonth)
+    {
+        if ($total === 0) return "0%";
+        $percentage = ($thisMonth / $total) * 100;
+        return number_format($percentage, 0) . '%';
     }
 }

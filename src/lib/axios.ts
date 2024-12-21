@@ -1,12 +1,16 @@
 import axios from 'axios';
 
-const apiClient = axios.create({
-  baseURL: 'http://192.168.43.190:8000/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true
+// Export the apiClient instance
+export const apiClient = axios.create({
+    baseURL: import.meta.env.VITE_API_URL,
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+    }
 });
+
+// We should use the same instance for all requests
+export const axiosInstance = apiClient;
 
 // Add request interceptor to add token
 apiClient.interceptors.request.use((config) => {
@@ -36,7 +40,3 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Export both named and default exports
-export { apiClient };
-export default apiClient;

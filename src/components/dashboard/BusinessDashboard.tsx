@@ -28,7 +28,7 @@ import {
   UserPlus
 } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
-import { businessService } from '@/services/businessService';
+import { businessService, BusinessMetrics } from '@/services/businessService';
 import NoBusinessProfile from '../business/NoBusinessProfile';
 import InactiveBusinessProfile from '../business/InactiveBusinessProfile';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -165,24 +165,17 @@ export default function BusinessDashboard() {
     retry: false
   });
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
+  const { data: metrics, isLoading: metricsLoading } = useQuery<BusinessMetrics>({
     queryKey: ['business-metrics'],
-    queryFn: businessService.getMetrics,
-    enabled: !!profileData?.has_profile
+    queryFn: () => businessService.getMetrics(),
+    enabled: !!profileData?.has_profile,
+    onSuccess: (data) => {
+      console.log('Metrics data:', data);
+    },
+    onError: (error) => {
+      console.error('Metrics error:', error);
+    }
   });
-
-  // Calculate customers added this month
-  const customersThisMonth = React.useMemo(() => {
-    if (!metrics?.customers_data) return 0;
-    
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    return metrics.customers_data.filter(customer => {
-      const createdAt = new Date(customer.created_at);
-      return createdAt >= startOfMonth && createdAt <= now;
-    }).length;
-  }, [metrics?.customers_data]);
 
   if (profileLoading) {
     return <LoadingSkeleton />;
@@ -273,7 +266,7 @@ export default function BusinessDashboard() {
         <div className="w-full">
           <MetricCard
             title="Monthly Revenue"
-            value={metrics?.revenue || "₦0"}
+            value={metrics?.revenue ? `₦${metrics.revenue.toLocaleString()}` : "₦0"}
             trend="up"
             trendValue="12%"
             icon={DollarSign}
@@ -295,9 +288,9 @@ export default function BusinessDashboard() {
           />
           <MetricCard
             title="This Month"
-            value={customersThisMonth.toString()}
+            value={metrics?.customers_this_month?.toString() || "0"}
             trend="up"
-            trendValue={`${((customersThisMonth / (metrics?.total_customers || 1)) * 100).toFixed(0)}%`}
+            trendValue={metrics?.customer_growth || "0%"}
             icon={UserPlus}
             isLoading={metricsLoading}
             color="green"

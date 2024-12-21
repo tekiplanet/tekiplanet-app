@@ -21,6 +21,11 @@ class BusinessMetricsController extends Controller
             // Get business profile ID for authenticated user
             $businessProfile = $request->user()->businessProfile;
 
+            Log::info('Fetching metrics for business:', [
+                'user_id' => $request->user()->id,
+                'business_profile' => $businessProfile
+            ]);
+
             if (!$businessProfile) {
                 return response()->json([
                     'message' => 'No business profile found'
@@ -28,6 +33,10 @@ class BusinessMetricsController extends Controller
             }
 
             $metrics = $this->metricsService->getBusinessMetrics($businessProfile->id);
+
+            Log::info('Metrics response:', [
+                'metrics' => $metrics
+            ]);
 
             return response()->json($metrics);
 
