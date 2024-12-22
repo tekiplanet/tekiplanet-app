@@ -168,13 +168,25 @@ class ProfessionalDashboardController extends Controller
     public function getActivities(Request $request)
     {
         try {
+            Log::info('Fetching activities with request:', [
+                'filters' => $request->all(),
+                'user_id' => Auth::id()
+            ]);
+
             $professional = Auth::user()->professional;
             
             if (!$professional) {
+                Log::warning('Professional profile not found for user:', [
+                    'user_id' => Auth::id()
+                ]);
                 return response()->json([
                     'message' => 'Professional profile not found'
                 ], 404);
             }
+
+            Log::info('Found professional profile:', [
+                'professional_id' => $professional->id
+            ]);
 
             $perPage = 10;
             $query = collect();
@@ -187,7 +199,7 @@ class ProfessionalDashboardController extends Controller
                 $hustleQuery->where('title', 'like', "%{$request->search}%");
             }
 
-            if ($request->has('status')) {
+            if ($request->has('status') && $request->status !== 'all') {
                 $hustleQuery->where('status', $request->status);
             }
 
@@ -195,7 +207,12 @@ class ProfessionalDashboardController extends Controller
                 $hustleQuery->whereBetween('created_at', [$request->from, $request->to]);
             }
 
-            $hustles = $hustleQuery->get()->map(function ($hustle) {
+            $hustles = $hustleQuery->get();
+            Log::info('Found hustles:', [
+                'count' => $hustles->count()
+            ]);
+
+            $hustles = $hustles->map(function ($hustle) {
                 return [
                     'id' => $hustle->id,
                     'type' => 'hustle',
@@ -210,7 +227,7 @@ class ProfessionalDashboardController extends Controller
             // Get hustle payments with filters
             $paymentsQuery = HustlePayment::where('professional_id', $professional->id);
 
-            if ($request->has('status')) {
+            if ($request->has('status') && $request->status !== 'all') {
                 $paymentsQuery->where('status', $request->status);
             }
 
@@ -218,7 +235,12 @@ class ProfessionalDashboardController extends Controller
                 $paymentsQuery->whereBetween('created_at', [$request->from, $request->to]);
             }
 
-            $payments = $paymentsQuery->get()->map(function ($payment) {
+            $payments = $paymentsQuery->get();
+            Log::info('Found payments:', [
+                'count' => $payments->count()
+            ]);
+
+            $payments = $payments->map(function ($payment) {
                 return [
                     'id' => $payment->id,
                     'type' => 'payment',
@@ -238,7 +260,7 @@ class ProfessionalDashboardController extends Controller
                 });
             });
 
-            if ($request->has('status')) {
+            if ($request->has('status') && $request->status !== 'all') {
                 $workstationQuery->where('status', $request->status);
             }
 
@@ -246,7 +268,12 @@ class ProfessionalDashboardController extends Controller
                 $workstationQuery->whereBetween('created_at', [$request->from, $request->to]);
             }
 
-            $workstationPayments = $workstationQuery->get()->map(function ($payment) {
+            $workstationPayments = $workstationQuery->get();
+            Log::info('Found workstation payments:', [
+                'count' => $workstationPayments->count()
+            ]);
+
+            $workstationPayments = $workstationPayments->map(function ($payment) {
                 return [
                     'id' => $payment->id,
                     'type' => 'workstation',
@@ -291,6 +318,13 @@ class ProfessionalDashboardController extends Controller
             $offset = ($page - 1) * $perPage;
             $total = $sortedActivities->count();
             $activities = $sortedActivities->slice($offset, $perPage)->values();
+
+            Log::info('Returning activities:', [
+                'total' => $total,
+                'current_page' => $page,
+                'has_more' => ($offset + $perPage) < $total,
+                'activities_count' => $activities->count()
+            ]);
 
             return response()->json([
                 'data' => $activities,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,8 +19,9 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { professionalService } from "@/services/professionalService";
+import { settingsService } from "@/services/settingsService";
 import { useInView } from "react-intersection-observer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,12 @@ const ActivitiesPage = () => {
     dateRange: undefined,
   });
 
+  // Fetch settings for currency
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => settingsService.fetchSettings(),
+  });
+
   const { ref: infiniteRef, inView } = useInView();
 
   const {
@@ -59,13 +66,21 @@ const ActivitiesPage = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    error
   } = useInfiniteQuery({
     queryKey: ['activities', filters],
-    queryFn: ({ pageParam = 1 }) => 
-      professionalService.getActivities({
-        page: pageParam,
-        ...filters,
-      }),
+    queryFn: async ({ pageParam = 1 }) => {
+      try {
+        const response = await professionalService.getActivities({
+          page: pageParam,
+          ...filters,
+        });
+        return response;
+      } catch (err) {
+        console.error('Error fetching activities:', err);
+        throw err;
+      }
+    },
     getNextPageParam: (lastPage) => 
       lastPage.has_more ? lastPage.current_page + 1 : undefined,
     enabled: true,
@@ -107,7 +122,7 @@ const ActivitiesPage = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: settings?.default_currency || 'USD',
       currencyDisplay: 'symbol'
     }).format(amount);
   };
@@ -122,9 +137,9 @@ const ActivitiesPage = () => {
 
   return (
     <ScrollArea className="h-[calc(100vh-4rem)]">
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-4 py-3 space-y-4">
         {/* Header */}
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-col space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">Activity History</h1>
           <p className="text-muted-foreground">
             View and track all your activities.
@@ -247,9 +262,6 @@ const ActivitiesPage = () => {
 
         {/* Activities List */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Activities</CardTitle>
-          </CardHeader>
           <CardContent className="p-0">
             <div className="space-y-1">
               {isLoading ? (
