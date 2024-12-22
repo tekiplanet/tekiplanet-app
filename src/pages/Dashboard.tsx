@@ -277,22 +277,76 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      // Invalidate and refetch specific queries
       await Promise.all([
-        // Wallet related queries
+        // User & Auth
+        queryClient.invalidateQueries({ queryKey: ['user'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-profile'] }),
+        queryClient.invalidateQueries({ queryKey: ['professional-profile'] }),
+        
+        // Wallet & Transactions
         queryClient.invalidateQueries({ queryKey: ['wallet'] }),
         queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] }),
-        // User data
-        queryClient.invalidateQueries({ queryKey: ['user'] }),
-        // Cart data
+        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
+        
+        // Store & Cart
+        queryClient.invalidateQueries({ queryKey: ['cart'] }),
         queryClient.invalidateQueries({ queryKey: ['cartCount'] }),
-        // Course related queries
+        queryClient.invalidateQueries({ queryKey: ['orders'] }),
+        queryClient.invalidateQueries({ queryKey: ['products'] }),
+        
+        // Courses & Academy
         queryClient.invalidateQueries({ queryKey: ['courses'] }),
         queryClient.invalidateQueries({ queryKey: ['enrolled-courses'] }),
-        // Business related queries
+        queryClient.invalidateQueries({ queryKey: ['course-details'] }),
+        queryClient.invalidateQueries({ queryKey: ['course-modules'] }),
+        queryClient.invalidateQueries({ queryKey: ['course-progress'] }),
+        
+        // Business
         queryClient.invalidateQueries({ queryKey: ['business-customers'] }),
         queryClient.invalidateQueries({ queryKey: ['business-invoices'] }),
         queryClient.invalidateQueries({ queryKey: ['business-transactions'] }),
+        queryClient.invalidateQueries({ queryKey: ['business-profile'] }),
+        
+        // Hustles
+        queryClient.invalidateQueries({ queryKey: ['hustles'] }),
+        queryClient.invalidateQueries({ queryKey: ['my-applications'] }),
+        
+        // Services & Quotes
+        queryClient.invalidateQueries({ queryKey: ['service-quotes'] }),
+        queryClient.invalidateQueries({ queryKey: ['quote-requests'] }),
+        
+        // Settings
+        queryClient.invalidateQueries({ queryKey: ['settings'] }),
+        queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+
+        // Course Management
+        queryClient.invalidateQueries({ queryKey: ['course-enrollments'] }),
+        queryClient.invalidateQueries({ queryKey: ['course-notices'] }),
+        queryClient.invalidateQueries({ queryKey: ['course-exams'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-courses'] }),
+        queryClient.invalidateQueries({ queryKey: ['learning-stats'] }),
+
+        // Business Dashboard
+        queryClient.invalidateQueries({ queryKey: ['business-stats'] }),
+        queryClient.invalidateQueries({ queryKey: ['business-activities'] }),
+        queryClient.invalidateQueries({ queryKey: ['business-revenue'] }),
+        queryClient.invalidateQueries({ queryKey: ['recent-transactions'] }),
+
+        // Consulting
+        queryClient.invalidateQueries({ queryKey: ['consulting-bookings'] }),
+        queryClient.invalidateQueries({ queryKey: ['booking-slots'] }),
+        queryClient.invalidateQueries({ queryKey: ['available-consultants'] }),
+        queryClient.invalidateQueries({ queryKey: ['consulting-services'] }),
+        queryClient.invalidateQueries({ queryKey: ['consultation-history'] }),
+
+        // Workstation
+        queryClient.invalidateQueries({ queryKey: ['workstation-plans'] }),
+        queryClient.invalidateQueries({ queryKey: ['active-subscription'] }),
+        queryClient.invalidateQueries({ queryKey: ['workspace-usage'] }),
+
+        // Quote Requests
+        queryClient.invalidateQueries({ queryKey: ['quote-requests-list'] }),
+
         // Force refresh user data
         useAuthStore.getState().refreshToken()
       ]);
