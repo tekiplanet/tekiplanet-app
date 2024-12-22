@@ -60,27 +60,27 @@ const CustomerCard = ({
         onClick={() => navigate(`/dashboard/business/customers/${customer.id}`)}
       >
         <div className="flex items-start gap-4">
-          <Avatar className="h-10 w-10 border">
+          <Avatar className="h-10 w-10 border shrink-0">
             <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <div>
+              <div className="min-w-0">
                 <h3 className="font-semibold truncate">{customer.name}</h3>
                 <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Mail className="h-3 w-3" />
+                    <Mail className="h-3 w-3 shrink-0" />
                     <span className="truncate">{customer.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Phone className="h-3 w-3" />
-                    <span>{customer.phone}</span>
+                    <Phone className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{customer.phone}</span>
                   </div>
                 </div>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100">
+                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 shrink-0">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -113,11 +113,11 @@ const CustomerCard = ({
         <div className="mt-4 pt-4 border-t flex items-center justify-between text-sm">
           <div>
             <p className="text-muted-foreground text-xs">Total Spent</p>
-            <p className="font-medium">{formatCurrency(customer.total_spent, customer.currency)}</p>
+            <p className="font-medium truncate">{formatCurrency(customer.total_spent, customer.currency)}</p>
           </div>
           <div className="text-right">
             <p className="text-muted-foreground text-xs">Last Order</p>
-            <p className="font-medium">{customer.last_order_date}</p>
+            <p className="font-medium truncate">{customer.last_order_date}</p>
           </div>
         </div>
       </div>
@@ -211,7 +211,7 @@ export default function Customers() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
+    <div className="container mx-auto px-4 py-6 md:p-8 max-w-7xl space-y-6">
       {/* Header with Stats */}
       <div className="flex flex-col md:flex-row gap-6 md:items-center">
         <div className="flex-1">
@@ -280,7 +280,7 @@ export default function Customers() {
       ) : !customers || customers.length === 0 ? (
         <EmptyState onAddCustomer={handleAddCustomer} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 px-0.5">
           {customers.map((customer) => (
             <CustomerCard 
               key={customer.id} 
