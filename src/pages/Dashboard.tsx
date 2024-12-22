@@ -132,6 +132,9 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
     try {
       await updateUserType(type);
       
+      // Close the sheet menu
+      setIsSheetOpen(false);
+      
       // Navigate to dashboard after profile type switch
       navigate('/dashboard', { 
         replace: true,  // Replace current history entry
