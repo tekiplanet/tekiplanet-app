@@ -280,33 +280,64 @@ export default function CourseDetails() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative bg-primary/5">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:grid md:grid-cols-2 gap-6 pt-0 pb-8 md:py-8">
-            {/* Image Container - Full width on mobile, rounded top corners */}
-            <div className="relative aspect-[16/9] w-[calc(100%+2rem)] -mx-4 -mt-4 md:mt-0 md:w-full md:mx-0 md:rounded-lg md:overflow-hidden">
-              <div className="rounded-t-3xl overflow-hidden md:rounded-lg">
+      <div className="relative bg-gradient-to-b from-primary/5 via-primary/[0.02] to-transparent pt-4 md:pt-8">
+        <div className="container mx-auto px-0 md:px-4">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-8 pb-8 md:py-12">
+            {/* Image Container */}
+            <div className="relative aspect-video md:aspect-[16/9] w-full md:rounded-2xl md:overflow-hidden group">
+              <div className="relative h-full">
                 <img 
-                  src={course?.image_url} 
+                  src={course?.image_url || '/placeholder-course.jpg'} 
                   alt={course?.title}
-                  className="object-cover w-full h-full"
+                  className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                
+                {/* Overlay Content for Mobile */}
+                <div className="absolute inset-x-0 bottom-0 p-4 md:hidden">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <Badge variant="secondary" className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+                      {course.category}
+                    </Badge>
+                    <Badge 
+                      variant={
+                        course.level === "Beginner" ? "default" :
+                        course.level === "Intermediate" ? "secondary" : 
+                        "destructive"
+                      }
+                      className="bg-white/10 backdrop-blur-sm border-white/20 text-white"
+                    >
+                      {course.level}
+                    </Badge>
+                  </div>
+                  <h1 className="text-2xl font-bold text-white mb-1 line-clamp-2">{course.title}</h1>
+                  <div className="flex items-center gap-4 text-white/90">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">{course.duration_hours} Months</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Star className="h-4 w-4 text-yellow-400" />
+                      <span className="text-sm">{course.average_rating || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+
                 <Button 
                   size="icon"
                   variant="ghost"
-                  className="absolute bottom-4 right-4 text-white hover:text-primary"
+                  className="absolute top-4 right-4 text-white hover:text-primary hover:scale-110 transition-all duration-300 md:bottom-4 md:top-auto"
                 >
-                  <PlayCircle className="h-8 w-8" />
+                  <PlayCircle className="h-8 w-8 md:h-10 md:w-10" />
                 </Button>
               </div>
             </div>
 
-            {/* Course Info */}
-            <div className="space-y-6">
+            {/* Course Info - Hidden on Mobile */}
+            <div className="hidden md:block space-y-6 md:py-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <Badge variant="secondary" className="px-3 py-1">
                     {course.category}
                   </Badge>
                   <Badge 
@@ -315,62 +346,89 @@ export default function CourseDetails() {
                       course.level === "Intermediate" ? "secondary" : 
                       "destructive"
                     }
+                    className="px-3 py-1"
                   >
                     {course.level}
                   </Badge>
                 </div>
-                <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
-                <p className="text-muted-foreground">
+                <h1 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">{course.title}</h1>
+                <p className="text-muted-foreground text-lg leading-relaxed">
                   {course.description}
                 </p>
               </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">
-                    <p className="text-muted-foreground">Duration</p>
-                    <p className="font-medium">{course.duration_hours} Months</p>
+              {/* Rest of desktop course info */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted/50">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Duration</p>
+                    <p className="font-semibold">{course.duration_hours} Months</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">
-                    <p className="text-muted-foreground">Students</p>
-                    <p className="font-medium">{course.students_count || 0}</p>
+                <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted/50">
+                  <Users className="h-5 w-5 text-primary" />
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Students</p>
+                    <p className="font-semibold">{course.students_count || 0}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-yellow-500" />
-                  <div className="text-sm">
-                    <p className="text-muted-foreground">Rating</p>
-                    <p className="font-medium">{course.average_rating || 'N/A'}</p>
+                <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted/50">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Rating</p>
+                    <p className="font-semibold">{course.average_rating || 'N/A'}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">
-                    <p className="text-muted-foreground">Level</p>
-                    <p className="font-medium">{course.level}</p>
+                <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted/50">
+                  <GraduationCap className="h-5 w-5 text-primary" />
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Level</p>
+                    <p className="font-semibold">{course.level}</p>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Enrollment Card for Mobile */}
-              <Card className="md:hidden">
-                <CardContent className="p-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h2 className="text-2xl font-bold">{formatCurrency(course.price, settings?.default_currency)}</h2>
-                      <p className="text-sm text-muted-foreground">Tuition Fee</p>
+            {/* Mobile Course Description */}
+            <div className="md:hidden px-4">
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {course.description}
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted/50">
+                    <Users className="h-4 w-4 text-primary" />
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground">Students</p>
+                      <p className="text-sm font-semibold">{course.students_count || 0}</p>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Enrollment Fee:</span>
-                        <span>{formatCurrency(ENROLLMENT_FEE, settings?.default_currency)}</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted/50">
+                    <GraduationCap className="h-4 w-4 text-primary" />
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground">Level</p>
+                      <p className="text-sm font-semibold">{course.level}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile Enrollment Card */}
+                <Card className="bg-card/50 backdrop-blur-sm border-none shadow-lg">
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-xl font-bold text-primary">{formatCurrency(course.price, settings?.default_currency)}</h2>
+                          <p className="text-xs text-muted-foreground">Tuition Fee</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground mb-1">Enrollment Fee</p>
+                          <p className="text-sm font-medium">{formatCurrency(ENROLLMENT_FEE, settings?.default_currency)}</p>
+                        </div>
                       </div>
                       <Button 
-                        className="w-full text-white"
+                        className="w-full text-white font-medium rounded-xl h-11"
                         onClick={handleEnroll}
                         disabled={loading}
                       >
@@ -387,45 +445,30 @@ export default function CourseDetails() {
                         Wallet Balance: {formatCurrency(walletBalance, settings?.default_currency)}
                       </p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-[1fr,300px]">
-          <div className="space-y-6">
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <div className="grid gap-8 md:grid-cols-[1fr,320px]">
+          <div className="space-y-8">
             {/* Course Content Tabs */}
-            <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="w-full justify-start">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
-                <TabsTrigger value="instructor">Instructor</TabsTrigger>
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList className="w-full justify-start p-1 bg-muted/50 rounded-xl">
+                <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
+                <TabsTrigger value="curriculum" className="rounded-lg">Curriculum</TabsTrigger>
+                <TabsTrigger value="instructor" className="rounded-lg">Instructor</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-6">
-                <Card>
-                  {/* <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <h2 className="text-xl font-semibold">What you'll learn</h2>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {course.features && course.features.map((feature, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <CheckCircle2 className="h-5 w-5 text-primary" />
-                            <span className="text-sm text-primary">{feature.feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent> */}
-                </Card>
+              <TabsContent value="overview" className="space-y-8">
                 <div className="grid gap-4 md:grid-cols-3">
-                  <Card>
+                  <Card className="bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
                     <CardContent className="p-4 flex items-center gap-4">
-                      <div className="p-3 rounded-full bg-primary/10">
+                      <div className="p-3 rounded-xl bg-primary/10">
                         <Globe className="h-6 w-6 text-primary" />
                       </div>
                       <div>
@@ -436,9 +479,9 @@ export default function CourseDetails() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
                     <CardContent className="p-4 flex items-center gap-4">
-                      <div className="p-3 rounded-full bg-primary/10">
+                      <div className="p-3 rounded-xl bg-primary/10">
                         <Shield className="h-6 w-6 text-primary" />
                       </div>
                       <div>
@@ -449,9 +492,9 @@ export default function CourseDetails() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
+                  <Card className="bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
                     <CardContent className="p-4 flex items-center gap-4">
-                      <div className="p-3 rounded-full bg-primary/10">
+                      <div className="p-3 rounded-xl bg-primary/10">
                         <Award className="h-6 w-6 text-primary" />
                       </div>
                       <div>
@@ -465,8 +508,8 @@ export default function CourseDetails() {
                 </div>
 
                 <div className="space-y-4">
-                  <h2 className="text-lg font-semibold">What you'll learn</h2>
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <h2 className="text-xl font-semibold">What you'll learn</h2>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {(course.features?.length ? course.features : [
                       "Comprehensive understanding of core concepts",
                       "Practical skills through hands-on projects",
@@ -475,9 +518,9 @@ export default function CourseDetails() {
                       "Problem-solving and critical thinking skills",
                       "Preparation for real-world challenges"
                     ])?.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                        <span className="text-sm">{feature}</span>
+                      <div key={index} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors">
+                        <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <span className="text-sm leading-relaxed">{feature}</span>
                       </div>
                     ))}
                   </div>
@@ -489,8 +532,8 @@ export default function CourseDetails() {
               </TabsContent>
 
               <TabsContent value="instructor">
-                <Card>
-                  <CardContent className="p-6">
+                <Card className="bg-card/50 backdrop-blur-sm">
+                  <CardContent className="p-8">
                     {renderInstructor()}
                   </CardContent>
                 </Card>
@@ -500,47 +543,42 @@ export default function CourseDetails() {
 
           {/* Enrollment Card for Desktop */}
           <div className="hidden md:block">
-            <Card className="sticky top-6">
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-3xl font-bold">{formatCurrency(course.price, settings?.default_currency)}</h2>
-                    <p className="text-sm text-muted-foreground">Tuition Fee</p>
+            <Card className="sticky top-6 bg-card/50 backdrop-blur-sm">
+              <CardContent className="p-6 space-y-6">
+                <div>
+                  <h2 className="text-3xl font-bold text-primary">{formatCurrency(course.price, settings?.default_currency)}</h2>
+                  <p className="text-sm text-muted-foreground">Tuition Fee</p>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Enrollment Fee:</span>
+                    <span className="font-medium">{formatCurrency(ENROLLMENT_FEE, settings?.default_currency)}</span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Enrollment Fee:</span>
-                      <span>{formatCurrency(ENROLLMENT_FEE, settings?.default_currency)}</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Button 
-                        size="lg" 
-                        className="flex-1"
-                        onClick={() => setShowConfirmEnrollmentModal(true)}
-                        disabled={loading}
-                      >
-                        {loading ? 'Enrolling...' : 'Enroll Now'}
-                      </Button>
-
-                    </div>
-                    <p className="text-xs text-center text-muted-foreground">
-                      Wallet Balance: {formatCurrency(walletBalance, settings?.default_currency)}
-                    </p>
+                  <Button 
+                    size="lg" 
+                    className="w-full h-12 rounded-xl font-medium"
+                    onClick={() => setShowConfirmEnrollmentModal(true)}
+                    disabled={loading}
+                  >
+                    {loading ? 'Enrolling...' : 'Enroll Now'}
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Wallet Balance: {formatCurrency(walletBalance, settings?.default_currency)}
+                  </p>
+                </div>
+                <Separator className="bg-border/50" />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    <span className="text-sm">Start Learning Today</span>
                   </div>
-                  <Separator />
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <span className="text-sm">Start Learning Today</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-sm">Self-paced Learning</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4" />
-                      <span className="text-sm">24/7 Course Access</span>
-                    </div>
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
+                    <Clock className="h-5 w-5 text-primary" />
+                    <span className="text-sm">Self-paced Learning</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    <span className="text-sm">24/7 Course Access</span>
                   </div>
                 </div>
               </CardContent>
@@ -549,34 +587,48 @@ export default function CourseDetails() {
         </div>
       </div>
 
-      {showConfirmEnrollmentModal && (
-        <Dialog open={showConfirmEnrollmentModal} onOpenChange={setShowConfirmEnrollmentModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirm Enrollment</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to enroll in {course.title}? 
-                An enrollment fee of {formatCurrency(ENROLLMENT_FEE, settings?.default_currency)} will be deducted from your wallet.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowConfirmEnrollmentModal(false)}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleConfirmEnrollment} 
-                disabled={loading}
-              >
-                {loading ? 'Enrolling...' : 'Confirm Enrollment'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Enrollment Confirmation Modal */}
+      <Dialog open={showConfirmEnrollmentModal} onOpenChange={setShowConfirmEnrollmentModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Enrollment</DialogTitle>
+            <DialogDescription className="space-y-3">
+              <p>
+                Are you sure you want to enroll in <span className="font-medium text-foreground">{course.title}</span>?
+              </p>
+              <div className="p-3 rounded-lg bg-muted/50 flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Enrollment Fee:</span>
+                <span className="font-medium">{formatCurrency(ENROLLMENT_FEE, settings?.default_currency)}</span>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-3 sm:gap-0">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmEnrollmentModal(false)}
+              disabled={loading}
+              className="rounded-lg"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleConfirmEnrollment} 
+              disabled={loading}
+              className="rounded-lg"
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Enrolling...</span>
+                </div>
+              ) : (
+                'Confirm Enrollment'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <InsufficientFundsModal
         open={showInsufficientFundsModal}
         onClose={() => setShowInsufficientFundsModal(false)}
