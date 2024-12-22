@@ -342,9 +342,9 @@ export default function StudentDashboard() {
       <div className="grid grid-cols-2 gap-3 px-2">
         {[
           { icon: <BookMarked className="h-5 w-5" />, label: "My Courses", color: "from-blue-500/20 to-blue-600/20", link: "/dashboard/academy/my-courses" },
-          { icon: <Calendar className="h-5 w-5" />, label: "Schedule", color: "from-green-500/20 to-green-600/20", link: "/dashboard/academy/schedule" },
+          { icon: <BookOpen className="h-5 w-5" />, label: "All Courses", color: "from-green-500/20 to-green-600/20", link: "/dashboard/academy" },
           { icon: <Award className="h-5 w-5" />, label: "Certificates", color: "from-yellow-500/20 to-yellow-600/20", link: "/dashboard/academy/certificates" },
-          { icon: <GraduationCap className="h-5 w-5" />, label: "Learning Path", color: "from-purple-500/20 to-purple-600/20", link: "/dashboard/academy/learning-path" }
+          { icon: <Wallet className="h-5 w-5" />, label: "Visit Store", color: "from-purple-500/20 to-purple-600/20", link: "/dashboard/store" }
         ].map((action, index) => (
           <motion.div
             key={action.label}

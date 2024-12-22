@@ -27,6 +27,7 @@ import CustomerDetails from "@/pages/business/CustomerDetails";
 import InvoiceDetails from "@/pages/business/InvoiceDetails";
 import BusinessDashboard from "@/components/dashboard/BusinessDashboard";
 import BusinessActivities from "@/pages/business/BusinessActivities";
+import { lazy } from "react";
 
 // Lazy load pages
 const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
@@ -68,6 +69,7 @@ const Settings = React.lazy(() => import('@/pages/Settings'));
 const PaymentConfirmation = React.lazy(() => import('@/pages/PaymentConfirmation'));
 const PaystackCallback = React.lazy(() => import('@/pages/PaystackCallback'));
 const ActivitiesPage = React.lazy(() => import('@/pages/dashboard/ActivitiesPage'));
+const CertificatesPage = lazy(() => import("@/pages/dashboard/CertificatesPage"));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -159,6 +161,7 @@ const AppContent = () => {
             <Route path="business/dashboard" element={<BusinessDashboard />} />
             <Route path="business/activities" element={<BusinessActivities />} />
             <Route path="activities" element={<ActivitiesPage />} />
+            <Route path="academy/certificates" element={<CertificatesPage />} />
           </Route>
 
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
