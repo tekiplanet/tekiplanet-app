@@ -692,12 +692,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
             <PullToRefresh
               onRefresh={handleRefresh}
               pullingContent={
-                <div className="flex items-center justify-center py-1 text-sm text-muted-foreground bg-background/80 backdrop-blur-sm border-b">
+                <div className="flex items-center justify-center py-1 text-sm text-muted-foreground bg-background/50 backdrop-blur-sm">
                   Pull down to refresh...
                 </div>
               }
               refreshingContent={
-                <div className="flex items-center justify-center gap-2 py-1 text-sm bg-background/80 backdrop-blur-sm border-b">
+                <div className="flex items-center justify-center gap-2 py-1 text-sm bg-background/50 backdrop-blur-sm">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
               }
@@ -725,19 +725,21 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                     className={cn(
                       "w-12 h-12 rounded-full",
                       "transition-all duration-200 ease-in-out",
+                      "hover:bg-primary/5 active:scale-95",
                       isSheetOpen && "text-primary"
                     )}
                   >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-72 p-0">
-                  <div className="flex flex-col h-full">
-                    {/* Fixed Header - User Profile Section */}
-                    <div className="border-b px-6 py-4 shrink-0">
-                      <div className="flex items-center gap-4">
+                <SheetContent side="left" className="w-[85%] p-0 border-r shadow-2xl">
+                  <div className="flex flex-col h-full bg-gradient-to-b from-background to-background/95">
+                    {/* Profile Header Section */}
+                    <div className="relative px-4 pt-12 pb-6">
+                      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+                      <div className="relative flex items-center gap-4">
                         <div className="relative">
-                          <Avatar className="h-10 w-10 ring-2 ring-primary/10">
+                          <Avatar className="h-14 w-14 ring-4 ring-background">
                             <AvatarImage 
                               src={user?.avatar || undefined} 
                               alt={user?.name || user?.first_name || user?.last_name || "User Avatar"} 
@@ -751,10 +753,10 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                               }
                             </AvatarFallback>
                           </Avatar>
-                          <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-background bg-green-500" />
+                          <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-background bg-green-500" />
                         </div>
-                        <div className="flex-1 overflow-hidden">
-                          <h3 className="truncate text-sm font-medium">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold truncate">
                             {user?.name || 
                              (user?.first_name && user?.last_name 
                                ? `${user.first_name} ${user.last_name}` 
@@ -763,108 +765,220 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                                  user?.email || 
                                  'User')}
                           </h3>
-                          <p className="truncate text-xs text-muted-foreground">
+                          <p className="text-sm text-muted-foreground truncate">
                             {user?.email || 'No email'}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Scrollable Menu Items */}
+                    {/* Profile Type Switcher */}
+                    <div className="px-4 pb-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            className="w-full justify-between gap-2 h-12 rounded-xl bg-primary/5 border-primary/10 hover:bg-primary/10"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <GraduationCap className="h-4 w-4 text-primary" />
+                              </div>
+                              <span className="font-medium">
+                                {user?.account_type === "student" ? "Student Account" : 
+                                 user?.account_type === "business" ? "Business Account" : 
+                                 "Professional Account"}
+                              </span>
+                            </div>
+                            <ChevronDown className="h-4 w-4 text-primary opacity-50" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[calc(85vw-2rem)]">
+                          <DropdownMenuItem 
+                            disabled={user?.account_type === "student"}
+                            onClick={() => handleProfileSwitch("student")}
+                            className="h-11"
+                          >
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <GraduationCap className="h-4 w-4 text-primary" />
+                              </div>
+                              Switch to Student Account
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            disabled={user?.account_type === "business"}
+                            onClick={() => handleProfileSwitch("business")}
+                            className="h-11"
+                          >
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Building2 className="h-4 w-4 text-primary" />
+                              </div>
+                              Switch to Business Account
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            disabled={user?.account_type === "professional"}
+                            onClick={() => handleProfileSwitch("professional")}
+                            className="h-11"
+                          >
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Briefcase className="h-4 w-4 text-primary" />
+                              </div>
+                              Switch to Professional Account
+                            </div>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Menu Categories */}
                     <div className="flex-1 overflow-y-auto">
-                      <nav className="flex-1 space-y-1 px-4 py-2 overflow-y-auto">
-                        {menuItems.map((item) => (
-                          <div key={item.path}>
+                      <div className="p-4 space-y-6">
+                        {/* Main Navigation */}
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Main Navigation</h4>
+                          {menuItems.slice(0, 4).map((item) => (
                             <Button
+                              key={item.path}
                               variant={location.pathname === item.path ? "secondary" : "ghost"}
                               className={cn(
-                                "w-full justify-start mb-1",
-                                item.submenu && "mb-2"
+                                "w-full justify-start h-11 gap-3",
+                                "transition-all duration-200",
+                                location.pathname === item.path ? 
+                                  "bg-primary/10 hover:bg-primary/15" : 
+                                  "hover:bg-muted/50",
+                                "rounded-lg"
                               )}
                               onClick={() => {
                                 navigate(item.path);
                                 setIsSheetOpen(false);
                               }}
                             >
-                              <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center">
-                                  {item.icon}
-                                  <span className="ml-3">{item.label}</span>
-                                </div>
-                                {item.badge && (
-                                  <Badge variant="secondary" className="ml-auto mr-2">
-                                    {item.badge}
-                                  </Badge>
-                                )}
+                              <div className={cn(
+                                "p-1.5 rounded-md",
+                                location.pathname === item.path ? "bg-primary/10" : "bg-muted"
+                              )}>
+                                {item.icon}
                               </div>
+                              <span className="font-medium">{item.label}</span>
+                              {item.badge && (
+                                <Badge variant="secondary" className="ml-auto">
+                                  {item.badge}
+                                </Badge>
+                              )}
                             </Button>
-                          </div>
-                        ))}
-                      </nav>
+                          ))}
+                        </div>
+
+                        {/* Learning */}
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Learning</h4>
+                          {menuItems.slice(4, 7).map((item) => (
+                            <Button
+                              key={item.path}
+                              variant={location.pathname === item.path ? "secondary" : "ghost"}
+                              className={cn(
+                                "w-full justify-start h-11 gap-3",
+                                "transition-all duration-200",
+                                location.pathname === item.path ? 
+                                  "bg-primary/10 hover:bg-primary/15" : 
+                                  "hover:bg-muted/50",
+                                "rounded-lg"
+                              )}
+                              onClick={() => {
+                                navigate(item.path);
+                                setIsSheetOpen(false);
+                              }}
+                            >
+                              <div className={cn(
+                                "p-1.5 rounded-md",
+                                location.pathname === item.path ? "bg-primary/10" : "bg-muted"
+                              )}>
+                                {item.icon}
+                              </div>
+                              <span className="font-medium">{item.label}</span>
+                              {item.badge && (
+                                <Badge variant="secondary" className="ml-auto">
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </Button>
+                          ))}
+                        </div>
+
+                        {/* Business */}
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium text-muted-foreground px-2 mb-2">Business</h4>
+                          {menuItems.slice(7).map((item) => (
+                            <Button
+                              key={item.path}
+                              variant={location.pathname === item.path ? "secondary" : "ghost"}
+                              className={cn(
+                                "w-full justify-start h-11 gap-3",
+                                "transition-all duration-200",
+                                location.pathname === item.path ? 
+                                  "bg-primary/10 hover:bg-primary/15" : 
+                                  "hover:bg-muted/50",
+                                "rounded-lg"
+                              )}
+                              onClick={() => {
+                                navigate(item.path);
+                                setIsSheetOpen(false);
+                              }}
+                            >
+                              <div className={cn(
+                                "p-1.5 rounded-md",
+                                location.pathname === item.path ? "bg-primary/10" : "bg-muted"
+                              )}>
+                                {item.icon}
+                              </div>
+                              <span className="font-medium">{item.label}</span>
+                              {item.badge && (
+                                <Badge variant="secondary" className="ml-auto">
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Fixed Bottom Section */}
-                    <div className="border-t p-3 space-y-2 shrink-0">
-                      {/* Profile Type Switcher */}
-                      <div className="px-3 py-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start gap-2">
-                              <GraduationCap className="h-4 w-4" />
-                              {user?.account_type === "student" ? "Student" : user?.account_type === "business" ? "Business" : "Professional"}
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem 
-                              disabled={user?.account_type === "student"}
-                              onClick={() => handleProfileSwitch("student")}
-                            >
-                              Switch to Student
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              disabled={user?.account_type === "business"}
-                              onClick={() => handleProfileSwitch("business")}
-                            >
-                              Switch to Business
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              disabled={user?.account_type === "professional"}
-                              onClick={() => handleProfileSwitch("professional")}
-                            >
-                              Switch to Professional
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
+                    {/* Bottom Actions */}
+                    <div className="border-t bg-muted/5 p-4 space-y-4">
                       {/* Theme Toggle */}
-                      <div className="flex items-center justify-between px-3 py-2">
-                        <h4 className="text-xs font-medium text-muted-foreground">
-                          Theme
-                        </h4>
+                      <div className="flex items-center justify-between px-4 py-2 rounded-xl bg-muted/50">
+                        <div className="flex items-center gap-3">
+                          <h4 className="font-medium">Theme</h4>
+                        </div>
                         <ThemeToggle />
                       </div>
 
                       {/* Settings & Logout */}
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-2"
-                        onClick={() => {
-                          navigate('/dashboard/settings');
-                          setIsSheetOpen(false);
-                        }}
-                      >
-                        <Settings className="h-4 w-4" />
-                        Settings
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-2 text-red-500 hover:text-red-500 hover:bg-red-50"
-                        onClick={handleLogout}
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Logout
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          className="h-11 gap-2 rounded-xl bg-background hover:bg-muted/50"
+                          onClick={() => {
+                            navigate('/dashboard/settings');
+                            setIsSheetOpen(false);
+                          }}
+                        >
+                          <Settings className="h-4 w-4" />
+                          Settings
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="h-11 gap-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border-red-500/20"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </SheetContent>
