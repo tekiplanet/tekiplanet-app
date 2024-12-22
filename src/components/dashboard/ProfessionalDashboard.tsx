@@ -182,7 +182,7 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
 
         {/* Quick Stats Cards */}
         <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden col-span-2 lg:col-span-1">
             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-primary/20 to-transparent rounded-full transform translate-x-12 -translate-y-6 sm:translate-x-16 sm:-translate-y-8" />
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center justify-between">
@@ -218,7 +218,7 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden col-span-2 lg:col-span-1">
+          <Card className="relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500/20 to-transparent rounded-full transform translate-x-12 -translate-y-6 sm:translate-x-16 sm:-translate-y-8" />
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center justify-between">
