@@ -106,18 +106,33 @@ const QuickAction = ({ icon: Icon, title, onClick, variant = "default" }) => (
 );
 
 // Metric Card Component with Animation
-const MetricCard = ({ title, value, trend, icon: Icon, trendValue, isLoading, color = "primary" }) => (
+const MetricCard = ({ 
+  title, 
+  value, 
+  trend, 
+  icon: Icon, 
+  trendValue, 
+  isLoading, 
+  color = "primary",
+  className 
+}) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.3 }}
   >
-    <Card className="relative overflow-hidden">
+    <Card className={cn(
+      "relative overflow-hidden",
+      className
+    )}>
       <div className={cn(
         "absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 transform translate-x-8 -translate-y-8",
         `bg-${color}-500`
       )} />
-      <CardContent className="p-6">
+      <CardContent className={cn(
+        "p-6",
+        className?.includes("h-[100px]") && "py-4"  // Reduce padding for smaller cards
+      )}>
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center space-x-4">
             <div className={cn(
@@ -134,7 +149,10 @@ const MetricCard = ({ title, value, trend, icon: Icon, trendValue, isLoading, co
               {isLoading ? (
                 <div className="h-8 w-24 animate-pulse bg-muted rounded" />
               ) : (
-                <h3 className="text-2xl font-bold">{value}</h3>
+                <h3 className={cn(
+                  "font-bold",
+                  className?.includes("h-[100px]") ? "text-xl" : "text-2xl"
+                )}>{value}</h3>
               )}
             </div>
           </div>
@@ -317,8 +335,8 @@ export default function BusinessDashboard() {
           />
         </div>
         
-        {/* Inventory and Customers - Two columns on mobile */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Customer Metrics - Stack on mobile, side by side on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MetricCard
             title="Total Customers"
             value={metrics?.total_customers || "0"}
@@ -327,6 +345,7 @@ export default function BusinessDashboard() {
             icon={Users}
             isLoading={metricsLoading}
             color="blue"
+            className="h-[100px]"
           />
           <MetricCard
             title="This Month"
@@ -336,6 +355,7 @@ export default function BusinessDashboard() {
             icon={UserPlus}
             isLoading={metricsLoading}
             color="green"
+            className="h-[100px]"
           />
         </div>
       </div>

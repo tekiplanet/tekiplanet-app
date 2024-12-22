@@ -69,9 +69,9 @@ export default function TransactionList() {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-nowrap items-center gap-4 overflow-x-auto pb-2">
         {/* Search - Flex grow to take available space */}
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative w-full max-w-[50%]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search transactions..." 
@@ -82,7 +82,7 @@ export default function TransactionList() {
         </div>
 
         {/* Date Filter */}
-        <div className="flex items-center gap-2 min-w-[200px]">
+        <div className="flex items-center gap-2 w-full max-w-[50%]">
           <Popover>
             <PopoverTrigger asChild>
               <Button 
