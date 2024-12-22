@@ -88,7 +88,7 @@ export function ProductCard({ product, currency, onNavigate }: ProductCardProps)
           <Button 
             size="icon" 
             variant="secondary" 
-            className="rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            className="rounded-full bg-background/80 hover:bg-background shadow-sm"
             onClick={handleToggleWishlist}
             disabled={isTogglingWishlist}
           >
@@ -101,7 +101,7 @@ export function ProductCard({ product, currency, onNavigate }: ProductCardProps)
           <Button 
             size="icon" 
             variant="secondary" 
-            className="rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            className="rounded-full bg-background/80 hover:bg-background shadow-sm"
             onClick={handleAddToCart}
             disabled={isAddingToCart || product.stock === 0}
           >

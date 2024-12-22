@@ -9,89 +9,26 @@ import { settingsService } from '@/services/settingsService';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
-interface PaymentTabProps {
-  hustle: {
-    budget: number;
-    status: string;
-    payments?: Array<{
-      id: string;
-      amount: number;
-      payment_type: 'initial' | 'final';
-      status: 'pending' | 'completed' | 'failed';
-      paid_at: string | null;
-    }>;
-  };
+interface Payment {
+  id: string;
+  amount: number;
+  payment_type: "initial" | "final";
+  status: "pending" | "completed" | "failed";
+  paid_at: string;
+  date: string;
+  method: string;
+  transactionId?: string;
+  paidBy?: string;
+  reference?: string;
+  notes?: string;
 }
 
-const PaymentTab = ({ hustle }: PaymentTabProps) => {
-  const payments = hustle.payments || [];
-  
-  const initialPayment = payments.find(p => p.payment_type === 'initial');
-  const finalPayment = payments.find(p => p.payment_type === 'final');
-  
-  const totalPayments = 2;
-  const completedPayments = payments.filter(p => p.status === 'completed').length;
-  const progress = (completedPayments / totalPayments) * 100;
+interface PaymentTabProps {
+  payments: Payment[];
+  currency: string;
+}
 
-  const { data: settings } = useQuery({
-    queryKey: ['settings'],
-    queryFn: settingsService.fetchSettings
-  });
-
-  const PaymentCard = ({ 
-    type, 
-    payment, 
-    description 
-  }: { 
-    type: 'initial' | 'final'; 
-    payment: typeof initialPayment; 
-    description: string;
-  }) => (
-    <div className="flex flex-col sm:flex-row sm:items-start justify-between p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors">
-      <div className="space-y-3 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge 
-            variant={payment?.status === 'completed' ? "success" : "secondary"}
-            className="px-2.5 py-0.5 text-xs font-medium"
-          >
-            {type === 'initial' ? 'Initial Payment' : 'Final Payment'}
-          </Badge>
-          {payment?.status === 'completed' ? (
-            <div className="p-1 rounded-full bg-green-500/10">
-              <CheckCircle2 className="h-3 w-3 text-green-500" />
-            </div>
-          ) : (
-            <div className="p-1 rounded-full bg-muted">
-              <Clock className="h-3 w-3 text-muted-foreground" />
-            </div>
-          )}
-        </div>
-        <div className="space-y-1">
-          <p className="text-xl sm:text-2xl font-bold tracking-tight">
-            {formatCurrency(payment?.amount || 0, settings?.default_currency)}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {description}
-          </p>
-          {payment?.paid_at && (
-            <p className="text-xs text-muted-foreground">
-              Paid on {payment.paid_at}
-            </p>
-          )}
-        </div>
-      </div>
-      <Badge 
-        variant={payment?.status === 'completed' ? "success" : "outline"}
-        className={cn(
-          "mt-3 sm:mt-0 self-start sm:self-center",
-          payment?.status === 'completed' ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : ""
-        )}
-      >
-        {payment?.status.toUpperCase() || 'PENDING'}
-      </Badge>
-    </div>
-  );
-
+const PaymentTab = ({ payments, currency }: PaymentTabProps) => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
@@ -134,20 +71,20 @@ const PaymentTab = ({ hustle }: PaymentTabProps) => {
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-muted-foreground">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5" />
-                        <span>{format(new Date(payment.date), 'MMM dd, yyyy')}</span>
+                        <span>{format(new Date(payment.date || payment.paid_at), 'MMM dd, yyyy')}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" />
-                        <span>{format(new Date(payment.date), 'hh:mm a')}</span>
+                        <span>{format(new Date(payment.date || payment.paid_at), 'hh:mm a')}</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-base md:text-lg">
-                      {settings?.default_currency}{formatCurrency(payment.amount)}
+                      {currency}{formatCurrency(payment.amount)}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      via {payment.method}
+                      via {payment.method || payment.payment_type}
                     </div>
                   </div>
                 </div>
@@ -156,15 +93,15 @@ const PaymentTab = ({ hustle }: PaymentTabProps) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background/50 rounded-md p-2">
                     <CreditCard className="h-4 w-4 text-primary" />
-                    <span>Transaction ID: {payment.transactionId || 'N/A'}</span>
+                    <span>Transaction ID: {payment.transactionId || payment.id}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background/50 rounded-md p-2">
                     <User className="h-4 w-4 text-primary" />
-                    <span>Paid by: {payment.paidBy || 'Anonymous'}</span>
+                    <span>Type: {payment.payment_type}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background/50 rounded-md p-2">
                     <FileText className="h-4 w-4 text-primary" />
-                    <span>Reference: {payment.reference || 'N/A'}</span>
+                    <span>Reference: {payment.reference || payment.id}</span>
                   </div>
                 </div>
 
