@@ -251,23 +251,28 @@ const ActivityItem = ({
   currency?: string;
   status?: string; 
 }) => (
-  <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50">
-    <div className={cn(
-      "p-2 rounded-full",
-      status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-primary/10 text-primary'
-    )}>
-      <Icon className="h-4 w-4" />
-    </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-medium">{title}</p>
-      <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(time))} ago</p>
-    </div>
-    {amount && currency && (
-      <div className="text-right">
-        <p className="text-sm font-medium">{formatAmountWithCurrency(amount, currency)}</p>
+  <motion.div
+    whileHover={{ scale: 1.01 }}
+    className="group"
+  >
+    <div className="flex gap-4 p-3 rounded-xl hover:bg-muted/50 transition-colors">
+      <div className={cn(
+        "p-2 rounded-xl shrink-0 mt-0.5",
+        status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-primary/10 text-primary'
+      )}>
+        <Icon className="h-4 w-4" />
       </div>
-    )}
-  </div>
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="space-y-1">
+          <p className="text-sm font-medium break-words leading-relaxed">{title}</p>
+          <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(time))} ago</p>
+        </div>
+        {amount && currency && (
+          <p className="text-sm font-semibold text-primary">{formatAmountWithCurrency(amount, currency)}</p>
+        )}
+      </div>
+    </div>
+  </motion.div>
 );
 
 export default function BusinessDashboard() {
@@ -560,23 +565,26 @@ export default function BusinessDashboard() {
 
             {/* Recent Activity */}
             <Card className="w-full rounded-2xl">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div>
-                  <CardTitle className="text-lg">Recent Activity</CardTitle>
-                  <CardDescription>Latest business transactions</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-primary" />
+                    Recent Activity
+                  </CardTitle>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-xs"
+                  className="text-xs hover:bg-primary/10"
                   onClick={() => navigate('/dashboard/business/activities')}
                 >
                   View All
+                  <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[250px] md:h-[300px]">
-                  <div className="space-y-1 pr-4">
+                <ScrollArea className="h-[250px] md:h-[300px] -mx-2">
+                  <div className="space-y-1 px-2">
                     {metrics?.recent_activities?.map((activity: Activity, index) => {
                       let icon = CircleDollarSign;
                       switch (activity.type) {
@@ -605,7 +613,8 @@ export default function BusinessDashboard() {
                     })}
 
                     {(!metrics?.recent_activities || metrics.recent_activities.length === 0) && (
-                      <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center h-[200px] space-y-2 text-muted-foreground">
+                        <Bell className="h-8 w-8 opacity-50" />
                         <p>No recent activities</p>
                       </div>
                     )}
