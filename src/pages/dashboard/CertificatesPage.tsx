@@ -250,33 +250,56 @@ export default function CertificatesPage() {
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <Card className="group overflow-hidden border-none hover:shadow-2xl transition-all duration-300">
+                    <Card className="group overflow-hidden border-none hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-card to-card/50">
                       <div className="relative aspect-[2/1.4]">
                         <img
                           src={certificate.image || "/placeholder-certificate.jpg"}
                           alt={certificate.title}
                           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent backdrop-blur-[2px] group-hover:backdrop-blur-0 transition-all duration-300" />
                         
-                        <Badge 
-                          className={cn(
-                            "absolute top-4 right-4 cursor-pointer transition-all duration-300",
-                            certificate.featured
-                              ? "bg-primary hover:bg-primary/90"
-                              : "bg-muted/80 hover:bg-muted text-muted-foreground"
-                          )}
-                          onClick={() => toggleFeaturedMutation.mutate(certificate.id)}
-                        >
-                          <Star className={cn(
-                            "h-3.5 w-3.5 mr-1.5 transition-transform",
-                            certificate.featured && "text-yellow-300"
-                          )} />
-                          Featured
-                        </Badge>
+                        <div className="absolute top-4 right-4 flex items-center gap-2">
+                          <Badge 
+                            className={cn(
+                              "cursor-pointer transition-all duration-300 backdrop-blur-md",
+                              certificate.featured
+                                ? "bg-primary/90 hover:bg-primary"
+                                : "bg-muted/80 hover:bg-muted text-muted-foreground"
+                            )}
+                            onClick={() => toggleFeaturedMutation.mutate(certificate.id)}
+                          >
+                            <Star className={cn(
+                              "h-3.5 w-3.5 mr-1.5 transition-transform",
+                              certificate.featured && "text-yellow-300"
+                            )} />
+                            Featured
+                          </Badge>
+                          <div className="flex gap-1">
+                            <Button 
+                              size="sm" 
+                              variant="secondary" 
+                              className="h-8 w-8 p-0 backdrop-blur-md bg-muted/80 hover:bg-muted border-none"
+                              onClick={() => handleShare(certificate)}
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="secondary" 
+                              className="h-8 w-8 p-0 backdrop-blur-md bg-muted/80 hover:bg-muted border-none"
+                              onClick={() => downloadMutation.mutate(certificate.id)}
+                              disabled={downloadMutation.isPending}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
 
                         <div className="absolute inset-x-6 bottom-6 text-white">
-                          <h3 className="text-xl font-semibold mb-3 line-clamp-2">{certificate.title}</h3>
+                          <h3 className="text-xl font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                            {certificate.title}
+                          </h3>
                           <div className="flex items-center gap-3 text-sm text-white/90">
                             <Calendar className="h-4 w-4" />
                             <span>Issued {new Date(certificate.issue_date).toLocaleDateString()}</span>
@@ -284,26 +307,41 @@ export default function CertificatesPage() {
                         </div>
                       </div>
 
-                      <CardContent className="p-6 space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1.5">
-                            <p className="text-sm text-muted-foreground font-medium">Instructor</p>
-                            <p className="font-medium">{certificate.instructor}</p>
+                      <CardContent className="p-6">
+                        <div className="grid grid-cols-2 gap-6 mb-6">
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Instructor</p>
+                            <div className="flex items-center gap-2">
+                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <GraduationCap className="h-4 w-4 text-primary" />
+                              </div>
+                              <p className="font-medium line-clamp-1">{certificate.instructor}</p>
+                            </div>
                           </div>
-                          <div className="text-right space-y-1.5">
-                            <p className="text-sm text-muted-foreground font-medium">Grade</p>
-                            <p className="text-lg font-bold text-primary">{certificate.grade}</p>
+                          <div className="space-y-2 text-right">
+                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Grade</p>
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                <Trophy className="h-4 w-4 text-primary" />
+                              </div>
+                              <p className="text-lg font-bold text-primary">{certificate.grade}</p>
+                            </div>
                           </div>
                         </div>
 
                         <div className="space-y-3">
-                          <p className="text-sm text-muted-foreground font-medium">Skills Earned</p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Skills Earned</p>
+                            <Badge variant="outline" className="rounded-md">
+                              {certificate.skills.length} Skills
+                            </Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
                             {certificate.skills.map((skill) => (
                               <Badge
                                 key={skill}
                                 variant="secondary"
-                                className="rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors px-3 py-1"
+                                className="rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors px-2.5 py-0.5 text-xs"
                               >
                                 {skill}
                               </Badge>
@@ -311,29 +349,16 @@ export default function CertificatesPage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-2">
+                        <div className="mt-6 pt-4 border-t flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-primary" />
+                            <p className="text-xs text-muted-foreground font-medium">
+                              Verified Certificate
+                            </p>
+                          </div>
                           <p className="text-xs text-muted-foreground font-medium">
                             ID: {certificate.credential_id}
                           </p>
-                          <div className="flex gap-3">
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary"
-                              onClick={() => handleShare(certificate)}
-                            >
-                              <Share2 className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary"
-                              onClick={() => downloadMutation.mutate(certificate.id)}
-                              disabled={downloadMutation.isPending}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </div>
                       </CardContent>
                     </Card>
