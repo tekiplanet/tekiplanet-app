@@ -277,7 +277,26 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await queryClient.refetchQueries();
+      // Invalidate and refetch specific queries
+      await Promise.all([
+        // Wallet related queries
+        queryClient.invalidateQueries({ queryKey: ['wallet'] }),
+        queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] }),
+        // User data
+        queryClient.invalidateQueries({ queryKey: ['user'] }),
+        // Cart data
+        queryClient.invalidateQueries({ queryKey: ['cartCount'] }),
+        // Course related queries
+        queryClient.invalidateQueries({ queryKey: ['courses'] }),
+        queryClient.invalidateQueries({ queryKey: ['enrolled-courses'] }),
+        // Business related queries
+        queryClient.invalidateQueries({ queryKey: ['business-customers'] }),
+        queryClient.invalidateQueries({ queryKey: ['business-invoices'] }),
+        queryClient.invalidateQueries({ queryKey: ['business-transactions'] }),
+        // Force refresh user data
+        useAuthStore.getState().refreshToken()
+      ]);
+
       toast.success("Content refreshed");
     } catch (error) {
       toast.error("Failed to refresh");
@@ -711,7 +730,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
               refreshingContent={
                 <div className="flex items-center justify-center gap-2 py-3 text-sm bg-background/80 backdrop-blur-sm border-b">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Refreshing...</span>
+                  {/* <span>Refreshing...</span> */}
                 </div>
               }
               resistance={2}
