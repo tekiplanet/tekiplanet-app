@@ -38,6 +38,7 @@ use App\Http\Controllers\BusinessActivityController;
 use App\Http\Controllers\BusinessTransactionController;
 use App\Http\Controllers\ProfessionalDashboardController;
 use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\CertificateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -297,4 +298,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/business/metrics', [BusinessMetricsController::class, 'getMetrics']);
     Route::get('/business/activities', [BusinessActivityController::class, 'index']);
     Route::get('/business/transactions', [BusinessTransactionController::class, 'index']);
+});
+
+// Certificate Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('certificates')->group(function () {
+        Route::get('/', [CertificateController::class, 'getUserCertificates']);
+        Route::post('/{id}/toggle-featured', [CertificateController::class, 'toggleFeatured']);
+        Route::get('/{id}/download', [CertificateController::class, 'download']);
+    });
 });
