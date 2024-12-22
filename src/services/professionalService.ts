@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/axios';
+import { DateRange } from 'react-day-picker';
 
 export interface ProfessionalProfile {
   id: string;
@@ -50,6 +51,28 @@ export interface DashboardData {
   }>;
 }
 
+export interface ActivityFilters {
+  page?: number;
+  search?: string;
+  type?: string;
+  status?: string;
+  dateRange?: DateRange;
+}
+
+export interface PaginatedActivities {
+  data: Array<{
+    id: string;
+    type: 'hustle' | 'payment' | 'workstation';
+    title: string;
+    category?: string;
+    amount?: number;
+    status: string;
+    date: string;
+  }>;
+  current_page: number;
+  has_more: boolean;
+}
+
 export const professionalService = {
   checkProfile: async () => {
     const response = await apiClient.get('/professional/profile/check');
@@ -68,6 +91,22 @@ export const professionalService = {
 
   getDashboardData: async (): Promise<DashboardData> => {
     const response = await apiClient.get('/professional/dashboard');
+    return response.data;
+  },
+
+  getActivities: async (filters: ActivityFilters): Promise<PaginatedActivities> => {
+    const { page = 1, search, type, status, dateRange } = filters;
+    
+    const params = new URLSearchParams({
+      page: page.toString(),
+      ...(search && { search }),
+      ...(type && { type }),
+      ...(status && { status }),
+      ...(dateRange?.from && { from: dateRange.from.toISOString() }),
+      ...(dateRange?.to && { to: dateRange.to.toISOString() })
+    });
+
+    const response = await apiClient.get(`/professional/activities?${params}`);
     return response.data;
   }
 }; 

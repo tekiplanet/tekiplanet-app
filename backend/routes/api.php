@@ -229,6 +229,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/professional/profile', [ProfessionalController::class, 'store']);
     Route::put('/professional/profile', [ProfessionalController::class, 'update']);
     Route::get('/professional/dashboard', [ProfessionalDashboardController::class, 'getDashboardData']);
+    Route::get('/professional/activities', [ProfessionalDashboardController::class, 'getActivities']);
 });
 
 // Professional Category Routes

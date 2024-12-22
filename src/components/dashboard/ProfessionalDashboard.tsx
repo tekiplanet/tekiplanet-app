@@ -282,38 +282,39 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
         {/* Recent Activity */}
         <motion.div variants={item}>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-medium">Recent Activity</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg font-medium">Recent Activity</CardTitle>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => navigate('/dashboard/activities')}
+                className="h-8 px-2 sm:px-4"
               >
                 View All
               </Button>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-0 sm:p-6">
+              <div className="space-y-1">
                 {dashboardData?.recent_activities?.map((activity: any, index: number) => (
                   <motion.div
                     key={index}
-                    className="flex items-start space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                    className="flex items-start space-x-3 p-3 hover:bg-muted/50 transition-colors cursor-pointer border-b last:border-0 sm:border-none"
                     whileHover={{ x: 4 }}
                   >
                     <div className={cn(
-                      "rounded-full p-2 transition-transform hover:scale-110",
+                      "rounded-full p-2 shrink-0 transition-transform hover:scale-110",
                       getActivityColor(activity.type)
                     )}>
                       {getActivityIcon(activity.type)}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="font-medium truncate">{activity.title}</p>
-                        <Badge variant="outline" className="ml-2 shrink-0">
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <p className="font-medium text-sm sm:text-base truncate">{activity.title}</p>
+                        <Badge variant="outline" className="w-fit text-[10px] sm:text-xs shrink-0">
                           {new Date(activity.date).toLocaleDateString()}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
                         {activity.type === 'payment' && `Amount: ${formatCurrency(activity.amount)}`}
                         {activity.type === 'hustle' && `Category: ${activity.category}`}
                         {activity.type === 'workstation' && `Workstation Payment: ${formatCurrency(activity.amount)}`}
@@ -321,7 +322,7 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
                       <Badge 
                         variant="secondary" 
                         className={cn(
-                          "mt-2 h-8 text-xs",
+                          "h-6 sm:h-7 text-[10px] sm:text-xs px-2",
                           activity.status === 'completed' && "bg-green-500/10 text-green-500",
                           activity.status === 'pending' && "bg-yellow-500/10 text-yellow-500",
                           activity.status === 'failed' && "bg-red-500/10 text-red-500"

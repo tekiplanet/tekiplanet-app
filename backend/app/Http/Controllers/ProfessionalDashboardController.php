@@ -164,4 +164,149 @@ class ProfessionalDashboardController extends Controller
             ->values()
             ->all();
     }
+
+    public function getActivities(Request $request)
+    {
+        try {
+            $professional = Auth::user()->professional;
+            
+            if (!$professional) {
+                return response()->json([
+                    'message' => 'Professional profile not found'
+                ], 404);
+            }
+
+            $perPage = 10;
+            $query = collect();
+
+            // Get hustle applications with filters
+            $hustleQuery = Hustle::with(['category'])
+                ->where('assigned_professional_id', $professional->id);
+
+            if ($request->has('search')) {
+                $hustleQuery->where('title', 'like', "%{$request->search}%");
+            }
+
+            if ($request->has('status')) {
+                $hustleQuery->where('status', $request->status);
+            }
+
+            if ($request->has('from') && $request->has('to')) {
+                $hustleQuery->whereBetween('created_at', [$request->from, $request->to]);
+            }
+
+            $hustles = $hustleQuery->get()->map(function ($hustle) {
+                return [
+                    'id' => $hustle->id,
+                    'type' => 'hustle',
+                    'title' => $hustle->title,
+                    'category' => $hustle->category->name,
+                    'status' => $hustle->status,
+                    'amount' => $hustle->budget,
+                    'date' => $hustle->created_at,
+                ];
+            });
+
+            // Get hustle payments with filters
+            $paymentsQuery = HustlePayment::where('professional_id', $professional->id);
+
+            if ($request->has('status')) {
+                $paymentsQuery->where('status', $request->status);
+            }
+
+            if ($request->has('from') && $request->has('to')) {
+                $paymentsQuery->whereBetween('created_at', [$request->from, $request->to]);
+            }
+
+            $payments = $paymentsQuery->get()->map(function ($payment) {
+                return [
+                    'id' => $payment->id,
+                    'type' => 'payment',
+                    'title' => 'Hustle Payment',
+                    'amount' => $payment->amount,
+                    'status' => $payment->status,
+                    'date' => $payment->created_at,
+                ];
+            });
+
+            // Get workstation activities with filters
+            $workstationQuery = WorkstationPayment::whereHas('subscription', function ($query) use ($professional) {
+                $query->whereHas('user', function ($q) use ($professional) {
+                    $q->whereHas('professional', function ($p) use ($professional) {
+                        $p->where('id', $professional->id);
+                    });
+                });
+            });
+
+            if ($request->has('status')) {
+                $workstationQuery->where('status', $request->status);
+            }
+
+            if ($request->has('from') && $request->has('to')) {
+                $workstationQuery->whereBetween('created_at', [$request->from, $request->to]);
+            }
+
+            $workstationPayments = $workstationQuery->get()->map(function ($payment) {
+                return [
+                    'id' => $payment->id,
+                    'type' => 'workstation',
+                    'title' => 'Workstation Payment',
+                    'amount' => $payment->amount,
+                    'status' => $payment->status,
+                    'date' => $payment->created_at,
+                ];
+            });
+
+            // Merge all activities based on type filter
+            if ($request->type === 'all' || !$request->has('type') || $request->type === 'hustle') {
+                $query = $query->concat($hustles);
+            }
+            if ($request->type === 'all' || !$request->has('type') || $request->type === 'payment') {
+                $query = $query->concat($payments);
+            }
+            if ($request->type === 'all' || !$request->has('type') || $request->type === 'workstation') {
+                $query = $query->concat($workstationPayments);
+            }
+
+            // Sort by date
+            $sortedActivities = $query->sortByDesc('date');
+
+            // Apply search filter across all activities if present
+            if ($request->has('search')) {
+                $search = strtolower($request->search);
+                $sortedActivities = $sortedActivities->filter(function ($activity) use ($search) {
+                    return str_contains(strtolower($activity['title']), $search);
+                });
+            }
+
+            // Apply status filter if not "all"
+            if ($request->has('status') && $request->status !== 'all') {
+                $sortedActivities = $sortedActivities->filter(function ($activity) use ($request) {
+                    return $activity['status'] === $request->status;
+                });
+            }
+
+            // Paginate the results
+            $page = $request->get('page', 1);
+            $offset = ($page - 1) * $perPage;
+            $total = $sortedActivities->count();
+            $activities = $sortedActivities->slice($offset, $perPage)->values();
+
+            return response()->json([
+                'data' => $activities,
+                'current_page' => (int)$page,
+                'has_more' => ($offset + $perPage) < $total
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching professional activities:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to fetch activities'
+            ], 500);
+        }
+    }
 } 
