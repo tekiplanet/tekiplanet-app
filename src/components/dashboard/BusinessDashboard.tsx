@@ -131,16 +131,20 @@ const MetricCard = ({
       )} />
       <CardContent className={cn(
         "p-6",
-        className?.includes("h-[100px]") && "py-4"  // Reduce padding for smaller cards
+        className?.includes("h-[80px]") && "py-2",  // Even smaller padding for mobile
+        className?.includes("h-[100px]") && "py-3",  // Slightly reduced padding for desktop
+        className?.includes("h-[120px]") && "py-4"   // Medium padding for revenue card
       )}>
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center space-x-4">
             <div className={cn(
               "p-3 rounded-xl",
+              className?.includes("h-[80px]") && "p-2", // Smaller icon padding on mobile
               `bg-${color}-500/10`
             )}>
               <Icon className={cn(
                 "h-6 w-6",
+                className?.includes("h-[80px]") && "h-4 w-4", // Smaller icon size on mobile
                 `text-${color}-500`
               )} />
             </div>
@@ -151,15 +155,21 @@ const MetricCard = ({
               ) : (
                 <h3 className={cn(
                   "font-bold",
-                  className?.includes("h-[100px]") ? "text-xl" : "text-2xl"
+                  className?.includes("h-[80px]") && "text-lg",  // Smaller text on mobile
+                  className?.includes("h-[100px]") && "text-xl",  // Medium text on desktop
+                  className?.includes("h-[120px]") && "text-2xl"  // Large text for revenue
                 )}>{value}</h3>
               )}
             </div>
           </div>
           {trend && (
-            <Badge variant={trend === 'up' ? 'success' : 'destructive'} className="h-6">
+            <Badge variant={trend === 'up' ? 'success' : 'destructive'} className={cn(
+              "h-6",
+              className?.includes("h-[80px]") && "h-5 text-xs" // Smaller badge on mobile
+            )}>
               <TrendingUp className={cn(
                 "h-4 w-4 mr-1",
+                className?.includes("h-[80px]") && "h-3 w-3", // Smaller trend icon on mobile
                 trend === 'down' && "rotate-180"
               )} />
               {trendValue}
@@ -332,6 +342,7 @@ export default function BusinessDashboard() {
             icon={DollarSign}
             isLoading={metricsLoading}
             color="green"
+            className="h-[120px] md:h-auto"
           />
         </div>
         
@@ -345,7 +356,7 @@ export default function BusinessDashboard() {
             icon={Users}
             isLoading={metricsLoading}
             color="blue"
-            className="h-[100px]"
+            className="h-[80px] md:h-[100px]"
           />
           <MetricCard
             title="This Month"
@@ -355,7 +366,7 @@ export default function BusinessDashboard() {
             icon={UserPlus}
             isLoading={metricsLoading}
             color="green"
-            className="h-[100px]"
+            className="h-[80px] md:h-[100px]"
           />
         </div>
       </div>
