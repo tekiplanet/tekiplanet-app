@@ -17,11 +17,14 @@ export interface StudentDashboardData {
   courses: Array<{
     id: string;
     title: string;
-    progress: number;
+    progress?: number;
+    rating?: number;
+    total_students?: number;
     nextClass: string | null;
     image: string;
     instructor: string;
-    duration: number;
+    duration?: number;
+    lessons_count?: number;
     level: string;
   }>;
   has_enrollments: boolean;

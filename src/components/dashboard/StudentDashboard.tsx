@@ -286,26 +286,44 @@ export default function StudentDashboard() {
                   </div>
                   <CardContent className="p-3">
                     <div className="space-y-2">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{course.progress}%</span>
-                      </div>
-                      <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-primary/10">
-                        <motion.div 
-                          className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary-foreground"
-                          style={{ width: `${course.progress}%` }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${course.progress}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                        />
-                      </div>
+                      {dashboardData?.has_enrollments ? (
+                        <>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Progress</span>
+                            <span className="font-medium">{course.progress}%</span>
+                          </div>
+                          <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-primary/10">
+                            <motion.div 
+                              className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary-foreground"
+                              style={{ width: `${course.progress}%` }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${course.progress}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <Star className="h-3.5 w-3.5 text-yellow-500" />
+                            <span className="font-medium">{course.rating?.toFixed(1) || 'N/A'}</span>
+                          </div>
+                          <span className="text-muted-foreground">
+                            {course.total_students?.toLocaleString() || 0} students
+                          </span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-muted-foreground">
-                          {course.duration}h • {course.level}
+                          {course.lessons_count} Lessons • {course.level}
                         </span>
                         <Button 
                           size="sm" 
-                          onClick={() => navigate(`/dashboard/academy/${course.id}/manage`)}
+                          onClick={() => navigate(
+                            dashboardData?.has_enrollments 
+                              ? `/dashboard/academy/course/${course.id}/manage` // Go to CourseManagement for enrolled courses
+                              : `/dashboard/academy/${course.id}` // Go to CourseDetails for non-enrolled courses
+                          )}
                           className="bg-primary/10 hover:bg-primary/20 text-primary text-xs h-7 rounded-lg"
                         >
                           {dashboardData?.has_enrollments ? 'Continue' : 'Start'}

@@ -36,6 +36,9 @@ class StudentDashboardController extends Controller
             $coursesForDisplay = $enrollments->count() > 0
                 ? $enrollments->take(2)->map(function ($enrollment) {
                     $nextClass = $this->getNextClassSchedule($enrollment->course);
+                    $totalLessons = $enrollment->course->modules->sum(function($module) {
+                        return $module->lessons->count();
+                    });
                     return [
                         'id' => $enrollment->course->id,
                         'title' => $enrollment->course->title,
@@ -43,20 +46,24 @@ class StudentDashboardController extends Controller
                         'nextClass' => $nextClass ? $this->formatNextClass($nextClass) : null,
                         'image' => $enrollment->course->image_url,
                         'instructor' => $enrollment->course->instructor?->full_name ?? 'Unknown Instructor',
-                        'duration' => $enrollment->course->duration_hours,
+                        'lessons_count' => $totalLessons,
                         'level' => $enrollment->course->level
                     ];
                 })
-                : Course::with('instructor')->inRandomOrder()->take(5)->get()->map(function ($course) {
+                : Course::with(['instructor', 'modules.lessons'])->inRandomOrder()->take(5)->get()->map(function ($course) {
                     $nextClass = $this->getNextClassSchedule($course);
+                    $totalLessons = $course->modules->sum(function($module) {
+                        return $module->lessons->count();
+                    });
                     return [
                         'id' => $course->id,
                         'title' => $course->title,
-                        'progress' => 0,
+                        'rating' => $course->rating ?? 0,
+                        'total_students' => $course->total_students ?? 0,
                         'nextClass' => $nextClass ? $this->formatNextClass($nextClass) : null,
                         'image' => $course->image_url,
                         'instructor' => $course->instructor?->full_name ?? 'Unknown Instructor',
-                        'duration' => $course->duration_hours,
+                        'lessons_count' => $totalLessons,
                         'level' => $course->level
                     ];
                 });
