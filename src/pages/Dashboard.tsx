@@ -55,6 +55,8 @@ import { storeService } from '@/services/storeService';
 import ITConsulting from "./ITConsulting";
 import ConsultingBookings from "./ConsultingBookings";
 import ConsultingBookingDetails from "./ConsultingBookingDetails";
+import PullToRefresh from 'react-simple-pull-to-refresh';
+import { Loader2 } from "lucide-react";
 
 interface MenuItem {
   label: string;
@@ -71,6 +73,8 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
   const { user, updateUserType } = useAuthStore()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: cartCount = 0 } = useQuery({
     queryKey: ['cartCount'],
@@ -270,7 +274,17 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
     }
   ];
 
-
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await queryClient.refetchQueries();
+      toast.success("Content refreshed");
+    } catch (error) {
+      toast.error("Failed to refresh");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <>
@@ -686,11 +700,32 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto bg-background">
-            <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-              <Outlet />
-            </div>
-          </main>
+          <div className="flex-1 overflow-y-auto bg-background">
+            <PullToRefresh
+              onRefresh={handleRefresh}
+              pullingContent={
+                <div className="flex items-center justify-center py-3 text-sm text-muted-foreground bg-background/80 backdrop-blur-sm border-b">
+                  Pull down to refresh...
+                </div>
+              }
+              refreshingContent={
+                <div className="flex items-center justify-center gap-2 py-3 text-sm bg-background/80 backdrop-blur-sm border-b">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Refreshing...</span>
+                </div>
+              }
+              resistance={2}
+              maxPullDownDistance={200}
+              pullDownThreshold={67}
+              className="h-full"
+            >
+              <main className="h-full">
+                <div className="container mx-auto p-4 md:p-6 max-w-7xl">
+                  <Outlet />
+                </div>
+              </main>
+            </PullToRefresh>
+          </div>
         </div>
       </div>
     </>
