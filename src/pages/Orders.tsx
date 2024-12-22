@@ -76,13 +76,13 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const { ref, inView } = useInView();
-  const [currency, setCurrency] = useState(settingsService.getDefaultCurrency());
+  const [currency, setCurrency] = useState('');
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
 
   useEffect(() => {
     const loadCurrency = async () => {
-      await settingsService.fetchSettings();
-      setCurrency(settingsService.getDefaultCurrency());
+      const settings = await settingsService.fetchSettings();
+      setCurrency(settings.default_currency);
     };
     loadCurrency();
   }, []);

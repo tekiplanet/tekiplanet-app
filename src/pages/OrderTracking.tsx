@@ -50,7 +50,7 @@ const eventVariants = {
 export default function OrderTracking() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const [currency, setCurrency] = useState(settingsService.getDefaultCurrency());
+  const [currency, setCurrency] = useState('');
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   // Fetch tracking data
@@ -69,8 +69,8 @@ export default function OrderTracking() {
   // Load currency
   useEffect(() => {
     const loadCurrency = async () => {
-      await settingsService.fetchSettings();
-      setCurrency(settingsService.getDefaultCurrency());
+      const settings = await settingsService.fetchSettings();
+      setCurrency(settings.default_currency);
     };
     loadCurrency();
   }, []);
