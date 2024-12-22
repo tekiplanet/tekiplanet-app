@@ -100,6 +100,14 @@ class User extends Authenticatable
         return $this->hasOne(BusinessProfile::class);
     }
 
+    /**
+     * Get the professional profile associated with the user.
+     */
+    public function professional()
+    {
+        return $this->hasOne(Professional::class);
+    }
+
     protected static function boot()
     {
         parent::boot();

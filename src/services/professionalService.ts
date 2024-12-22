@@ -22,6 +22,27 @@ export interface ProfessionalProfile {
   verified_at?: string;
 }
 
+export interface DashboardData {
+  currency: {
+    code: string;
+    symbol: string;
+  };
+  statistics: {
+    monthly_revenue: number;
+    total_revenue: number;
+    completed_hustles: number;
+    success_rate: number;
+  };
+  recent_activities: Array<{
+    type: 'hustle' | 'payment' | 'workstation';
+    title: string;
+    category?: string;
+    amount?: number;
+    status: string;
+    date: string;
+  }>;
+}
+
 export const professionalService = {
   checkProfile: async () => {
     const response = await apiClient.get('/professional/profile/check');
@@ -35,6 +56,11 @@ export const professionalService = {
 
   updateProfile: async (data: Partial<ProfessionalProfile>) => {
     const response = await apiClient.put('/professional/profile', data);
+    return response.data;
+  },
+
+  getDashboardData: async (): Promise<DashboardData> => {
+    const response = await apiClient.get('/professional/dashboard');
     return response.data;
   }
 }; 

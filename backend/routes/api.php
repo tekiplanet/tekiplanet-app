@@ -36,6 +36,7 @@ use App\Http\Controllers\BusinessInvoiceController;
 use App\Http\Controllers\BusinessMetricsController;
 use App\Http\Controllers\BusinessActivityController;
 use App\Http\Controllers\BusinessTransactionController;
+use App\Http\Controllers\ProfessionalDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -227,6 +228,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/professional/profile/check', [ProfessionalController::class, 'checkProfile']);
     Route::post('/professional/profile', [ProfessionalController::class, 'store']);
     Route::put('/professional/profile', [ProfessionalController::class, 'update']);
+    Route::get('/professional/dashboard', [ProfessionalDashboardController::class, 'getDashboardData']);
 });
 
 // Professional Category Routes

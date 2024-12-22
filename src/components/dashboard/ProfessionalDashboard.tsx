@@ -2,7 +2,6 @@ import React from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Briefcase,
@@ -17,14 +16,6 @@ import {
   Users,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer,
-} from "recharts";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
@@ -49,24 +40,14 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-// Enhanced mock data
-const earningsData = [
-  { month: "Jan", amount: 2400, clients: 15 },
-  { month: "Feb", amount: 3600, clients: 18 },
-  { month: "Mar", amount: 2800, clients: 14 },
-  { month: "Apr", amount: 4200, clients: 22 },
-  { month: "May", amount: 3800, clients: 20 },
-  { month: "Jun", amount: 5600, clients: 28 }
-];
-
 const quickActions = [
   {
-    title: "Start Consultation",
-    description: "Begin a new session",
+    title: "View Hustles",
+    description: "Browse available hustles",
     icon: Briefcase,
     color: "from-blue-600 to-blue-400",
-    link: "/consultation",
-    stat: "8 pending"
+    link: "/dashboard/hustles",
+    stat: "Explore opportunities"
   },
   {
     title: "Book Workstation",
@@ -81,8 +62,8 @@ const quickActions = [
     description: "Manage your schedule",
     icon: Clock,
     color: "from-green-600 to-green-400",
-    link: "/availability",
-    stat: "Next: 2PM"
+    link: "/dashboard/settings",
+    stat: "Manage status"
   },
   {
     title: "Manage Earnings",
@@ -90,32 +71,7 @@ const quickActions = [
     icon: CreditCard,
     color: "from-orange-600 to-orange-400",
     link: "/dashboard/wallet",
-    stat: "+$1,200"
-  }
-];
-
-const recentActivity = [
-  {
-    type: "booking",
-    title: "New Consultation Request",
-    message: "Sarah Johnson requested a consultation",
-    time: "5 min ago",
-    avatar: "/avatars/sarah.jpg",
-    action: "Review"
-  },
-  {
-    type: "payment",
-    title: "Payment Received",
-    message: "Received $150 for last week's session",
-    time: "1 hour ago",
-    action: "View"
-  },
-  {
-    type: "system",
-    title: "System Update",
-    message: "Your profile has been verified",
-    time: "2 hours ago",
-    action: "Details"
+    stat: "View wallet"
   }
 ];
 
@@ -125,7 +81,6 @@ interface DashboardProps {
 
 const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) => {
   const navigate = useNavigate();
-  const [selectedStat, setSelectedStat] = useState<string | null>(null);
 
   const { data: profileData, isLoading: profileLoading } = useQuery({
     queryKey: ['professional-profile'],
@@ -133,7 +88,14 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
     retry: false
   });
 
-  if (isLoading || profileLoading) {
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
+    queryKey: ['professional-dashboard'],
+    queryFn: professionalService.getDashboardData,
+    enabled: !!profileData?.has_profile && profileData?.profile?.status === 'active',
+    retry: false
+  });
+
+  if (isLoading || profileLoading || dashboardLoading) {
     return (
       <div className="container mx-auto px-4 py-6 space-y-6">
         <div className="flex flex-col space-y-2">
@@ -162,6 +124,40 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
     return <SuspendedProfessionalProfile />;
   }
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: dashboardData?.currency?.code || 'USD',
+      currencyDisplay: 'symbol'
+    }).format(amount);
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'hustle':
+        return <Calendar className="h-4 w-4 text-white" />;
+      case 'payment':
+        return <CreditCard className="h-4 w-4 text-white" />;
+      case 'workstation':
+        return <LayoutDashboard className="h-4 w-4 text-white" />;
+      default:
+        return <Bell className="h-4 w-4 text-white" />;
+    }
+  };
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case 'hustle':
+        return 'bg-blue-500';
+      case 'payment':
+        return 'bg-green-500';
+      case 'workstation':
+        return 'bg-purple-500';
+      default:
+        return 'bg-orange-500';
+    }
+  };
+
   return (
     <ScrollArea className="h-[calc(100vh-4rem)]">
       <motion.div
@@ -172,7 +168,7 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
       >
         {/* Welcome Section */}
         <motion.div variants={item} className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Welcome back, Professional!</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Welcome back, {profileData?.profile?.title}!</h1>
           <p className="text-muted-foreground">
             Here's what's happening with your business today.
           </p>
@@ -190,9 +186,9 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
               <div className="space-y-1">
-                <h2 className="text-xl sm:text-3xl font-bold">$5,600</h2>
+                <h2 className="text-xl sm:text-3xl font-bold">{formatCurrency(dashboardData?.statistics?.monthly_revenue || 0)}</h2>
                 <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  +12% from last month
+                  Total: {formatCurrency(dashboardData?.statistics?.total_revenue || 0)}
                 </p>
               </div>
             </CardContent>
@@ -202,15 +198,15 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full transform translate-x-12 -translate-y-6 sm:translate-x-16 sm:-translate-y-8" />
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center justify-between">
-                <span className="text-xs sm:text-sm font-medium">Active Clients</span>
+                <span className="text-xs sm:text-sm font-medium">Completed Hustles</span>
                 <Users className="h-4 w-4 text-blue-500" />
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
               <div className="space-y-1">
-                <h2 className="text-xl sm:text-3xl font-bold">24</h2>
+                <h2 className="text-xl sm:text-3xl font-bold">{dashboardData?.statistics?.completed_hustles || 0}</h2>
                 <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  8 consultations today
+                  Successful completions
                 </p>
               </div>
             </CardContent>
@@ -220,15 +216,15 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500/20 to-transparent rounded-full transform translate-x-12 -translate-y-6 sm:translate-x-16 sm:-translate-y-8" />
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center justify-between">
-                <span className="text-xs sm:text-sm font-medium">Completion Rate</span>
+                <span className="text-xs sm:text-sm font-medium">Success Rate</span>
                 <ArrowUpRight className="h-4 w-4 text-green-500" />
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
               <div className="space-y-1">
-                <h2 className="text-xl sm:text-3xl font-bold">98%</h2>
+                <h2 className="text-xl sm:text-3xl font-bold">{dashboardData?.statistics?.success_rate || 0}%</h2>
                 <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  +2% this week
+                  Overall completion rate
                 </p>
               </div>
             </CardContent>
@@ -282,11 +278,17 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-medium">Recent Activity</CardTitle>
-              <Badge variant="secondary">3 new</Badge>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/dashboard/activities')}
+              >
+                View All
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
+                {dashboardData?.recent_activities?.map((activity: any, index: number) => (
                   <motion.div
                     key={index}
                     className="flex items-start space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
@@ -294,32 +296,33 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
                   >
                     <div className={cn(
                       "rounded-full p-2 transition-transform hover:scale-110",
-                      activity.type === "booking" && "bg-blue-500",
-                      activity.type === "payment" && "bg-green-500",
-                      activity.type === "system" && "bg-orange-500"
+                      getActivityColor(activity.type)
                     )}>
-                      {activity.type === "booking" && <Calendar className="h-4 w-4 text-white" />}
-                      {activity.type === "payment" && <CreditCard className="h-4 w-4 text-white" />}
-                      {activity.type === "system" && <Bell className="h-4 w-4 text-white" />}
+                      {getActivityIcon(activity.type)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <p className="font-medium truncate">{activity.title}</p>
                         <Badge variant="outline" className="ml-2 shrink-0">
-                          {activity.time}
+                          {new Date(activity.date).toLocaleDateString()}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground truncate">
-                        {activity.message}
+                        {activity.type === 'payment' && `Amount: ${formatCurrency(activity.amount)}`}
+                        {activity.type === 'hustle' && `Category: ${activity.category}`}
+                        {activity.type === 'workstation' && `Workstation Payment: ${formatCurrency(activity.amount)}`}
                       </p>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="mt-2 h-8 text-xs"
+                      <Badge 
+                        variant="secondary" 
+                        className={cn(
+                          "mt-2 h-8 text-xs",
+                          activity.status === 'completed' && "bg-green-500/10 text-green-500",
+                          activity.status === 'pending' && "bg-yellow-500/10 text-yellow-500",
+                          activity.status === 'failed' && "bg-red-500/10 text-red-500"
+                        )}
                       >
-                        {activity.action}
-                        <ChevronRight className="h-3 w-3 ml-1" />
-                      </Button>
+                        {activity.status}
+                      </Badge>
                     </div>
                   </motion.div>
                 ))}
