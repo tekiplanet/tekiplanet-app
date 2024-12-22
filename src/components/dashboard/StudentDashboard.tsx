@@ -13,68 +13,82 @@ import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-// Mock data
-const mockCourses = [
-  {
-    id: "1",
-    title: "Web Development Fundamentals",
-    progress: 45,
-    nextClass: "Tomorrow at 10:00 AM",
-    image: "https://images.unsplash.com/photo-1593720213428-28a5b9e94613",
-    instructor: "Dr. Sarah Johnson",
-    totalLessons: 24,
-    completedLessons: 11
-  },
-  {
-    id: "2",
-    title: "Advanced React Patterns",
-    progress: 30,
-    nextClass: "Today at 2:00 PM",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee",
-    instructor: "Prof. Michael Chen",
-    totalLessons: 18,
-    completedLessons: 5
-  }
-];
-
-const mockStats = [
-  {
-    title: "Wallet Balance",
-    value: "₦45,231.89",
-    icon: <Wallet className="h-5 w-5 text-primary" />,
-    trend: "+₦5,000 this week",
-    color: "from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-500/20 dark:via-blue-500/10 dark:to-transparent",
-    iconColor: "text-blue-500"
-  },
-  {
-    title: "Study Hours",
-    value: "24.5h",
-    icon: <Clock className="h-5 w-5 text-primary" />,
-    trend: "+2.5h from last week",
-    color: "from-green-500/10 via-green-500/5 to-transparent dark:from-green-500/20 dark:via-green-500/10 dark:to-transparent",
-    iconColor: "text-green-500"
-  },
-  {
-    title: "Achievements",
-    value: "12",
-    icon: <Trophy className="h-5 w-5 text-primary" />,
-    trend: "3 new badges",
-    color: "from-yellow-500/10 via-yellow-500/5 to-transparent dark:from-yellow-500/20 dark:via-yellow-500/10 dark:to-transparent",
-    iconColor: "text-yellow-500"
-  },
-  {
-    title: "Course Progress",
-    value: "45%",
-    icon: <Target className="h-5 w-5 text-primary" />,
-    trend: "On track",
-    color: "from-purple-500/10 via-purple-500/5 to-transparent dark:from-purple-500/20 dark:via-purple-500/10 dark:to-transparent",
-    iconColor: "text-purple-500"
-  }
-];
+import { useQuery } from "@tanstack/react-query";
+import { studentService } from "@/services/studentService";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
+
+  const { data: dashboardData, isLoading } = useQuery({
+    queryKey: ['student-dashboard'],
+    queryFn: studentService.getDashboardData,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: dashboardData?.currency.code || 'USD',
+      currencyDisplay: 'symbol'
+    }).format(amount);
+  };
+
+  const stats = [
+    {
+      title: "Wallet Balance",
+      value: dashboardData ? formatCurrency(dashboardData.user.wallet_balance) : '0',
+      icon: <Wallet className="h-5 w-5 text-primary" />,
+      trend: "Available balance",
+      color: "from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-500/20 dark:via-blue-500/10 dark:to-transparent",
+      iconColor: "text-blue-500"
+    },
+    {
+      title: "Achievements",
+      value: dashboardData?.statistics.achievements.toString() || '0',
+      icon: <Trophy className="h-5 w-5 text-primary" />,
+      trend: "Completed courses",
+      color: "from-yellow-500/10 via-yellow-500/5 to-transparent dark:from-yellow-500/20 dark:via-yellow-500/10 dark:to-transparent",
+      iconColor: "text-yellow-500"
+    },
+    {
+      title: "Enrolled Courses",
+      value: dashboardData?.statistics.enrolled_courses.toString() || '0',
+      icon: <BookOpen className="h-5 w-5 text-primary" />,
+      trend: "Active enrollments",
+      color: "from-green-500/10 via-green-500/5 to-transparent dark:from-green-500/20 dark:via-green-500/10 dark:to-transparent",
+      iconColor: "text-green-500"
+    },
+    {
+      title: "Course Progress",
+      value: `${dashboardData?.statistics.overall_progress || 0}%`,
+      icon: <Target className="h-5 w-5 text-primary" />,
+      trend: "Overall completion",
+      color: "from-purple-500/10 via-purple-500/5 to-transparent dark:from-purple-500/20 dark:via-purple-500/10 dark:to-transparent",
+      iconColor: "text-purple-500"
+    }
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 p-2 sm:p-4 md:p-6 space-y-6">
+        <Skeleton className="h-[200px] rounded-xl" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-[120px] rounded-xl" />
+          ))}
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid gap-4 md:grid-cols-2">
+            {[1, 2].map((i) => (
+              <Skeleton key={i} className="h-[300px] rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5 p-2 sm:p-4 md:p-6">
@@ -102,7 +116,7 @@ export default function StudentDashboard() {
                     transition={{ delay: 0.2 }}
                     className="text-2xl sm:text-3xl font-bold"
                   >
-                    Welcome back, John! ✨
+                    Welcome back, {dashboardData?.user.first_name}! ✨
                   </motion.h1>
                   <motion.p 
                     initial={{ opacity: 0, x: -20 }}
@@ -136,7 +150,9 @@ export default function StudentDashboard() {
                   </div>
                   <div>
                     <p className="text-xs text-yellow-500/70">Achievements</p>
-                    <p className="text-sm font-semibold text-yellow-500">12 Earned</p>
+                    <p className="text-sm font-semibold text-yellow-500">
+                      {dashboardData?.statistics.achievements} Earned
+                    </p>
                   </div>
                 </motion.div>
 
@@ -147,11 +163,13 @@ export default function StudentDashboard() {
                   className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10"
                 >
                   <div className="p-2 rounded-lg bg-blue-500/20">
-                    <Clock className="h-4 w-4 text-blue-500" />
+                    <Target className="h-4 w-4 text-blue-500" />
                   </div>
                   <div>
-                    <p className="text-xs text-blue-500/70">Study Time</p>
-                    <p className="text-sm font-semibold text-blue-500">24.5h</p>
+                    <p className="text-xs text-blue-500/70">Progress</p>
+                    <p className="text-sm font-semibold text-blue-500">
+                      {dashboardData?.statistics.overall_progress}%
+                    </p>
                   </div>
                 </motion.div>
               </div>
@@ -163,7 +181,7 @@ export default function StudentDashboard() {
       {/* Stats Grid - Make it scrollable on mobile with snap points */}
       <div className="w-full mb-6 overflow-x-auto">
         <div className="flex space-x-3 pb-4 px-2 snap-x snap-mandatory">
-          {mockStats.map((stat, index) => (
+          {stats.map((stat, index) => (
             <motion.div
               key={stat.title}
               initial={{ opacity: 0, y: 20 }}
@@ -204,14 +222,21 @@ export default function StudentDashboard() {
       {/* Course Cards - Horizontal scroll on mobile */}
       <div className="space-y-4 mb-6">
         <div className="flex items-center justify-between px-2">
-          <h2 className="text-lg font-bold">Continue Learning</h2>
-          <Button variant="ghost" size="sm" className="text-xs">
+          <h2 className="text-lg font-bold">
+            {dashboardData?.has_enrollments ? 'Continue Learning' : 'Start Learning'}
+          </h2>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs"
+            onClick={() => navigate(dashboardData?.has_enrollments ? '/dashboard/academy/my-courses' : '/dashboard/academy')}
+          >
             View All <ChevronRight className="h-3 w-3 ml-1" />
           </Button>
         </div>
         <div className="w-full overflow-x-auto">
           <div className="flex space-x-4 pb-4 px-2 snap-x snap-mandatory">
-            {mockCourses.map((course, index) => (
+            {dashboardData?.courses.map((course, index) => (
               <motion.div
                 key={course.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -251,9 +276,11 @@ export default function StudentDashboard() {
                           </Avatar>
                           <span className="text-xs text-white/80">{course.instructor}</span>
                         </div>
-                        <Badge className="bg-white/20 text-white hover:bg-white/30 text-[10px] py-0.5">
-                          {course.nextClass}
-                        </Badge>
+                        {course.nextClass && (
+                          <Badge className="bg-white/20 text-white hover:bg-white/30 text-[10px] py-0.5">
+                            {course.nextClass}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -281,7 +308,7 @@ export default function StudentDashboard() {
                           onClick={() => navigate(`/dashboard/academy/${course.id}/manage`)}
                           className="bg-primary/10 hover:bg-primary/20 text-primary text-xs h-7 rounded-lg"
                         >
-                          Continue
+                          {dashboardData?.has_enrollments ? 'Continue' : 'Start'}
                         </Button>
                       </div>
                     </div>
@@ -296,10 +323,10 @@ export default function StudentDashboard() {
       {/* Quick Actions Grid */}
       <div className="grid grid-cols-2 gap-3 px-2">
         {[
-          { icon: <BookMarked className="h-5 w-5" />, label: "My Courses", color: "from-blue-500/20 to-blue-600/20" },
-          { icon: <Calendar className="h-5 w-5" />, label: "Schedule", color: "from-green-500/20 to-green-600/20" },
-          { icon: <Award className="h-5 w-5" />, label: "Certificates", color: "from-yellow-500/20 to-yellow-600/20" },
-          { icon: <GraduationCap className="h-5 w-5" />, label: "Learning Path", color: "from-purple-500/20 to-purple-600/20" }
+          { icon: <BookMarked className="h-5 w-5" />, label: "My Courses", color: "from-blue-500/20 to-blue-600/20", link: "/dashboard/academy/my-courses" },
+          { icon: <Calendar className="h-5 w-5" />, label: "Schedule", color: "from-green-500/20 to-green-600/20", link: "/dashboard/academy/schedule" },
+          { icon: <Award className="h-5 w-5" />, label: "Certificates", color: "from-yellow-500/20 to-yellow-600/20", link: "/dashboard/academy/certificates" },
+          { icon: <GraduationCap className="h-5 w-5" />, label: "Learning Path", color: "from-purple-500/20 to-purple-600/20", link: "/dashboard/academy/learning-path" }
         ].map((action, index) => (
           <motion.div
             key={action.label}
@@ -308,6 +335,7 @@ export default function StudentDashboard() {
             transition={{ delay: index * 0.1 }}
             whileHover={{ scale: 1.02 }}
             className="group touch-manipulation"
+            onClick={() => navigate(action.link)}
           >
             <Card className="relative overflow-hidden border-primary/10 hover:shadow-lg hover:shadow-primary/10 transition-all cursor-pointer rounded-2xl">
               <div className={cn(

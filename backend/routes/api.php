@@ -37,6 +37,7 @@ use App\Http\Controllers\BusinessMetricsController;
 use App\Http\Controllers\BusinessActivityController;
 use App\Http\Controllers\BusinessTransactionController;
 use App\Http\Controllers\ProfessionalDashboardController;
+use App\Http\Controllers\StudentDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,6 +117,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/subscriptions/{subscription}/cancel', [WorkstationController::class, 'cancelSubscription']);
             Route::get('/subscriptions/{subscription}/access-card', [WorkstationController::class, 'downloadAccessCard']);
         });
+        
+        // Student Dashboard Route
+        Route::get('/student/dashboard', [StudentDashboardController::class, 'getDashboardData']);
     });
 });
 
