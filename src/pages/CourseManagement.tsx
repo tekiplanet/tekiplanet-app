@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import { useAuthStore } from '@/store/useAuthStore';
 import enrollmentService from '@/services/enrollmentService';
 import { courseManagementService } from '@/services/courseManagementService';
-import apiClient, { isAxiosError } from '@/lib/axios';
+import { apiClient } from '@/lib/axios';
+import { isAxiosError } from 'axios';
 import { useQuery } from "@tanstack/react-query";
 import { settingsService } from "@/services/settingsService";
 

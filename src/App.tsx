@@ -101,7 +101,7 @@ const AppContent = () => {
               path="academy/:courseId" 
               element={<CourseDetails />}
             />
-            <Route path="academy/:courseId/manage" element={<CourseManagement />} />
+            <Route path="academy/course/:courseId/manage" element={<CourseManagement />} />
             <Route path="wallet" element={<WalletDashboard />} />
             <Route path="wallet/transactions/:transactionId" element={<TransactionDetails />} />
             <Route path="settings" element={<SettingsPage />} />

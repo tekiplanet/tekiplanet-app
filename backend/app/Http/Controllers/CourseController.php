@@ -288,4 +288,58 @@ class CourseController extends Controller
             ], 500);
         }
     }
+
+    public function getCourseDetails($courseId)
+    {
+        try {
+            $course = Course::with([
+                'modules' => function($query) {
+                    $query->orderBy('order');
+                },
+                'modules.topics' => function($query) {
+                    $query->orderBy('order');
+                },
+                'modules.lessons' => function($query) {
+                    $query->orderBy('order');
+                },
+                'instructor',
+                'schedules',
+                'exams',
+                'notices'
+            ])->findOrFail($courseId);
+
+            // Get enrollment details if user is authenticated
+            $enrollment = null;
+            if (auth()->check()) {
+                $enrollment = Enrollment::where('user_id', auth()->id())
+                    ->where('course_id', $courseId)
+                    ->first();
+            }
+
+            return response()->json([
+                'course' => $course,
+                'modules' => $course->modules,
+                'lessons' => $course->modules->flatMap->lessons,
+                'exams' => $course->exams,
+                'schedules' => $course->schedules,
+                'notices' => $course->notices,
+                'features' => $course->features,
+                'instructor' => $course->instructor,
+                'enrollment' => $enrollment,
+                'installments' => $enrollment ? $enrollment->installments : []
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching course details:', [
+                'course_id' => $courseId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to fetch course details',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

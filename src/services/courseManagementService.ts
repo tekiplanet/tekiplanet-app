@@ -1,5 +1,5 @@
-import apiClient, { isAxiosError } from '@/lib/axios';
-import axios from 'axios';
+import { apiClient } from '@/lib/axios';
+import { isAxiosError } from 'axios';
 
 export interface CourseDetails {
   course: any;
@@ -19,130 +19,117 @@ const courseNotices = {
 };
 
 export const courseManagementService = {
-  async getCourseDetails(courseId: string) {
+  getCourseDetails: async (courseId: string) => {
     try {
-      console.log(`Attempting to fetch course details for course ID: ${courseId}`);
-      const response = await apiClient.get(`/courses/${courseId}`);
+      if (!courseId) {
+        throw new Error('Course ID is required');
+      }
+
+      const response = await apiClient.get(`/courses/${courseId}/details`);
       
-      console.log('Full course details response:', JSON.stringify(response.data, null, 2));
-      
-      // Log specific details about schedules
-      console.log('Schedules in response:', response.data.schedules);
-      console.log('Schedules length:', response.data.schedules?.length);
-      console.log('Schedules type:', typeof response.data.schedules);
-      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+
       if (!response.data.course) {
-        console.warn('No course details found in response');
         throw new Error('Course details not found');
       }
 
       return response.data;
     } catch (error) {
-      console.error('Error fetching course details:', error);
-      throw error;
+      if (isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('Course not found');
+        }
+        if (error.response?.status === 401) {
+          throw new Error('Unauthorized access');
+        }
+        throw new Error(error.response?.data?.message || 'Failed to fetch course details');
+      }
+      throw new Error('An unexpected error occurred');
     }
   },
 
-  async getCourseNotices(courseId: string) {
+  getCourseNotices: async (courseId: string) => {
     try {
-      console.log(`Fetching notices for courseId: ${courseId}`);
-      
-      // Validate courseId
       if (!courseId) {
-        console.warn('No courseId provided');
         throw new Error('Course ID is required');
       }
-      
+
       const response = await apiClient.get(`/courses/${courseId}/notices`);
       
-      // Log the full response for debugging
-      console.log('Full Notices Response:', {
-        status: response.status,
-        data: JSON.stringify(response.data, null, 2)
-      });
-      
-      // Validate response structure
-      if (!response || !response.data || !response.data.notices) {
-        console.warn('Invalid response structure for course notices');
-        throw new Error('Invalid response from server');
+      if (!response.data || !response.data.notices) {
+        throw new Error('Invalid response structure');
       }
-      
-      // Transform the notices to match the existing type structure
+
       const transformedNotices = response.data.notices.map((notice: any) => ({
         id: notice.id.toString(),
         type: notice.is_important ? 'announcement' : 'resource',
         title: notice.title,
         content: notice.content,
         date: new Date(notice.published_at),
-        read: false, // You might want to implement read status later
+        read: false,
         priority: notice.is_important ? 'high' : 'normal'
       }));
-
-      console.log('Transformed Notices:', JSON.stringify(transformedNotices, null, 2));
 
       return {
         success: true,
         notices: transformedNotices
       };
     } catch (error) {
-      // More detailed error logging
-      console.error('Full Error Object:', error);
-      
-      if (axios.isAxiosError(error)) {
-        console.error('Axios Error Details:', {
-          message: error.message,
+      if (isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message || 'Failed to fetch notices';
+        console.error('Notice fetch error:', {
           status: error.response?.status,
-          data: JSON.stringify(error.response?.data, null, 2)
+          message: errorMessage
         });
+        return {
+          success: false,
+          message: errorMessage,
+          notices: []
+        };
       }
-
-      // Fallback to local notices if backend fails
-      const localNotices = courseNotices[courseId as keyof typeof courseNotices] || [];
-      
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch notices from server',
-        notices: localNotices
+        message: 'An unexpected error occurred',
+        notices: []
       };
     }
   },
 
-  async deleteUserCourseNotice(courseNoticeId: string) {
+  deleteUserCourseNotice: async (courseNoticeId: string) => {
     try {
-      console.log(`Deleting notice with ID: ${courseNoticeId}`);
-      
+      if (!courseNoticeId) {
+        throw new Error('Notice ID is required');
+      }
+
       const response = await apiClient.delete(`/courses/notices/${courseNoticeId}`);
-      
-      console.log('Delete Notice Response:', {
-        status: response.status,
-        data: JSON.stringify(response.data, null, 2)
-      });
 
       return {
         success: true,
         message: response.data.message || 'Notice deleted successfully',
-        courseNoticeId: courseNoticeId
+        courseNoticeId
       };
     } catch (error) {
-      console.error('Error deleting course notice:', error);
-      
-      if (axios.isAxiosError(error)) {
-        console.error('Axios Error Details:', {
-          message: error.message,
+      if (isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message || 'Failed to delete notice';
+        console.error('Notice deletion error:', {
           status: error.response?.status,
-          data: JSON.stringify(error.response?.data, null, 2)
+          message: errorMessage
         });
+        return {
+          success: false,
+          message: errorMessage,
+          courseNoticeId
+        };
       }
-
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to delete notice',
-        courseNoticeId: courseNoticeId
+        message: 'An unexpected error occurred',
+        courseNoticeId
       };
     }
-  },
-
-  // Add other course management related methods here
+  }
 };
 
 export default courseManagementService;

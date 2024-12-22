@@ -804,7 +804,7 @@ export default function MyCourses() {
                   <div className="flex gap-2 pt-4 border-t">
                     <Button 
                       className="flex-1 text-white"
-                      onClick={() => navigate(`/dashboard/academy/${enrollment.course_id}/manage`)}
+                      onClick={() => navigate(`/dashboard/academy/course/${enrollment.course_id}/manage`)}
                     >
                       <>
                         Manage Course
