@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import apiClient from '@/lib/axios';
+import { apiClient } from '@/lib/axios';
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Dashboard from "@/pages/Dashboard";
