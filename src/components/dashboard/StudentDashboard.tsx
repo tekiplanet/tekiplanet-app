@@ -92,42 +92,77 @@ export default function StudentDashboard() {
           "dark:from-blue-500/20 dark:via-blue-500/10 dark:to-transparent"
         )}>
           <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center gap-4">
-              <motion.div 
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className={cn(
-                  "rounded-xl bg-background/50 dark:bg-background/80 backdrop-blur-xl",
-                  "group-hover:bg-background/80 dark:group-hover:bg-background/60 transition-colors",
-                  "shadow-sm dark:shadow-none relative"
-                )}
-              >
-                <Avatar className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl">
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback className="rounded-xl">JD</AvatarFallback>
-                </Avatar>
-              </motion.div>
-              <div className="space-y-2 flex-1">
-                <h1 className="text-lg sm:text-2xl font-bold">Welcome back ✨</h1>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  <Badge variant="outline" className="bg-background/50">
-                    <Trophy className="h-3 w-3 mr-1 text-yellow-500" />
-                    12 Achievements
-                  </Badge>
-                  <Badge variant="outline" className="bg-background/50">
-                    <Clock className="h-3 w-3 mr-1 text-blue-500" />
-                    24.5h Study Time
-                  </Badge>
+            <div className="flex flex-col gap-4">
+              {/* Welcome Text */}
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <motion.h1 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-2xl sm:text-3xl font-bold"
+                  >
+                    Welcome back, John! ✨
+                  </motion.h1>
+                  <motion.p 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-sm text-muted-foreground"
+                  >
+                    Ready to continue your learning journey?
+                  </motion.p>
                 </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="hidden sm:flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary"
+                >
+                  <GraduationCap className="h-6 w-6" />
+                </motion.div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-3">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-yellow-500/10"
+                >
+                  <div className="p-2 rounded-lg bg-yellow-500/20">
+                    <Trophy className="h-4 w-4 text-yellow-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-yellow-500/70">Achievements</p>
+                    <p className="text-sm font-semibold text-yellow-500">12 Earned</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10"
+                >
+                  <div className="p-2 rounded-lg bg-blue-500/20">
+                    <Clock className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-blue-500/70">Study Time</p>
+                    <p className="text-sm font-semibold text-blue-500">24.5h</p>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Stats Grid - Make it scrollable on mobile */}
-      <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0 mb-4 sm:mb-8">
-        <div className="grid grid-cols-[repeat(4,minmax(200px,1fr))] sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-max sm:w-auto">
+      {/* Stats Grid - Make it scrollable on mobile with snap points */}
+      <div className="w-full mb-6 overflow-x-auto">
+        <div className="flex space-x-3 pb-4 px-2 snap-x snap-mandatory">
           {mockStats.map((stat, index) => (
             <motion.div
               key={stat.title}
@@ -135,15 +170,16 @@ export default function StudentDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               whileHover={{ scale: 1.02 }}
-              className="group"
+              className="group snap-center"
+              style={{ minWidth: '80%', maxWidth: '300px' }}
             >
               <Card className={cn(
                 "relative overflow-hidden border-none bg-gradient-to-br backdrop-blur-xl",
-                "hover:shadow-lg transition-all dark:shadow-none",
+                "hover:shadow-lg transition-all dark:shadow-none rounded-2xl",
                 "dark:bg-background/50",
                 stat.color
               )}>
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     <div className={cn(
                       "p-3 rounded-xl bg-background/50 dark:bg-background/80 backdrop-blur-xl",
@@ -154,7 +190,7 @@ export default function StudentDashboard() {
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">{stat.title}</p>
-                      <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
+                      <p className="text-xl font-bold tracking-tight">{stat.value}</p>
                       <p className={cn("text-xs", stat.iconColor)}>{stat.trend}</p>
                     </div>
                   </div>
@@ -165,102 +201,105 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Course Cards */}
-      <div className="space-y-4 sm:space-y-6 mb-4 sm:mb-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold">Continue Learning</h2>
-          <Button variant="ghost" size="sm">
-            View All <ChevronRight className="h-4 w-4 ml-1" />
+      {/* Course Cards - Horizontal scroll on mobile */}
+      <div className="space-y-4 mb-6">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-lg font-bold">Continue Learning</h2>
+          <Button variant="ghost" size="sm" className="text-xs">
+            View All <ChevronRight className="h-3 w-3 ml-1" />
           </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-          {mockCourses.map((course, index) => (
-            <motion.div
-              key={course.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -5 }}
-              className="group touch-manipulation"
-            >
-              <Card className="overflow-hidden border-none bg-background/50 backdrop-blur-xl hover:shadow-xl hover:shadow-primary/10 transition-all">
-                <div className="relative aspect-video">
-                  <img 
-                    src={course.image} 
-                    alt={course.title}
-                    className="object-cover w-full h-full transition-transform group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <motion.div 
-                    className="absolute top-4 right-4"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <Button 
-                      size="icon"
-                      className="rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40"
+        <div className="w-full overflow-x-auto">
+          <div className="flex space-x-4 pb-4 px-2 snap-x snap-mandatory">
+            {mockCourses.map((course, index) => (
+              <motion.div
+                key={course.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="group touch-manipulation snap-center"
+                style={{ minWidth: '300px' }}
+              >
+                <Card className="overflow-hidden border-none bg-background/50 backdrop-blur-xl hover:shadow-xl hover:shadow-primary/10 transition-all rounded-2xl">
+                  <div className="relative aspect-video">
+                    <img 
+                      src={course.image} 
+                      alt={course.title}
+                      className="object-cover w-full h-full transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <motion.div 
+                      className="absolute top-3 right-3"
+                      whileHover={{ scale: 1.1 }}
                     >
-                      <PlayCircle className="h-5 w-5 text-white" />
-                    </Button>
-                  </motion.div>
-                  <div className="absolute inset-x-4 bottom-4 space-y-2">
-                    <h3 className="text-lg font-semibold text-white line-clamp-1">
-                      {course.title}
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6 ring-2 ring-white/20">
-                          <AvatarFallback>{course.instructor[0]}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm text-white/80">{course.instructor}</span>
-                      </div>
-                      <Badge className="bg-white/20 text-white hover:bg-white/30">
-                        {course.nextClass}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-                <CardContent className="p-3 sm:p-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium">{course.progress}%</span>
-                    </div>
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-primary/10">
-                      <motion.div 
-                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary-foreground"
-                        style={{ width: `${course.progress}%` }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${course.progress}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        {course.completedLessons}/{course.totalLessons} Lessons
-                      </span>
                       <Button 
-                        size="sm" 
-                        onClick={() => navigate(`/dashboard/academy/${course.id}/manage`)}
-                        className="bg-primary/10 hover:bg-primary/20 text-primary"
+                        size="icon"
+                        className="rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 h-8 w-8"
                       >
-                        Continue Learning
+                        <PlayCircle className="h-4 w-4 text-white" />
                       </Button>
+                    </motion.div>
+                    <div className="absolute inset-x-3 bottom-3 space-y-1.5">
+                      <h3 className="text-base font-semibold text-white line-clamp-1">
+                        {course.title}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Avatar className="h-5 w-5 ring-1 ring-white/20">
+                            <AvatarFallback className="text-xs">{course.instructor[0]}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs text-white/80">{course.instructor}</span>
+                        </div>
+                        <Badge className="bg-white/20 text-white hover:bg-white/30 text-[10px] py-0.5">
+                          {course.nextClass}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                  <CardContent className="p-3">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-medium">{course.progress}%</span>
+                      </div>
+                      <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-primary/10">
+                        <motion.div 
+                          className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary-foreground"
+                          style={{ width: `${course.progress}%` }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${course.progress}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground">
+                          {course.completedLessons}/{course.totalLessons} Lessons
+                        </span>
+                        <Button 
+                          size="sm" 
+                          onClick={() => navigate(`/dashboard/academy/${course.id}/manage`)}
+                          className="bg-primary/10 hover:bg-primary/20 text-primary text-xs h-7 rounded-lg"
+                        >
+                          Continue
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-2 gap-3 px-2">
         {[
-          { icon: <BookMarked />, label: "My Courses", color: "from-blue-500/20 to-blue-600/20" },
-          { icon: <Calendar />, label: "Schedule", color: "from-green-500/20 to-green-600/20" },
-          { icon: <Award />, label: "Certificates", color: "from-yellow-500/20 to-yellow-600/20" },
-          { icon: <GraduationCap />, label: "Learning Path", color: "from-purple-500/20 to-purple-600/20" }
+          { icon: <BookMarked className="h-5 w-5" />, label: "My Courses", color: "from-blue-500/20 to-blue-600/20" },
+          { icon: <Calendar className="h-5 w-5" />, label: "Schedule", color: "from-green-500/20 to-green-600/20" },
+          { icon: <Award className="h-5 w-5" />, label: "Certificates", color: "from-yellow-500/20 to-yellow-600/20" },
+          { icon: <GraduationCap className="h-5 w-5" />, label: "Learning Path", color: "from-purple-500/20 to-purple-600/20" }
         ].map((action, index) => (
           <motion.div
             key={action.label}
@@ -270,20 +309,20 @@ export default function StudentDashboard() {
             whileHover={{ scale: 1.02 }}
             className="group touch-manipulation"
           >
-            <Card className="relative overflow-hidden border-primary/10 hover:shadow-lg hover:shadow-primary/10 transition-all cursor-pointer">
+            <Card className="relative overflow-hidden border-primary/10 hover:shadow-lg hover:shadow-primary/10 transition-all cursor-pointer rounded-2xl">
               <div className={cn(
                 "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity",
                 action.color
               )} />
-              <CardContent className="relative p-4 sm:p-6">
-                <div className="flex flex-col items-center gap-2 sm:gap-3 text-center">
+              <CardContent className="relative p-3">
+                <div className="flex flex-col items-center gap-2 text-center">
                   <motion.div 
-                    className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors"
+                    className="p-2.5 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors"
                     whileHover={{ scale: 1.1, rotate: 5 }}
                   >
                     {action.icon}
                   </motion.div>
-                  <span className="font-medium">{action.label}</span>
+                  <span className="text-sm font-medium">{action.label}</span>
                 </div>
               </CardContent>
             </Card>

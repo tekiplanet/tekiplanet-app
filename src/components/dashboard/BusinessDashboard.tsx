@@ -25,10 +25,11 @@ import {
   Calendar,
   CircleDollarSign,
   Wallet,
-  UserPlus
+  UserPlus,
+  LucideIcon
 } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
-import { businessService, BusinessMetrics } from '@/services/businessService';
+import { businessService } from '@/services/businessService';
 import NoBusinessProfile from '../business/NoBusinessProfile';
 import InactiveBusinessProfile from '../business/InactiveBusinessProfile';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -51,6 +52,26 @@ import { Input } from "@/components/ui/input";
 import { ChevronRight, Search } from "lucide-react";
 import CustomerFormDialog from '../business/CustomerFormDialog';
 
+// Define the BusinessMetrics interface
+interface BusinessMetrics {
+  revenue: number;
+  revenue_trend: {
+    direction: 'up' | 'down';
+    percentage: number;
+  };
+  total_customers: number;
+  customers_this_month: number;
+  customer_trend: {
+    direction: 'up' | 'down';
+    percentage: number;
+  };
+  revenueData: Array<{
+    name: string;
+    value: number;
+  }>;
+  recent_activities: Activity[];
+}
+
 // Helper function for formatting currency
 const formatAmount = (amount: number) => {
   return new Intl.NumberFormat('en-NG', {
@@ -72,7 +93,17 @@ const formatAmountWithCurrency = (amount: number, currency: string) => {
 };
 
 // Quick Action Component
-const QuickAction = ({ icon: Icon, title, onClick, variant = "default" }) => (
+const QuickAction = ({ 
+  icon: Icon, 
+  title, 
+  onClick, 
+  variant = "default" 
+}: { 
+  icon: LucideIcon; 
+  title: string; 
+  onClick: () => void; 
+  variant?: "default" | "primary";
+}) => (
   <motion.div
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
@@ -118,6 +149,15 @@ const MetricCard = ({
   isLoading, 
   color = "primary",
   className 
+}: {
+  title: string;
+  value: string | number;
+  trend?: 'up' | 'down';
+  icon: LucideIcon;
+  trendValue?: string;
+  isLoading?: boolean;
+  color?: string;
+  className?: string;
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -125,7 +165,7 @@ const MetricCard = ({
     transition={{ duration: 0.3 }}
   >
     <Card className={cn(
-      "relative overflow-hidden",
+      "relative overflow-hidden rounded-2xl",
       className
     )}>
       <div className={cn(
@@ -134,14 +174,14 @@ const MetricCard = ({
       )} />
       <CardContent className={cn(
         "p-6",
-        className?.includes("h-[80px]") && "py-2",  // Even smaller padding for mobile
-        className?.includes("h-[100px]") && "py-3",  // Slightly reduced padding for desktop
-        className?.includes("h-[120px]") && "py-4"   // Medium padding for revenue card
+        className?.includes("h-[80px]") && "p-3",  // Smaller padding for mobile
+        className?.includes("h-[100px]") && "p-4",  // Medium padding for desktop
+        className?.includes("h-[120px]") && "p-5"   // Larger padding for revenue card
       )}>
-        <div className="flex items-center justify-between space-x-4">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
             <div className={cn(
-              "p-3 rounded-xl",
+              "p-3 rounded-xl shrink-0",
               className?.includes("h-[80px]") && "p-2", // Smaller icon padding on mobile
               `bg-${color}-500/10`
             )}>
@@ -151,7 +191,7 @@ const MetricCard = ({
                 `text-${color}-500`
               )} />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-muted-foreground">{title}</p>
               {isLoading ? (
                 <div className="h-8 w-24 animate-pulse bg-muted rounded" />
@@ -166,17 +206,19 @@ const MetricCard = ({
             </div>
           </div>
           {trend && (
-            <Badge variant={trend === 'up' ? 'success' : 'destructive'} className={cn(
-              "h-6",
-              className?.includes("h-[80px]") && "h-5 text-xs" // Smaller badge on mobile
-            )}>
-              <TrendingUp className={cn(
-                "h-4 w-4 mr-1",
-                className?.includes("h-[80px]") && "h-3 w-3", // Smaller trend icon on mobile
-                trend === 'down' && "rotate-180"
-              )} />
-              {trendValue}
-            </Badge>
+            <div className="flex justify-end">
+              <Badge variant={trend === 'up' ? 'success' : 'destructive'} className={cn(
+                "h-6 whitespace-nowrap",
+                className?.includes("h-[80px]") && "h-5 text-xs" // Smaller badge on mobile
+              )}>
+                <TrendingUp className={cn(
+                  "h-4 w-4 mr-1",
+                  className?.includes("h-[80px]") && "h-3 w-3", // Smaller trend icon on mobile
+                  trend === 'down' && "rotate-180"
+                )} />
+                {trendValue}
+              </Badge>
+            </div>
           )}
         </div>
       </CardContent>
@@ -254,12 +296,7 @@ export default function BusinessDashboard() {
     queryKey: ['business-metrics'],
     queryFn: () => businessService.getMetrics(),
     enabled: !!profileData?.has_profile,
-    onSuccess: (data) => {
-      console.log('Metrics data:', data, 'Recent activities:', data.recent_activities);
-    },
-    onError: (error) => {
-      console.error('Metrics error:', error);
-    }
+    select: (data: BusinessMetrics) => data
   });
 
   if (profileLoading) {
@@ -275,25 +312,25 @@ export default function BusinessDashboard() {
   }
 
   return (
-    <div className="space-y-8 p-4 md:p-8 max-w-7xl mx-auto">
+    <div className="space-y-6 p-4 md:p-8 max-w-7xl mx-auto">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16 border-2 border-primary">
+          <Avatar className="h-12 w-12 md:h-16 md:w-16 border-2 border-primary rounded-2xl">
             <AvatarImage src={profileData?.profile?.logo} />
             <AvatarFallback>BP</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight">
               {profileData?.profile?.business_name}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {format(new Date(), 'EEEE, MMMM do yyyy')}
             </p>
           </div>
         </div>
         <Button 
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 rounded-xl w-full md:w-auto"
           onClick={() => setIsQuickActionOpen(true)}
         >
           <Plus className="h-4 w-4" />
@@ -303,11 +340,11 @@ export default function BusinessDashboard() {
 
       {/* Quick Actions Dialog */}
       <Dialog open={isQuickActionOpen} onOpenChange={setIsQuickActionOpen}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[400px] p-0">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle className="text-lg font-semibold">Quick Actions</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-2 py-2">
+          <div className="grid gap-2 p-2">
             <QuickAction
               icon={CircleDollarSign}
               title="Create Invoice"
@@ -339,16 +376,16 @@ export default function BusinessDashboard() {
 
       {/* Customer Search Dialog */}
       <Dialog open={isCustomerSearchOpen} onOpenChange={setIsCustomerSearchOpen}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[400px] p-0">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Select Customer</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 p-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search customers..." 
-                className="pl-9"
+                className="pl-9 h-10 rounded-xl"
                 value={customerSearch}
                 onChange={(e) => setCustomerSearch(e.target.value)}
               />
@@ -401,7 +438,7 @@ export default function BusinessDashboard() {
         mode="create"
       />
 
-      {/* Metrics Section */}
+      {/* Metrics Section - Horizontal scroll on mobile */}
       <div className="space-y-4">
         {/* Monthly Revenue - Full Width */}
         <div className="w-full">
@@ -409,7 +446,7 @@ export default function BusinessDashboard() {
             title="Monthly Revenue"
             value={metrics?.revenue ? formatAmount(metrics.revenue) : formatAmount(0)}
             trend={metrics?.revenue_trend?.direction}
-            trendValue={`${metrics?.revenue_trend?.percentage}%`}
+            trendValue={`${metrics?.revenue_trend?.percentage || 0}%`}
             icon={DollarSign}
             isLoading={metricsLoading}
             color="green"
@@ -417,32 +454,34 @@ export default function BusinessDashboard() {
           />
         </div>
         
-        {/* Customer Metrics - Stack on mobile, side by side on desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <MetricCard
-            title="Total Customers"
-            value={metrics?.total_customers || "0"}
-            trend={undefined}
-            trendValue={undefined}
-            icon={Users}
-            isLoading={metricsLoading}
-            color="blue"
-            className="h-[80px] md:h-[100px]"
-          />
-          <MetricCard
-            title="This Month"
-            value={metrics?.customers_this_month?.toString() || "0"}
-            trend={metrics?.customer_trend?.direction}
-            trendValue={`${metrics?.customer_trend?.percentage}%`}
-            icon={UserPlus}
-            isLoading={metricsLoading}
-            color="green"
-            className="h-[80px] md:h-[100px]"
-          />
+        {/* Customer Metrics - Horizontal scroll on mobile */}
+        <div className="overflow-x-auto -mx-4 md:mx-0">
+          <div className="flex md:grid md:grid-cols-2 gap-4 px-4 md:px-0 min-w-[600px] md:min-w-0">
+            <MetricCard
+              title="Total Customers"
+              value={metrics?.total_customers || "0"}
+              trend={undefined}
+              trendValue={undefined}
+              icon={Users}
+              isLoading={metricsLoading}
+              color="blue"
+              className="h-[80px] md:h-[100px]"
+            />
+            <MetricCard
+              title="This Month"
+              value={metrics?.customers_this_month?.toString() || "0"}
+              trend={metrics?.customer_trend?.direction}
+              trendValue={`${metrics?.customer_trend?.percentage}%`}
+              icon={UserPlus}
+              isLoading={metricsLoading}
+              color="green"
+              className="h-[80px] md:h-[100px]"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Main Content Tabs - Fix mobile overflow */}
+      {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
         <div className="relative -mx-4 md:mx-0">
           <div className="border-b overflow-x-auto scrollbar-none">
@@ -468,12 +507,12 @@ export default function BusinessDashboard() {
         </div>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Charts Grid - Stack on mobile, side by side on md screens */}
+          {/* Charts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Revenue Overview - Full width on mobile */}
-            <Card className="w-full">
+            {/* Revenue Overview */}
+            <Card className="w-full rounded-2xl">
               <CardHeader>
-                <CardTitle>Revenue Overview</CardTitle>
+                <CardTitle className="text-lg">Revenue Overview</CardTitle>
                 <CardDescription>Monthly revenue breakdown</CardDescription>
               </CardHeader>
               <CardContent>
@@ -487,12 +526,22 @@ export default function BusinessDashboard() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
                       <Tooltip 
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))'
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                          fontSize: '12px'
                         }}
                       />
                       <Area
@@ -502,7 +551,6 @@ export default function BusinessDashboard() {
                         fillOpacity={1}
                         fill="url(#revenue)"
                         name="Revenue"
-                        formatter={(value: number) => formatAmount(value)}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -510,11 +558,11 @@ export default function BusinessDashboard() {
               </CardContent>
             </Card>
 
-            {/* Recent Activity - Full width on mobile */}
-            <Card className="w-full">
+            {/* Recent Activity */}
+            <Card className="w-full rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
-                  <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+                  <CardTitle className="text-lg">Recent Activity</CardTitle>
                   <CardDescription>Latest business transactions</CardDescription>
                 </div>
                 <Button 
@@ -529,7 +577,6 @@ export default function BusinessDashboard() {
               <CardContent>
                 <ScrollArea className="h-[250px] md:h-[300px]">
                   <div className="space-y-1 pr-4">
-                    {console.log('Rendering activities:', metrics?.recent_activities)}
                     {metrics?.recent_activities?.map((activity: Activity, index) => {
                       let icon = CircleDollarSign;
                       switch (activity.type) {
@@ -567,7 +614,6 @@ export default function BusinessDashboard() {
               </CardContent>
             </Card>
           </div>
-
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-6">
