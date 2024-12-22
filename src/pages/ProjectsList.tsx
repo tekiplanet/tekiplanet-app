@@ -31,6 +31,7 @@ import {
 import { projectService, type Project } from '@/services/projectService';
 import { toast } from 'sonner';
 import { EmptyPlaceholder } from "@/components/empty-placeholder";
+import { cn } from '@/lib/utils';
 
 export default function ProjectsListPage() {
   return <ProjectsList />;
@@ -187,22 +188,20 @@ function ProjectsList() {
                 transition={{ duration: 0.3 }}
                 onClick={() => navigate(`/dashboard/projects/${project.id}`)}
               >
-                <Card className="hover:shadow-md transition-shadow">
+                <Card className="hover:shadow-md transition-all hover:bg-accent/10">
                   <CardHeader className="p-4 pb-2">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="space-y-1.5 flex-1 min-w-0">
-                        <h3 className="text-base font-medium truncate">
-                          {project.name}
-                        </h3>
-                        <div className="space-y-1">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <Server className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="space-y-1 min-w-0">
+                          <h3 className="text-base font-semibold leading-none truncate">
+                            {project.name}
+                          </h3>
                           <p className="text-sm text-muted-foreground truncate">
                             {project.business_name}
                           </p>
-                          <div className="flex items-center gap-2 text-xs">
-                            <Badge variant={getStatusVariant(project.status)} className="rounded-full">
-                              {project.status}
-                            </Badge>
-                          </div>
                         </div>
                       </div>
                       <DropdownMenu>
@@ -218,33 +217,44 @@ function ProjectsList() {
                       </DropdownMenu>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-4 pt-2">
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{project.start_date} - {project.end_date}</span>
-                      </div>
-                      <div className="flex items-center gap-2 justify-end">
-                        <BanknoteIcon className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium text-primary">{project.budget}</span>
+                  <CardContent className="p-4 pt-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Badge 
+                        variant={getStatusVariant(project.status)} 
+                        className="rounded-lg capitalize px-2.5 py-0.5 text-xs"
+                      >
+                        {project.status.replace('_', ' ')}
+                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <BanknoteIcon className="h-4 w-4 text-primary" />
+                        <span className="font-medium text-sm">{project.budget}</span>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{project.progress}%</span>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>{project.start_date} - {project.end_date}</span>
                       </div>
-                      <div className="w-full bg-secondary rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${
-                            project.status === 'completed' 
-                              ? 'bg-green-500' 
-                              : project.status === 'in_progress' 
-                              ? 'bg-yellow-500' 
-                              : 'bg-blue-500'
-                          }`} 
-                          style={{ width: `${project.progress}%` }}
-                        />
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Progress</span>
+                          <span className="font-medium">{project.progress}%</span>
+                        </div>
+                        <div className="w-full bg-secondary/50 rounded-full h-1.5 overflow-hidden">
+                          <div 
+                            className={cn(
+                              "h-full rounded-full transition-all", 
+                              project.status === 'completed' 
+                                ? 'bg-green-500' 
+                                : project.status === 'in_progress' 
+                                ? 'bg-yellow-500' 
+                                : 'bg-blue-500'
+                            )}
+                            style={{ width: `${project.progress}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </CardContent>
