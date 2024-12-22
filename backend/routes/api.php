@@ -263,6 +263,7 @@ Route::middleware('auth:sanctum')->prefix('business')->group(function () {
 
     // Customer Routes
     Route::get('/customers', [BusinessCustomerController::class, 'index']);
+    Route::get('/customers/search', [BusinessCustomerController::class, 'search']);
     Route::post('/customers', [BusinessCustomerController::class, 'store']);
     Route::get('/customers/{customer}', [BusinessCustomerController::class, 'show']);
     Route::put('/customers/{customer}', [BusinessCustomerController::class, 'update']);

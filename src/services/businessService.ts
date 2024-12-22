@@ -180,6 +180,19 @@ export const businessService = {
     return data;
   },
 
+  searchCustomers: async (search: string) => {
+    if (search.length < 3) return [];
+    try {
+      const { data } = await apiClient.get(`/business/customers/search`, {
+        params: { search }
+      });
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error searching customers:', error);
+      return [];
+    }
+  },
+
   // Add other business-related API calls
 }; 
 
@@ -210,4 +223,12 @@ export interface Activity {
   time: string;
   amount: number | null;
   currency: string | null;
+} 
+
+export interface CreateCustomerDto {
+  name: string;
+  email: string;
+  phone: string;
+  currency: string;
+  address?: string;
 } 

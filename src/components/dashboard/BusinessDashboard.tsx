@@ -47,6 +47,9 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import TransactionList from './TransactionList';
+import { Input } from "@/components/ui/input";
+import { ChevronRight, Search } from "lucide-react";
+import AddCustomerModal from '../business/AddCustomerModal';
 
 // Helper function for formatting currency
 const formatAmount = (amount: number) => {
@@ -227,7 +230,19 @@ const ActivityItem = ({
 
 export default function BusinessDashboard() {
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
+  const [isCustomerSearchOpen, setIsCustomerSearchOpen] = useState(false);
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState('');
   const navigate = useNavigate();
+
+  // Query for searching customers
+  const { data: customers, isLoading: customersLoading } = useQuery({
+    queryKey: ['customer-search', customerSearch],
+    queryFn: () => businessService.searchCustomers(customerSearch),
+    enabled: customerSearch.length >= 3,
+    initialData: [],
+    select: (data) => data || [],
+  });
 
   const { data: profileData, isLoading: profileLoading } = useQuery({
     queryKey: ['business-profile'],
@@ -298,37 +313,92 @@ export default function BusinessDashboard() {
               title="Create Invoice"
               onClick={() => {
                 setIsQuickActionOpen(false);
-                // Add navigation logic
+                setIsCustomerSearchOpen(true);
               }}
               variant="primary"
-            />
-            <QuickAction
-              icon={Package}
-              title="Add Inventory"
-              onClick={() => {
-                setIsQuickActionOpen(false);
-                // Add navigation logic
-              }}
             />
             <QuickAction
               icon={Users}
               title="Add Customer"
               onClick={() => {
                 setIsQuickActionOpen(false);
-                // Add navigation logic
+                setIsAddCustomerOpen(true);
               }}
             />
             <QuickAction
-              icon={Wallet}
-              title="Record Payment"
+              icon={Package}
+              title="Start New Project"
               onClick={() => {
                 setIsQuickActionOpen(false);
-                // Add navigation logic
+                navigate('/dashboard/services');
               }}
             />
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Customer Search Dialog */}
+      <Dialog open={isCustomerSearchOpen} onOpenChange={setIsCustomerSearchOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Select Customer</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search customers..." 
+                className="pl-9"
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="relative">
+              {customerSearch.length < 3 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Type at least 3 characters to search...
+                </p>
+              ) : customersLoading ? (
+                <div className="p-4 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                </div>
+              ) : customers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No customers found.
+                </p>
+              ) : (
+                <ScrollArea className="h-[300px] w-full rounded-md border">
+                  <div className="p-4 space-y-2">
+                    {customers.map((customer) => (
+                      <div
+                        key={customer.id}
+                        className="flex items-center space-x-4 rounded-lg p-2 hover:bg-accent cursor-pointer"
+                        onClick={() => {
+                          setIsCustomerSearchOpen(false);
+                          navigate(`/dashboard/business/customers/${customer.id}`);
+                        }}
+                      >
+                        <div className="flex-1 space-y-1">
+                          <p className="text-sm font-medium leading-none">{customer.name}</p>
+                          <p className="text-sm text-muted-foreground">{customer.email}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Customer Modal */}
+      <AddCustomerModal 
+        open={isAddCustomerOpen} 
+        onOpenChange={setIsAddCustomerOpen}
+      />
 
       {/* Metrics Section */}
       <div className="space-y-4">

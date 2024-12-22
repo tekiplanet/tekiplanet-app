@@ -8,6 +8,7 @@ use App\Models\BusinessInvoicePayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class BusinessCustomerController extends Controller
 {
@@ -69,19 +70,12 @@ class BusinessCustomerController extends Controller
     public function store(Request $request)
     {
         try {
-            \Log::info('Creating customer with data:', $request->all());
-
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'nullable|email|max:255',
-                'phone' => 'nullable|string|max:20',
-                'address' => 'nullable|string|max:255',
-                'city' => 'required|string|max:100',
-                'state' => 'required|string|max:100',
-                'country' => 'required|string|max:100',
+                'name' => 'required|string|min:2',
+                'email' => 'required|email',
+                'phone' => 'required|string|min:10',
                 'currency' => 'required|string|size:3',
-                'tags' => 'nullable|array',
-                'notes' => 'nullable|string'
+                'address' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
@@ -91,39 +85,24 @@ class BusinessCustomerController extends Controller
                 ], 422);
             }
 
-            // Get the business profile ID
             $businessProfile = BusinessProfile::where('user_id', Auth::id())->first();
-
-            if (!$businessProfile) {
-                return response()->json([
-                    'message' => 'Business profile not found'
-                ], 404);
-            }
 
             $customer = BusinessCustomer::create([
                 'business_id' => $businessProfile->id,
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'address' => $request->address,
-                'city' => $request->city,
-                'state' => $request->state,
-                'country' => $request->country,
                 'currency' => $request->currency,
-                'tags' => $request->tags,
-                'notes' => $request->notes,
-                'status' => 'active'
+                'address' => $request->address,
             ]);
-
-            \Log::info('Customer created successfully:', $customer->toArray());
 
             return response()->json([
                 'message' => 'Customer created successfully',
-                'customer' => $customer
-            ], 201);
+                'data' => $customer
+            ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error creating customer:', [
+            Log::error('Error creating customer:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -278,6 +257,38 @@ class BusinessCustomerController extends Controller
                 'message' => 'Failed to delete customer',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function search(Request $request)
+    {
+        try {
+            $search = $request->input('search');
+            
+            if (strlen($search) < 3) {
+                return response()->json([]);
+            }
+
+            $customers = BusinessCustomer::where('business_id', $request->user()->businessProfile->id)
+                ->where(function($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                })
+                ->select('id', 'name', 'email', 'phone', 'currency')
+                ->orderBy('name')
+                ->limit(10)
+                ->get();
+
+            return response()->json($customers->toArray());
+
+        } catch (\Exception $e) {
+            Log::error('Error searching customers:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([]);
         }
     }
 } 
