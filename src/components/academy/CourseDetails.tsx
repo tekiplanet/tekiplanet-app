@@ -86,61 +86,75 @@ export default function CourseDetails() {
   const renderCurriculum = () => {
     if (!curriculum || curriculum.length === 0) {
       return (
-        <div className="text-center text-muted-foreground">
-          No curriculum available for this course.
+        <div className="text-center py-12">
+          <div className="bg-muted/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <p className="text-muted-foreground font-medium">No curriculum available yet</p>
+          <p className="text-sm text-muted-foreground/70">Check back soon for updates</p>
         </div>
       );
     }
 
     return (
-      <div className="space-y-4">
-        <div className="space-y-4">
-          {curriculum.map((module, moduleIndex) => (
-            <div key={module.id} className="border rounded-lg p-4">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="text-lg font-semibold">
-                  Module {moduleIndex + 1}: {module.title}
-                </h4>
-                <span className="text-sm text-muted-foreground">
-                  {module.topics?.length || 0} Topics
-                </span>
+      <div className="space-y-6">
+        {curriculum.map((module, moduleIndex) => (
+          <div key={module.id} className="group">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-sm font-semibold text-primary">{moduleIndex + 1}</span>
               </div>
-              
-              {module.topics && module.topics.length > 0 && (
-                <div className="space-y-2">
-                  {module.topics.map((topic, topicIndex) => (
-                    <div 
-                      key={topic.id} 
-                      className="bg-secondary/50 p-3 rounded-md"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">
-                          Topic {topicIndex + 1}: {topic.title}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {topic.lessons?.length || 0} Lessons
-                        </span>
-                      </div>
-                      
-                      {topic.lessons && topic.lessons.length > 0 && (
-                        <ul className="pl-4 mt-2 space-y-1 text-sm">
-                          {topic.lessons.map((lesson, lessonIndex) => (
-                            <li 
-                              key={lesson.id} 
-                              className="list-disc list-inside"
-                            >
-                              Lesson {lessonIndex + 1}: {lesson.title}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="flex-grow">
+                <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
+                  {module.title}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {module.topics?.length || 0} Topics • {module.topics?.reduce((acc, topic) => acc + (topic.lessons?.length || 0), 0)} Lessons
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+            
+            {module.topics && module.topics.length > 0 && (
+              <div className="ml-4 pl-8 border-l border-border/50 space-y-6">
+                {module.topics.map((topic, topicIndex) => (
+                  <div key={topic.id} className="relative">
+                    <div className="absolute -left-[2.45rem] top-3 h-0.5 w-4 bg-border/50" />
+                    
+                    <Card className="bg-muted/50 hover:bg-muted/80 transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-background flex items-center justify-center">
+                            <span className="text-xs font-medium">{moduleIndex + 1}.{topicIndex + 1}</span>
+                          </div>
+                          <h4 className="font-medium">{topic.title}</h4>
+                        </div>
+                        
+                        {topic.lessons && topic.lessons.length > 0 && (
+                          <div className="space-y-2 ml-9">
+                            {topic.lessons.map((lesson, lessonIndex) => (
+                              <div 
+                                key={lesson.id}
+                                className="flex items-center gap-3 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors"
+                              >
+                                <div className="flex items-center gap-2 flex-1">
+                                  <PlayCircle className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">{lesson.title}</span>
+                                </div>
+                                <Badge variant="secondary" className="text-xs">
+                                  {lesson.duration || '10'} mins
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };
@@ -284,7 +298,7 @@ export default function CourseDetails() {
         <div className="container mx-auto px-0 md:px-4">
           <div className="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-8 pb-8 md:py-12">
             {/* Image Container */}
-            <div className="relative aspect-video md:aspect-[16/9] w-full md:rounded-2xl md:overflow-hidden group">
+            <div className="relative aspect-video md:aspect-[16/9] w-full rounded-xl overflow-hidden group">
               <div className="relative h-full">
                 <img 
                   src={course?.image_url || '/placeholder-course.jpg'} 
