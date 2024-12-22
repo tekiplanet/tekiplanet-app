@@ -432,74 +432,134 @@ const ExamSchedule: React.FC<ExamScheduleProps> = ({
     // Prepare notification badge
     const hasUpcomingExams = upcomingExamsCount > 0;
 
+    // Loading state
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center h-full">
-                <Spinner />
+            <div className="flex flex-col items-center justify-center py-12">
+                <div className="w-12 h-12 rounded-full border-4 border-primary/10 border-l-primary animate-spin" />
+                <p className="text-sm text-muted-foreground mt-4">Loading exams...</p>
             </div>
         );
     }
 
+    // Error state
     if (error) {
         return (
-            <div className="text-red-500 text-center">
-                {error}
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-lg font-semibold">Failed to Load Exams</h3>
+                <p className="text-sm text-muted-foreground mt-1">{error}</p>
             </div>
         );
     }
 
+    // Empty state
     if (exams.length === 0) {
         return (
-            <div className="text-center text-gray-500">
-                No exams found for this course
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold">No Exams Scheduled</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Check back later for upcoming exams
+                </p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Upcoming Exams ({upcomingExamsCount})</h2>
+        <div className="space-y-6">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                    <h2 className="text-xl font-semibold">Course Exams</h2>
+                    <p className="text-sm text-muted-foreground">
+                        {upcomingExamsCount > 0 
+                            ? `You have ${upcomingExamsCount} upcoming exam${upcomingExamsCount > 1 ? 's' : ''}`
+                            : 'No upcoming exams at the moment'}
+                    </p>
+                </div>
                 {hasUpcomingExams && (
-                    <Badge variant="outline" className="text-xs">
-                        {upcomingExamsCount} upcoming
+                    <Badge variant="secondary" className="bg-primary text-primary-foreground">
+                        {upcomingExamsCount} Upcoming
                     </Badge>
                 )}
             </div>
 
+            {/* Exams Grid */}
             <div className="grid gap-4">
                 {exams.map((exam) => (
-                    <Card key={exam.id}>
-                        <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                                <div className="space-y-3">
-                                    <div>
-                                        <h3 className="font-medium">{exam.title}</h3>
-                                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                                            <Calendar className="h-4 w-4" />
-                                            <span>{exam.date ? format(exam.date, 'MMM dd, yyyy') : 'Not scheduled'}</span>
-                                            <Clock className="h-4 w-4 ml-2" />
-                                            <span>{exam.duration}</span>
+                    <Card 
+                        key={exam.id}
+                        className={`group overflow-hidden transition-all duration-200 hover:shadow-md ${
+                            exam.userExamStatus === 'not_started' ? 'bg-primary/5' : ''
+                        } border-none shadow-sm`}
+                    >
+                        <CardContent className="p-4 md:p-6">
+                            <div className="flex flex-col gap-4">
+                                {/* Title and Participate Button */}
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="space-y-1 flex-1 min-w-0">
+                                        <h3 className="font-medium text-base md:text-lg truncate group-hover:text-primary transition-colors">
+                                            {exam.title}
+                                        </h3>
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar className="h-3.5 w-3.5" />
+                                                <span>{exam.date ? format(exam.date, 'MMM dd, yyyy') : 'Not scheduled'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Clock className="h-3.5 w-3.5" />
+                                                <span>{exam.duration}</span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap gap-2">
+                                    {exam.userExamStatus === 'not_started' && (
+                                        <Button 
+                                            variant="secondary"
+                                            size="sm" 
+                                            className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground"
+                                            onClick={() => handleParticipate(exam.id)}
+                                            disabled={participatingExamId === exam.id}
+                                        >
+                                            {participatingExamId === exam.id ? (
+                                                <>
+                                                    <Timer className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                                                    Starting...
+                                                </>
+                                            ) : (
+                                                'Participate'
+                                            )}
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {/* Topics */}
+                                {exam.topics && exam.topics.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5">
                                         {exam.topics.map((topic, index) => (
-                                            <Badge key={index} variant="outline" className="text-xs">
+                                            <Badge 
+                                                key={index} 
+                                                variant="outline" 
+                                                className="text-[10px] md:text-xs border-primary/20 text-primary"
+                                            >
                                                 {topic}
                                             </Badge>
                                         ))}
                                     </div>
+                                )}
 
+                                {/* Status and Score */}
+                                <div className="flex flex-wrap items-center gap-2">
                                     <Badge 
-                                        className={
-                                            exam.userExamStatus === 'missed' ? 'bg-destructive text-white' :
-                                            exam.userExamStatus === 'upcoming' ? 'bg-blue-500 text-white' :
-                                            exam.userExamStatus === 'not_started' ? 'bg-primary text-white' :
-                                            exam.userExamStatus === 'completed' ? 'bg-green-500 text-white' :
-                                            exam.userExamStatus === 'in_progress' ? 'bg-yellow-500 text-white' :
-                                            'bg-gray-500 text-white'
-                                        }
+                                        className={`capitalize text-[10px] md:text-xs ${
+                                            exam.userExamStatus === 'missed' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                                            exam.userExamStatus === 'upcoming' ? 'bg-blue-500/10 text-blue-700 border-blue-200' :
+                                            exam.userExamStatus === 'not_started' ? 'bg-primary/10 text-primary border-primary/20' :
+                                            exam.userExamStatus === 'completed' ? 'bg-green-500/10 text-green-700 border-green-200' :
+                                            exam.userExamStatus === 'in_progress' ? 'bg-yellow-500/10 text-yellow-700 border-yellow-200' :
+                                            'bg-muted/50 text-muted-foreground border-muted'
+                                        }`}
                                     >
                                         {formatStatusText(exam.userExamStatus)}
                                     </Badge>
@@ -508,40 +568,22 @@ const ExamSchedule: React.FC<ExamScheduleProps> = ({
                                     (exam.userExamStatus === 'completed' || exam.userExamStatus === 'in_progress') && 
                                     exam.attempts && 
                                     exam.attempts > 0) && (
-                                        <div className="text-sm">
+                                        <div className="text-xs md:text-sm">
                                             {getExamScoreDisplay(exam).score !== "" && (
-                                                <div className={`text-sm ${getExamScoreDisplay(exam).color}`}>
+                                                <Badge 
+                                                    variant="outline" 
+                                                    className={`${getExamScoreDisplay(exam).color} border-current/20 bg-current/5`}
+                                                >
                                                     Score: {getExamScoreDisplay(exam).score}
-                                                </div>
+                                                </Badge>
                                             )}
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Only show participate button if not started */}
-                                {exam.userExamStatus === 'not_started' && (
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="shrink-0"
-                                        onClick={() => handleParticipate(exam.id)}
-                                        disabled={participatingExamId === exam.id}
-                                    >
-                                        {participatingExamId === exam.id ? 'Starting...' : 'Participate'}
-                                    </Button>
-                                )}
                             </div>
                         </CardContent>
                     </Card>
                 ))}
-
-                {exams.length === 0 && (
-                    <Card>
-                        <CardContent className="p-8 text-center text-muted-foreground">
-                            No upcoming exams scheduled
-                        </CardContent>
-                    </Card>
-                )}
             </div>
         </div>
     );
