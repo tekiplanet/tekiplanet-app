@@ -69,9 +69,9 @@ export default function TransactionList() {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="space-y-4">
-        {/* Search */}
-        <div className="relative">
+      <div className="flex flex-wrap gap-4">
+        {/* Search - Flex grow to take available space */}
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search transactions..." 
@@ -82,10 +82,13 @@ export default function TransactionList() {
         </div>
 
         {/* Date Filter */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-[200px]">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="justify-start text-left font-normal">
+              <Button 
+                variant="outline" 
+                className="justify-start text-left font-normal w-full"
+              >
                 <Calendar className="mr-2 h-4 w-4" />
                 {dateRange?.from ? (
                   dateRange.to ? (
@@ -101,13 +104,17 @@ export default function TransactionList() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent 
+              className="w-auto p-0" 
+              align="end"
+              side="bottom"
+            >
               <CalendarComponent
                 initialFocus
                 mode="range"
                 selected={dateRange}
                 onSelect={setDateRange}
-                numberOfMonths={1}
+                numberOfMonths={window.innerWidth >= 768 ? 2 : 1}
               />
             </PopoverContent>
           </Popover>
