@@ -13,7 +13,7 @@ class ProfessionalController extends Controller
     {
         try {
             $user = Auth::user();
-            $professional = Professional::where('user_id', $user->id)->first();
+            $professional = Professional::with('user')->where('user_id', $user->id)->first();
 
             return response()->json([
                 'has_profile' => !is_null($professional),

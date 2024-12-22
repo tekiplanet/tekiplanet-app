@@ -174,7 +174,7 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
       >
         {/* Welcome Section */}
         <motion.div variants={item} className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Welcome back, {profileData?.profile?.title}!</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Welcome back, {profileData?.profile?.user?.first_name || 'Professional'}!</h1>
           <p className="text-muted-foreground">
             Here's what's happening with your business today.
           </p>
