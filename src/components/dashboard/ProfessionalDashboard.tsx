@@ -15,7 +15,7 @@ import {
   ArrowUpRight,
   Users,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
@@ -40,41 +40,6 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-const quickActions = [
-  {
-    title: "View Hustles",
-    description: "Browse available hustles",
-    icon: Briefcase,
-    color: "from-blue-600 to-blue-400",
-    link: "/dashboard/hustles",
-    stat: "Explore opportunities"
-  },
-  {
-    title: "Book Workstation",
-    description: "Reserve your space",
-    icon: LayoutDashboard,
-    color: "from-purple-600 to-purple-400",
-    link: "/dashboard/workstation/plans",
-    stat: "3 available"
-  },
-  {
-    title: "Update Availability",
-    description: "Manage your schedule",
-    icon: Clock,
-    color: "from-green-600 to-green-400",
-    link: "/dashboard/settings",
-    stat: "Manage status"
-  },
-  {
-    title: "Manage Earnings",
-    description: "Track your income",
-    icon: CreditCard,
-    color: "from-orange-600 to-orange-400",
-    link: "/dashboard/wallet",
-    stat: "View wallet"
-  }
-];
-
 interface DashboardProps {
   isLoading?: boolean;
 }
@@ -94,6 +59,47 @@ const ProfessionalDashboard: React.FC<DashboardProps> = ({ isLoading = false }) 
     enabled: !!profileData?.has_profile && profileData?.profile?.status === 'active',
     retry: false
   });
+
+  const quickActions = useMemo(() => [
+    {
+      title: "View Hustles",
+      description: "Browse available hustles",
+      icon: Briefcase,
+      color: "from-blue-600 to-blue-400",
+      link: "/dashboard/hustles",
+      stat: "Explore opportunities"
+    },
+    {
+      title: dashboardData?.workstation?.has_active_subscription ? "Manage Workstation" : "Book Workstation",
+      description: dashboardData?.workstation?.has_active_subscription 
+        ? "View your workstation details" 
+        : "Reserve your space",
+      icon: LayoutDashboard,
+      color: "from-purple-600 to-purple-400",
+      link: dashboardData?.workstation?.has_active_subscription 
+        ? "/dashboard/workstation/subscription" 
+        : "/dashboard/workstation/plans",
+      stat: dashboardData?.workstation?.has_active_subscription
+        ? `Plan: ${dashboardData.workstation.subscription?.plan_name}`
+        : "View available plans"
+    },
+    {
+      title: "Update Availability",
+      description: "Manage your schedule",
+      icon: Clock,
+      color: "from-green-600 to-green-400",
+      link: "/dashboard/settings",
+      stat: "Manage status"
+    },
+    {
+      title: "Manage Earnings",
+      description: "Track your income",
+      icon: CreditCard,
+      color: "from-orange-600 to-orange-400",
+      link: "/dashboard/wallet",
+      stat: "View wallet"
+    }
+  ], [dashboardData?.workstation]);
 
   if (isLoading || profileLoading || dashboardLoading) {
     return (

@@ -6,6 +6,7 @@ use App\Models\Professional;
 use App\Models\Hustle;
 use App\Models\HustlePayment;
 use App\Models\WorkstationPayment;
+use App\Models\WorkstationSubscription;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,6 +58,14 @@ class ProfessionalDashboardController extends Controller
             // Calculate success rate
             $successRate = $totalHustles > 0 ? ($completedHustles / $totalHustles) * 100 : 0;
 
+            // Get active workstation subscription
+            $activeSubscription = WorkstationSubscription::with('plan')
+                ->where('user_id', Auth::id())
+                ->where('status', 'active')
+                ->where('end_date', '>', now())
+                ->latest()
+                ->first();
+
             // Get recent activities (last 20)
             $recentActivities = $this->getRecentActivities($professional->id);
 
@@ -67,6 +76,13 @@ class ProfessionalDashboardController extends Controller
                     'total_revenue' => $totalRevenue,
                     'completed_hustles' => $completedHustles,
                     'success_rate' => round($successRate, 2),
+                ],
+                'workstation' => [
+                    'has_active_subscription' => !is_null($activeSubscription),
+                    'subscription' => $activeSubscription ? [
+                        'plan_name' => $activeSubscription->plan->name,
+                        'end_date' => $activeSubscription->end_date->format('M d, Y')
+                    ] : null
                 ],
                 'recent_activities' => $recentActivities
             ]);

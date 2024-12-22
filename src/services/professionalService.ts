@@ -33,6 +33,13 @@ export interface DashboardData {
     completed_hustles: number;
     success_rate: number;
   };
+  workstation: {
+    has_active_subscription: boolean;
+    subscription: {
+      plan_name: string;
+      end_date: string;
+    } | null;
+  };
   recent_activities: Array<{
     type: 'hustle' | 'payment' | 'workstation';
     title: string;
