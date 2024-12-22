@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import axios from '@/lib/axios';
+import { apiClient } from '@/lib/axios';
 import { settingsService } from '@/services/settingsService';
 import { toast } from 'sonner';
 import { storeService } from '@/services/storeService';
@@ -57,7 +57,7 @@ export default function OrderTracking() {
     queryKey: ['order-tracking', orderId],
     queryFn: async () => {
       try {
-        const response = await axios.get(`/orders/${orderId}/tracking`);
+        const response = await apiClient.get(`/orders/${orderId}/tracking`);
         return response.data;
       } catch (error: any) {
         throw new Error(error.response?.data?.message || 'Failed to fetch tracking information');
