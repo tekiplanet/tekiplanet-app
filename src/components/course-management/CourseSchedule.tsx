@@ -263,18 +263,22 @@ export default function CourseSchedule({ courseId }: { courseId?: string }) {
       {/* Calendar and Schedule Grid */}
       <div className="grid md:grid-cols-[300px] gap-6 md:ml-auto">
         {/* Calendar - now sticky on desktop */}
-        <Card className="order-1 md:order-2 border-none shadow-sm">
+        <Card className="order-1 md:order-2 border-none shadow-sm w-full max-w-full overflow-hidden">
           <CardContent className="p-3">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              month={calendarMonth}
-              onMonthChange={setCalendarMonth}
-              onSelect={setSelectedDate}
-              modifiers={calendarModifiers}
-              modifiersStyles={calendarModifiersStyles}
-              className="rounded-md mx-auto"
-            />
+            <div className="overflow-x-auto">
+              <div className="w-full max-w-[280px] mx-auto">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  month={calendarMonth}
+                  onMonthChange={setCalendarMonth}
+                  onSelect={setSelectedDate}
+                  modifiers={calendarModifiers}
+                  modifiersStyles={calendarModifiersStyles}
+                  className="rounded-md"
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
