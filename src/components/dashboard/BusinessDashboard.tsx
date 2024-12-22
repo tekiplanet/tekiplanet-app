@@ -49,7 +49,7 @@ import { useNavigate } from 'react-router-dom';
 import TransactionList from './TransactionList';
 import { Input } from "@/components/ui/input";
 import { ChevronRight, Search } from "lucide-react";
-import AddCustomerModal from '../business/AddCustomerModal';
+import CustomerFormDialog from '../business/CustomerFormDialog';
 
 // Helper function for formatting currency
 const formatAmount = (amount: number) => {
@@ -231,7 +231,7 @@ const ActivityItem = ({
 export default function BusinessDashboard() {
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
   const [isCustomerSearchOpen, setIsCustomerSearchOpen] = useState(false);
-  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
   const navigate = useNavigate();
 
@@ -322,7 +322,7 @@ export default function BusinessDashboard() {
               title="Add Customer"
               onClick={() => {
                 setIsQuickActionOpen(false);
-                setIsAddCustomerOpen(true);
+                setShowCustomerForm(true);
               }}
             />
             <QuickAction
@@ -394,10 +394,11 @@ export default function BusinessDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Customer Modal */}
-      <AddCustomerModal 
-        open={isAddCustomerOpen} 
-        onOpenChange={setIsAddCustomerOpen}
+      {/* Customer Form Dialog */}
+      <CustomerFormDialog
+        open={showCustomerForm}
+        onOpenChange={setShowCustomerForm}
+        mode="create"
       />
 
       {/* Metrics Section */}
