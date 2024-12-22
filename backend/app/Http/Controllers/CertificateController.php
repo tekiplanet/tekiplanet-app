@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\CourseCertificate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\Log;
 
 class CertificateController extends Controller
 {
@@ -81,17 +84,46 @@ class CertificateController extends Controller
     public function download(Request $request, string $id)
     {
         try {
+            // Fetch certificate with relationships
             $certificate = CourseCertificate::where('user_id', Auth::id())
-                ->with(['course', 'user'])
+                ->with(['course', 'user', 'course.instructor'])
                 ->findOrFail($id);
 
-            // TODO: Generate PDF certificate
-            return response()->json([
-                'message' => 'Certificate download not implemented yet'
-            ], 501);
+            // Generate verification URL
+            $verificationUrl = url("/verify/certificate/{$certificate->credential_id}");
+
+            // Generate QR code as SVG
+            $qrCode = QrCode::size(100)
+                ->style('square')
+                ->eye('square')
+                ->format('svg')
+                ->generate($verificationUrl);
+
+            // Generate PDF
+            $pdf = PDF::loadView('pdfs.certificate', [
+                'certificate' => $certificate,
+                'user' => $certificate->user,
+                'course' => $certificate->course,
+                'instructor' => $certificate->course->instructor,
+                'qrCode' => $qrCode,
+                'qrData' => $verificationUrl
+            ]);
+
+            // Set paper size and orientation
+            $pdf->setPaper('A4', 'landscape');
+
+            // Return the PDF for download
+            return $pdf->download("certificate-{$certificate->credential_id}.pdf");
+
         } catch (\Exception $e) {
+            Log::error('Certificate download failed', [
+                'error' => $e->getMessage(),
+                'certificate_id' => $id,
+                'user_id' => Auth::id()
+            ]);
+
             return response()->json([
-                'message' => 'Failed to download certificate',
+                'message' => 'Failed to generate certificate',
                 'error' => $e->getMessage()
             ], 500);
         }
