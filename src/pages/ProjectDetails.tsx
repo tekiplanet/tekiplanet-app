@@ -32,7 +32,8 @@ import {
   Image,
   XCircle,
   Loader2,
-  Wallet
+  Wallet,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -531,30 +532,47 @@ function ProjectDetails() {
               </div>
             </TabsContent>
 
-            <TabsContent value="team" className="m-0 p-4 space-y-4">
+            <TabsContent value="team" className="m-0 p-4 space-y-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-primary" />
+                  </div>
+                  <h2 className="text-base font-semibold">Project Team</h2>
+                </div>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {project.team_members.map((member) => (
-                  <Card key={member.id} className="bg-card hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-4">
-                        {member.user.avatar ? (
-                          <img 
-                            src={member.user.avatar} 
-                            alt={member.user.name} 
-                            className="h-12 w-12 rounded-full object-cover ring-2 ring-background" 
-                          />
-                        ) : (
-                          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold ring-2 ring-background">
-                            {member.user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  <motion.div
+                    key={member.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <Card className="bg-card border-none hover:shadow-lg transition-all duration-300">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-4">
+                          {member.user.avatar ? (
+                            <img 
+                              src={member.user.avatar} 
+                              alt={member.user.name} 
+                              className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/10" 
+                            />
+                          ) : (
+                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold ring-2 ring-primary/5">
+                              {member.user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate">{member.user.name}</h3>
+                            <Badge variant="outline" className="mt-1 bg-primary/5 text-primary border-0">
+                              {member.role}
+                            </Badge>
                           </div>
-                        )}
-                        <div>
-                          <h3 className="font-semibold">{member.user.name}</h3>
-                          <p className="text-sm text-muted-foreground">{member.role}</p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </TabsContent>
