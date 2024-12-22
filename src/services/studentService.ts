@@ -21,8 +21,8 @@ export interface StudentDashboardData {
     nextClass: string | null;
     image: string;
     instructor: string;
-    totalLessons: number;
-    completedLessons: number;
+    duration: number;
+    level: string;
   }>;
   has_enrollments: boolean;
 }

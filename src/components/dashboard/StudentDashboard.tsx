@@ -301,7 +301,7 @@ export default function StudentDashboard() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-muted-foreground">
-                          {course.completedLessons}/{course.totalLessons} Lessons
+                          {course.duration}h • {course.level}
                         </span>
                         <Button 
                           size="sm" 

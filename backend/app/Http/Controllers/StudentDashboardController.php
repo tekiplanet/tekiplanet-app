@@ -42,12 +42,12 @@ class StudentDashboardController extends Controller
                         'progress' => $enrollment->progress,
                         'nextClass' => $nextClass ? $this->formatNextClass($nextClass) : null,
                         'image' => $enrollment->course->image_url,
-                        'instructor' => $enrollment->course->instructor?->name ?? 'Unknown Instructor',
-                        'totalLessons' => $enrollment->course->modules->sum('lessons_count'),
-                        'completedLessons' => round(($enrollment->progress / 100) * $enrollment->course->modules->sum('lessons_count'))
+                        'instructor' => $enrollment->course->instructor?->full_name ?? 'Unknown Instructor',
+                        'duration' => $enrollment->course->duration_hours,
+                        'level' => $enrollment->course->level
                     ];
                 })
-                : Course::inRandomOrder()->take(5)->get()->map(function ($course) {
+                : Course::with('instructor')->inRandomOrder()->take(5)->get()->map(function ($course) {
                     $nextClass = $this->getNextClassSchedule($course);
                     return [
                         'id' => $course->id,
@@ -55,9 +55,9 @@ class StudentDashboardController extends Controller
                         'progress' => 0,
                         'nextClass' => $nextClass ? $this->formatNextClass($nextClass) : null,
                         'image' => $course->image_url,
-                        'instructor' => $course->instructor?->name ?? 'Unknown Instructor',
-                        'totalLessons' => $course->modules->sum('lessons_count'),
-                        'completedLessons' => 0
+                        'instructor' => $course->instructor?->full_name ?? 'Unknown Instructor',
+                        'duration' => $course->duration_hours,
+                        'level' => $course->level
                     ];
                 });
 
