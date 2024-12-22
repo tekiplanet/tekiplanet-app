@@ -95,58 +95,71 @@ export default function BusinessActivities() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
+      <div className="space-y-4">
+        {/* Search - Full width */}
+        <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search activities..." 
-            className="pl-9"
+            className="pl-9 w-full"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Select
-          value={activityType}
-          onValueChange={setActivityType}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Activities</SelectItem>
-            <SelectItem value="customer_added">New Customers</SelectItem>
-            <SelectItem value="invoice_created">Invoices</SelectItem>
-            <SelectItem value="payment_received">Payments</SelectItem>
-          </SelectContent>
-        </Select>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[180px] justify-start text-left font-normal">
-              <Calendar className="mr-2 h-4 w-4" />
-              {dateRange?.from ? (
-                dateRange.to ? (
-                  <>
-                    {format(dateRange.from, "LLL dd")} -{" "}
-                    {format(dateRange.to, "LLL dd")}
-                  </>
+        
+        {/* Filter and Date - Same row */}
+        <div className="flex flex-nowrap overflow-x-auto gap-4">
+          <Select
+            value={activityType}
+            onValueChange={setActivityType}
+            className="min-w-[140px]"
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Activities</SelectItem>
+              <SelectItem value="customer_added">New Customers</SelectItem>
+              <SelectItem value="invoice_created">Invoices</SelectItem>
+              <SelectItem value="payment_received">Payments</SelectItem>
+            </SelectContent>
+          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="min-w-[140px] justify-start text-left font-normal whitespace-nowrap"
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "LLL dd")} -{" "}
+                      {format(dateRange.to, "LLL dd")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "LLL dd")
+                  )
                 ) : (
-                  format(dateRange.from, "LLL dd")
-                )
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <CalendarComponent
-              initialFocus
-              mode="range"
-              selected={dateRange}
-              onSelect={setDateRange}
-              numberOfMonths={2}
-            />
-          </PopoverContent>
-        </Popover>
+                  <span>Pick a date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-auto p-0" 
+              align="start"
+              side="bottom"
+            >
+              <CalendarComponent
+                initialFocus
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={window.innerWidth >= 768 ? 2 : 1}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Activities List */}
