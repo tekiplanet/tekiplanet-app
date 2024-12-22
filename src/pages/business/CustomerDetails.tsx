@@ -39,7 +39,8 @@ import {
   Trash,
   Phone,
   MapPin,
-  CircleDollarSign
+  CircleDollarSign,
+  Wallet
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getStatusBadgeProps } from "@/lib/format";
@@ -463,48 +464,73 @@ export default function CustomerDetails() {
         </div>
       </div>
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <Card className="col-span-2 md:col-span-1">
-          <CardContent className="pt-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">Total Spent</span>
-              <span className="text-2xl font-bold">
-                {formatCurrency(customer.total_spent, customer.currency)}
-              </span>
+      {/* Customer Overview */}
+      <div className="bg-card rounded-lg border p-6 space-y-6">
+        {/* Header with Status */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold">Customer Overview</h3>
+            <p className="text-sm text-muted-foreground">
+              Customer since {new Date(customer.created_at).toLocaleDateString()}
+            </p>
+          </div>
+          <Badge 
+            variant={customer.status === 'active' ? 'success' : 'secondary'}
+            className="capitalize px-3 py-1"
+          >
+            {customer.status}
+          </Badge>
+        </div>
+
+        {/* Stats */}
+        <div className="flex flex-col sm:flex-row gap-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Wallet className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Spent</p>
+                <p className="text-lg font-semibold">
+                  {formatCurrency(customer.total_spent || 0)}
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardContent className="pt-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">Status</span>
-              <div className="flex items-center gap-2">
-                <Badge variant={customer.status === 'active' ? 'success' : 'secondary'}>
-                  {customer.status}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Calendar className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Last Order</p>
+                <p className="text-lg font-semibold">
+                  {customer.last_order_date 
+                    ? new Date(customer.last_order_date).toLocaleDateString() 
+                    : 'No orders yet'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tags */}
+        {customer.tags?.length > 0 && (
+          <div className="pt-4 border-t">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-muted-foreground">Tags:</span>
+              {customer.tags.map((tag) => (
+                <Badge 
+                  key={tag} 
+                  variant="secondary" 
+                  className="px-2 py-0.5 text-xs"
+                >
+                  {tag}
                 </Badge>
-              </div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardContent className="pt-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">Tags</span>
-              <div className="flex flex-wrap gap-1">
-                {customer.tags?.length ? (
-                  customer.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-muted-foreground text-sm">No tags</span>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </div>
 
       {/* Contact Information */}
