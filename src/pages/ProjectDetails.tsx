@@ -64,6 +64,13 @@ function getFileIcon(fileType: string) {
   }
 }
 
+function formatStatus(status: string) {
+  // Replace underscores with spaces and convert to sentence case
+  return status.replace(/_/g, ' ').replace(/\w\S*/g, (txt) => {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
+
 function getStatusColor(status: string) {
   switch(status.toLowerCase()) {
     case 'completed': return 'bg-green-100 text-green-800';
@@ -90,6 +97,14 @@ function formatCurrency(amount: string | number) {
     style: 'currency',
     currency: 'NGN'
   }).format(numericAmount);
+}
+
+function getDaysBetweenDates(startDate: string, endDate: string) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
 }
 
 // Components
@@ -360,7 +375,7 @@ function ProjectDetails() {
                       </div>
                       <div className="space-y-0.5">
                         <p className="text-xs text-muted-foreground">Timeline</p>
-                        <p className="text-base font-semibold">{project.progress}%</p>
+                        <p className="text-base font-semibold">{getDaysBetweenDates(project.start_date, project.end_date)} days</p>
                       </div>
                     </div>
                   </CardContent>
@@ -453,7 +468,12 @@ function ProjectDetails() {
 
             <TabsContent value="stages" className="m-0 p-4 space-y-6">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold">Project Stages</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <ListTodo className="h-4 w-4 text-primary" />
+                  </div>
+                  <h2 className="text-base font-semibold">Project Stages</h2>
+                </div>
               </div>
               
               <div className="relative">
@@ -464,42 +484,42 @@ function ProjectDetails() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <div className="flex items-start mb-8 relative">
+                    <div className="flex items-start mb-6 relative">
                       {/* Timeline Line */}
                       {index !== project.stages.length - 1 && (
-                        <div className="absolute left-6 top-10 bottom-0 w-0.5 bg-border" />
+                        <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-border" />
                       )}
                       
                       {/* Stage Content */}
-                      <div className="flex-1 ml-12">
-                        <Card className="relative hover:shadow-md transition-shadow">
-                          <CardHeader className="pb-2">
-                            <div className="absolute -left-12 top-4 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                              {stage.status === 'completed' ? (
-                                <CheckCircle className="h-4 w-4 text-primary" />
-                              ) : (
-                                <Circle className="h-4 w-4 text-primary" />
-                              )}
-                            </div>
-                            <div className="flex items-start justify-between">
+                      <div className="flex-1 ml-8">
+                        <Card className="bg-card border-none relative">
+                          <div className="absolute -left-8 top-4 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                            {stage.status === 'completed' ? (
+                              <CheckCircle className="h-3 w-3 text-primary" />
+                            ) : (
+                              <Circle className="h-3 w-3 text-primary" />
+                            )}
+                          </div>
+                          <CardContent className="p-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                               <div>
-                                <CardTitle className="text-base">{stage.name}</CardTitle>
-                                <CardDescription>{stage.description}</CardDescription>
+                                <h3 className="text-sm font-semibold">{stage.name}</h3>
+                                <p className="text-sm text-muted-foreground mt-0.5">{stage.description}</p>
                               </div>
-                              <Badge variant="outline" className={getStatusColor(stage.status)}>
-                                {stage.status}
+                              <Badge variant="outline" className={`${getStatusColor(stage.status)} shrink-0`}>
+                                {formatStatus(stage.status)}
                               </Badge>
                             </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-1" />
-                                Start: {stage.start_date}
+                            <div className="flex flex-col sm:flex-row gap-3 mt-3 pt-3 border-t text-xs">
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="text-muted-foreground">Start:</span>
+                                <span className="font-medium">{stage.start_date}</span>
                               </div>
-                              <div className="flex items-center">
-                                <Timer className="h-4 w-4 mr-1" />
-                                End: {stage.end_date || 'Ongoing'}
+                              <div className="flex items-center gap-1.5">
+                                <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="text-muted-foreground">End:</span>
+                                <span className="font-medium">{stage.end_date || 'Ongoing'}</span>
                               </div>
                             </div>
                           </CardContent>
