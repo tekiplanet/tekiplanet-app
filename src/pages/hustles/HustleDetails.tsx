@@ -297,17 +297,17 @@ const HustleDetails = () => {
         </motion.div>
 
         {/* Stats Grid */}
-        <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent group-hover:from-primary/10 transition-colors" />
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg group-hover:scale-110 transition-transform">
+            <CardContent className="p-4 h-full">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-primary/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
                   <Timer className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Time Left</p>
-                  <p className="font-semibold">{daysRemaining} days</p>
+                  <p className="font-semibold break-words">{daysRemaining} days</p>
                 </div>
               </div>
               <Progress 
@@ -319,14 +319,14 @@ const HustleDetails = () => {
 
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent group-hover:from-blue-500/10 transition-colors" />
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-lg group-hover:scale-110 transition-transform">
+            <CardContent className="p-4 h-full">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-blue-500/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
                   <Calendar className="h-5 w-5 text-blue-500" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Deadline</p>
-                  <p className="font-semibold">{new Date(hustle.deadline).toLocaleDateString()}</p>
+                  <p className="font-semibold break-words">{new Date(hustle.deadline).toLocaleDateString()}</p>
                 </div>
               </div>
             </CardContent>
@@ -334,14 +334,14 @@ const HustleDetails = () => {
 
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent group-hover:from-green-500/10 transition-colors" />
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 rounded-lg group-hover:scale-110 transition-transform">
+            <CardContent className="p-4 h-full">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-green-500/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
                   <DollarSign className="h-5 w-5 text-green-500" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Budget</p>
-                  <p className="font-semibold">{formatCurrency(hustle.budget)}</p>
+                  <p className="font-semibold break-words">{formatCurrency(hustle.budget)}</p>
                 </div>
               </div>
             </CardContent>
@@ -349,14 +349,14 @@ const HustleDetails = () => {
 
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent group-hover:from-purple-500/10 transition-colors" />
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/10 rounded-lg group-hover:scale-110 transition-transform">
+            <CardContent className="p-4 h-full">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-purple-500/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
                   <Users className="h-5 w-5 text-purple-500" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Applications</p>
-                  <p className="font-semibold">{hustle.applications_count}</p>
+                  <p className="font-semibold break-words">{hustle.applications_count}</p>
                 </div>
               </div>
             </CardContent>

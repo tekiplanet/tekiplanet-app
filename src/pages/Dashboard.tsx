@@ -507,7 +507,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
         {/* Mobile Header and Content */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Mobile Header */}
-          <header className="flex h-16 items-center gap-4 border-b bg-background px-4 md:hidden">
+          <header className="flex h-16 items-center gap-4 border-b border-border/30 bg-background/30 backdrop-blur-[12px] px-4 md:hidden">
             <div className="flex-1 flex items-center gap-3">
               {location.pathname === "/dashboard" && (
                 <DropdownMenu>
@@ -716,7 +716,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
           </div>
 
           {/* Mobile Bottom Navigation */}
-          <div className="fixed bottom-0 left-0 right-0 border-t bg-background/80 backdrop-blur-sm md:hidden">
+          <div className="fixed bottom-0 left-0 right-0 border-t border-border/40 bg-background/80 backdrop-blur-sm md:hidden">
             <div className="flex items-center justify-around h-16">
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>

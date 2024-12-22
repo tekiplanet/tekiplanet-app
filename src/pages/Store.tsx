@@ -391,7 +391,7 @@ export default function Store() {
       {/* Featured Products */}
       <section className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Featured Products</h2>
+          <h2 className="text-2xl font-bold">Top Products</h2>
           <Button variant="ghost" className="gap-2">
             View All <ChevronRight className="h-4 w-4" />
           </Button>

@@ -97,18 +97,18 @@ export default function StudentDashboard() {
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 className={cn(
-                  "p-3 rounded-xl bg-background/50 dark:bg-background/80 backdrop-blur-xl",
+                  "rounded-xl bg-background/50 dark:bg-background/80 backdrop-blur-xl",
                   "group-hover:bg-background/80 dark:group-hover:bg-background/60 transition-colors",
                   "shadow-sm dark:shadow-none relative"
                 )}
               >
-                <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20">
+                <Avatar className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl">
                   <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback className="rounded-xl">JD</AvatarFallback>
                 </Avatar>
               </motion.div>
               <div className="space-y-2 flex-1">
-                <h1 className="text-lg sm:text-2xl font-bold">Welcome back, John! ✨</h1>
+                <h1 className="text-lg sm:text-2xl font-bold">Welcome back ✨</h1>
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                   <Badge variant="outline" className="bg-background/50">
                     <Trophy className="h-3 w-3 mr-1 text-yellow-500" />

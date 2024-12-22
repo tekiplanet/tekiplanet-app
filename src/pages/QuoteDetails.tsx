@@ -172,7 +172,7 @@ function QuoteDetails() {
           </TabsTrigger>
           <TabsTrigger value="conversation" className="relative">
             <MessageCircle className="h-4 w-4 mr-2" />
-            Conversation
+            Chat
             {quote.unread_messages_count > 0 && (
               <div className="absolute -top-2 -right-2">
                 <div className="relative flex items-center justify-center">

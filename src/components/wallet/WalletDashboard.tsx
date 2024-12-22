@@ -548,7 +548,7 @@ export default function WalletDashboard() {
             <div className="flex items-center justify-between">
               <div className="min-w-0">
                 <p className="text-xs md:text-sm font-medium opacity-80 truncate">Current Balance</p>
-                <h2 className="text-xl md:text-2xl font-bold truncate">
+                <h2 className="text-lg md:text-2xl font-bold truncate">
                   {formatCurrency(user?.wallet_balance || 0, settings?.default_currency)}
                 </h2>
               </div>
@@ -563,11 +563,16 @@ export default function WalletDashboard() {
         <Card>
           <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
-              <div className="min-w-0">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">
-                  Monthly Spending
-                </p>
-                <h2 className="text-xl md:text-2xl font-bold truncate">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">
+                    Monthly Spending
+                  </p>
+                  <div className="p-1 bg-destructive/10 rounded-full shrink-0">
+                    <ArrowDownRight className="h-3 w-3 text-destructive" />
+                  </div>
+                </div>
+                <h2 className="text-sm md:text-2xl font-bold truncate mt-1">
                   {formatCurrency(transactions
                     .filter(t => {
                       const date = new Date(t.created_at);
@@ -580,9 +585,6 @@ export default function WalletDashboard() {
                     .reduce((acc, t) => acc + parseFloat(t.amount), 0), settings?.default_currency)}
                 </h2>
               </div>
-              <div className="p-2 md:p-3 bg-destructive/10 rounded-full shrink-0">
-                <ArrowDownRight className="h-4 w-4 md:h-5 md:w-5 text-destructive" />
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -591,18 +593,20 @@ export default function WalletDashboard() {
         <Card>
           <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
-              <div className="min-w-0">
-                <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">
-                  Total Funded
-                </p>
-                <h2 className="text-xl md:text-2xl font-bold truncate">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">
+                    Total Funded
+                  </p>
+                  <div className="p-1 bg-green-500/10 rounded-full shrink-0">
+                    <ArrowUpRight className="h-3 w-3 text-green-500" />
+                  </div>
+                </div>
+                <h2 className="text-sm md:text-2xl font-bold truncate mt-1">
                   {formatCurrency(transactions
                     .filter(t => t.type === 'credit' && t.status === 'completed')
                     .reduce((acc, t) => acc + parseFloat(t.amount), 0), settings?.default_currency)}
                 </h2>
-              </div>
-              <div className="p-2 md:p-3 bg-green-500/10 rounded-full shrink-0">
-                <ArrowUpRight className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
               </div>
             </div>
           </CardContent>
@@ -614,37 +618,40 @@ export default function WalletDashboard() {
         {/* Left Column - Transactions and Chart */}
         <div className="space-y-6">
           {/* On mobile, chart comes first */}
-          <Card className="border-none shadow-lg rounded-2xl lg:hidden">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-foreground flex items-center">
+          <Card className="border-none shadow-lg rounded-2xl lg:hidden bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-bold text-foreground flex items-center">
                 Financial Trends
-                <div className="ml-2 flex items-center">
-                  <TrendingUp className="w-5 h-5 text-green-600 mr-1" />
-                  <TrendingDown className="w-5 h-5 text-red-600" />
+                <div className="ml-2 flex items-center gap-1">
+                  <Badge variant="secondary" className="text-xs py-0.5">
+                    <TrendingUp className="w-3 h-3 text-green-600 mr-1" />
+                    +2.5%
+                  </Badge>
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
-              <div className="h-[250px] w-full">
+              <div className="h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid 
                       strokeDasharray="3 3" 
-                      opacity={0.2} 
+                      opacity={0.1} 
                       stroke="hsl(var(--muted-foreground))"
                     />
                     <XAxis 
                       dataKey="date" 
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                     />
                     <YAxis 
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
                     />
                     <Tooltip 
                       contentStyle={{ 
                         backgroundColor: "hsl(var(--background))", 
                         borderColor: "hsl(var(--border))",
-                        borderRadius: "0.5rem"
+                        borderRadius: "0.5rem",
+                        fontSize: "12px"
                       }}
                       labelStyle={{ color: "hsl(var(--foreground))" }}
                     />
@@ -653,7 +660,7 @@ export default function WalletDashboard() {
                       dataKey="spent" 
                       name="Spent"
                       stroke="hsl(var(--destructive))"
-                      strokeWidth={3}
+                      strokeWidth={2}
                       dot={false}
                     />
                     <Line 
@@ -661,19 +668,19 @@ export default function WalletDashboard() {
                       dataKey="funded" 
                       name="Funded"
                       stroke="hsl(var(--primary))"
-                      strokeWidth={3}
+                      strokeWidth={2}
                       dot={false}
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-4 flex justify-between text-sm text-muted-foreground">
+              <div className="mt-3 flex justify-between text-xs text-muted-foreground">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 bg-destructive rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-destructive rounded-full mr-1.5"></div>
                   Spent
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mr-1.5"></div>
                   Funded
                 </div>
               </div>
@@ -684,21 +691,21 @@ export default function WalletDashboard() {
           <Card className="border-none shadow-lg rounded-2xl">
             <CardHeader className="pb-2">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
-                <CardTitle className="text-2xl font-bold text-foreground w-full">
+                <CardTitle className="text-lg md:text-2xl font-bold text-foreground">
                   Transaction History
                 </CardTitle>
                 <div className="flex items-center space-x-2 w-full md:w-auto">
                   <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/3 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input 
                       placeholder="Search transactions" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-full bg-secondary/50 border-none"
+                      className="pl-10 w-full bg-secondary/50 border-none rounded-full"
                     />
                   </div>
                   <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-[120px] bg-secondary/50 border-none">
+                    <SelectTrigger className="w-[120px] bg-secondary/50 border-none rounded-full">
                       <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
                       <SelectValue placeholder="Filter" />
                     </SelectTrigger>
@@ -713,19 +720,27 @@ export default function WalletDashboard() {
             </CardHeader>
             <CardContent className="p-0">
               {filteredTransactions.length > 0 ? (
-                <div className="divide-y">
+                <div className="divide-y divide-border/50">
                   {displayedTransactions.map((transaction) => (
                     <div 
                       key={transaction.id} 
-                      className="flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors group cursor-pointer"
+                      className="flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors group cursor-pointer relative overflow-hidden"
                       onClick={() => navigate(`/dashboard/wallet/transactions/${transaction.id}`)}
                     >
+                      {/* Background decoration for transaction type */}
+                      <div className={`
+                        absolute inset-y-0 left-0 w-1
+                        ${transaction.type === 'credit' 
+                          ? 'bg-green-500/20' 
+                          : 'bg-red-500/20'}
+                      `} />
+                      
                       <div className="flex items-center space-x-4">
                         <div className={`
-                          w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full flex-shrink-0 flex items-center justify-center
+                          w-10 h-10 rounded-full flex items-center justify-center
                           ${transaction.type === 'credit' 
-                            ? 'bg-green-100 text-green-600' 
-                            : 'bg-red-100 text-red-600'}
+                            ? 'bg-green-100 text-green-600 dark:bg-green-500/20' 
+                            : 'bg-red-100 text-red-600 dark:bg-red-500/20'}
                         `}>
                           {transaction.type === 'credit' ? (
                             <ArrowDownRight className="w-5 h-5" />
@@ -733,33 +748,31 @@ export default function WalletDashboard() {
                             <ArrowUpRight className="w-5 h-5" />
                           )}
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">
+                        <div className="space-y-1">
+                          <p className="font-medium text-sm text-foreground line-clamp-1">
                             {transaction.description}
                           </p>
                           <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium">
-                              {formatCurrency(parseFloat(transaction.amount), settings?.default_currency)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(transaction.created_at).toLocaleString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
-                            <StatusLabel status={transaction.status} />
+                            <div className="flex items-center space-x-2">
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(transaction.created_at).toLocaleString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                              <StatusLabel status={transaction.status} />
+                            </div>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className={`
-                          font-semibold
+                          text-sm font-semibold
                           ${transaction.type === 'credit' 
-                            ? 'text-green-600' 
-                            : 'text-red-600'}
+                            ? 'text-green-600 dark:text-green-500' 
+                            : 'text-red-600 dark:text-red-500'}
                         `}>
                           {transaction.type === 'credit' ? '+' : '-'}
                           {formatCurrency(transaction.amount, settings?.default_currency)}
@@ -775,7 +788,7 @@ export default function WalletDashboard() {
                       <Filter className="w-8 h-8 text-muted-foreground" />
                     </div>
                   </div>
-                  <p className="text-lg font-medium text-muted-foreground">
+                  <p className="text-base font-medium text-muted-foreground">
                     No transactions found
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -786,11 +799,11 @@ export default function WalletDashboard() {
               
               {/* Load More/View Less Button */}
               {filteredTransactions.length > 10 && (
-                <div className="p-4 text-center">
+                <div className="p-4">
                   <Button 
                     variant="outline" 
                     onClick={toggleTransactionsVisibility}
-                    className="w-full"
+                    className="w-full rounded-full text-sm"
                   >
                     {visibleTransactions === 10 
                       ? `View All (${filteredTransactions.length})` 
@@ -991,9 +1004,9 @@ export const FundWalletModal = ({
   open: boolean; 
   onOpenChange: (open: boolean) => void;
 }) => {
-  const [amount, setAmount] = React.useState("");
-  const [paymentMethod, setPaymentMethod] = React.useState("paystack");
-  const [loading, setLoading] = React.useState(false);
+  const [amount, setAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("paystack");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handlePaystackPayment = async () => {
@@ -1011,6 +1024,9 @@ export const FundWalletModal = ({
           paymentMethod: 'paystack'
         }
       });
+
+      // Close modal
+      onOpenChange(false);
     } catch (error) {
       console.error('Payment Preparation Error:', error);
       toast.error('Failed to prepare payment. Please try again.');
@@ -1027,72 +1043,98 @@ export const FundWalletModal = ({
       return;
     }
     
-    // Log the navigation details for debugging
-    console.log('Navigating to payment confirmation', {
-      amount: parsedAmount,
-      paymentMethod: paymentMethod
-    });
-    
     // Navigate to payment confirmation page with amount and payment method
     navigate('/dashboard/payment-confirmation', {
       state: { 
         amount: parsedAmount, 
         paymentMethod: paymentMethod 
-      },
-      replace: false  // Ensure a new history entry is created
+      }
     });
     
     // Close the modal
     onOpenChange(false);
   };
 
+  const quickAmounts = [1000, 2000, 5000, 10000];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Fund Wallet</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Fund Wallet</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-6 py-4">
+          {/* Quick amount selection */}
+          <div className="grid grid-cols-2 gap-2">
+            {quickAmounts.map((quickAmount) => (
+              <Button
+                key={quickAmount}
+                variant="outline"
+                onClick={() => setAmount(quickAmount.toString())}
+                className={cn(
+                  "h-12 rounded-xl hover:bg-primary hover:text-primary-foreground transition-colors",
+                  amount === quickAmount.toString() && "bg-primary text-primary-foreground"
+                )}
+              >
+                {formatCurrency(quickAmount)}
+              </Button>
+            ))}
+          </div>
+
+          {/* Custom amount input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Amount</label>
+            <Label className="text-sm font-medium">Or enter custom amount</Label>
             <div className="relative">
-            <span className="absolute left-3 top-1/3 -translate-y-1/2 text-muted-foreground w-4 h-4">
-              ₦
-            </span>   
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                ₦
+              </span>   
               <Input
                 type="number"
                 placeholder="Enter amount"
-                className="pl-9"
+                className="pl-8 h-12 text-lg font-medium"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
             </div>
           </div>
+
+          {/* Payment method selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Payment Method</label>
-            <Select 
-              value={paymentMethod} 
-              onValueChange={setPaymentMethod}
-            >
-              <SelectTrigger>
+            <Label className="text-sm font-medium">Payment Method</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setPaymentMethod("bank")}
+                className={cn(
+                  "h-12 rounded-xl hover:bg-primary hover:text-primary-foreground transition-colors",
+                  paymentMethod === "bank" && "bg-primary text-primary-foreground"
+                )}
+              >
                 <CreditCard className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Select payment method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="bank">Bank Transfer</SelectItem>
-                <SelectItem value="paystack">Paystack</SelectItem>
-              </SelectContent>
-            </Select>
+                Bank Transfer
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setPaymentMethod("paystack")}
+                className={cn(
+                  "h-12 rounded-xl hover:bg-primary hover:text-primary-foreground transition-colors",
+                  paymentMethod === "paystack" && "bg-primary text-primary-foreground"
+                )}
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                Paystack
+              </Button>
+            </div>
           </div>
 
           <Button 
-            className="w-full text-white" 
+            className="w-full h-12 text-white rounded-xl text-lg font-medium" 
             onClick={paymentMethod === 'paystack' ? handlePaystackPayment : handleSubmit}
-            disabled={loading}
+            disabled={loading || !amount}
           >
             {loading ? (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Processing...
               </div>
             ) : (
@@ -1106,4 +1148,4 @@ export const FundWalletModal = ({
       </DialogContent>
     </Dialog>
   );
-}
+};
