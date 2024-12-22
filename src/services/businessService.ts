@@ -186,9 +186,16 @@ export const businessService = {
 // Add TypeScript interface for the metrics response
 export interface BusinessMetrics {
   revenue: number;
+  revenue_trend: {
+    direction: 'up' | 'down';
+    percentage: number;
+  };
   total_customers: number;
   customers_this_month: number;
-  customer_growth: string;
+  customer_trend: {
+    direction: 'up' | 'down';
+    percentage: number;
+  };
   revenueData: {
     name: string;
     value: number;

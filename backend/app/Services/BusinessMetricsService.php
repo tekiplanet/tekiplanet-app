@@ -19,14 +19,26 @@ class BusinessMetricsService
 
     public function getBusinessMetrics($businessId)
     {
-        $totalCustomers = $this->getTotalCustomers($businessId);
-        $customersThisMonth = $this->getCustomersThisMonth($businessId);
-        
+        $currentMonthRevenue = $this->calculateMonthlyRevenue($businessId);
+        $lastMonthRevenue = $this->calculateLastMonthRevenue($businessId);
+        $revenueTrend = $this->calculateTrendPercentage($currentMonthRevenue, $lastMonthRevenue);
+
+        $currentMonthCustomers = $this->getCustomersThisMonth($businessId);
+        $lastMonthCustomers = $this->getLastMonthCustomers($businessId);
+        $customerTrend = $this->calculateTrendPercentage($currentMonthCustomers, $lastMonthCustomers);
+
         return [
-            'revenue' => $this->calculateMonthlyRevenue($businessId),
-            'total_customers' => $totalCustomers,
-            'customers_this_month' => $customersThisMonth,
-            'customer_growth' => $this->calculateCustomerGrowth($totalCustomers, $customersThisMonth),
+            'revenue' => $currentMonthRevenue,
+            'revenue_trend' => [
+                'direction' => $revenueTrend >= 0 ? 'up' : 'down',
+                'percentage' => abs($revenueTrend)
+            ],
+            'total_customers' => $this->getTotalCustomers($businessId),
+            'customers_this_month' => $currentMonthCustomers,
+            'customer_trend' => [
+                'direction' => $customerTrend >= 0 ? 'up' : 'down',
+                'percentage' => abs($customerTrend)
+            ],
             'revenueData' => $this->getRevenueChartData($businessId),
             'recent_activities' => $this->getRecentActivities($businessId)
         ];
@@ -48,6 +60,38 @@ class BusinessMetricsService
         ]);
 
         return $totalRevenue;
+    }
+
+    protected function calculateLastMonthRevenue($businessId)
+    {
+        $lastMonth = now()->subMonth();
+        
+        $businessInvoices = BusinessInvoice::where('business_id', $businessId)
+            ->pluck('id');
+
+        return BusinessInvoicePayment::whereIn('invoice_id', $businessInvoices)
+            ->whereMonth('created_at', $lastMonth->month)
+            ->whereYear('created_at', $lastMonth->year)
+            ->sum('converted_amount');
+    }
+
+    protected function getLastMonthCustomers($businessId)
+    {
+        $lastMonth = now()->subMonth();
+        
+        return BusinessCustomer::where('business_id', $businessId)
+            ->whereMonth('created_at', $lastMonth->month)
+            ->whereYear('created_at', $lastMonth->year)
+            ->count();
+    }
+
+    protected function calculateTrendPercentage($current, $previous)
+    {
+        if ($previous == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 1);
     }
 
     protected function getRevenueChartData($businessId)
@@ -95,13 +139,6 @@ class BusinessMetricsService
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
-    }
-
-    protected function calculateCustomerGrowth($total, $thisMonth)
-    {
-        if ($total === 0) return "0%";
-        $percentage = ($thisMonth / $total) * 100;
-        return number_format($percentage, 0) . '%';
     }
 
     protected function getRecentActivities($businessId, $limit = 20)

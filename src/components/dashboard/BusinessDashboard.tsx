@@ -309,8 +309,8 @@ export default function BusinessDashboard() {
           <MetricCard
             title="Monthly Revenue"
             value={metrics?.revenue ? formatAmount(metrics.revenue) : formatAmount(0)}
-            trend="up"
-            trendValue="12%"
+            trend={metrics?.revenue_trend?.direction}
+            trendValue={`${metrics?.revenue_trend?.percentage}%`}
             icon={DollarSign}
             isLoading={metricsLoading}
             color="green"
@@ -322,8 +322,8 @@ export default function BusinessDashboard() {
           <MetricCard
             title="Total Customers"
             value={metrics?.total_customers || "0"}
-            trend="up"
-            trendValue="8%"
+            trend={undefined}
+            trendValue={undefined}
             icon={Users}
             isLoading={metricsLoading}
             color="blue"
@@ -331,8 +331,8 @@ export default function BusinessDashboard() {
           <MetricCard
             title="This Month"
             value={metrics?.customers_this_month?.toString() || "0"}
-            trend="up"
-            trendValue={metrics?.customer_growth || "0%"}
+            trend={metrics?.customer_trend?.direction}
+            trendValue={`${metrics?.customer_trend?.percentage}%`}
             icon={UserPlus}
             isLoading={metricsLoading}
             color="green"
