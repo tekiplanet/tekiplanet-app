@@ -638,93 +638,91 @@ export default function MyCourses() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredCourses.map((enrollment) => (
-            <Card key={enrollment.enrollment_id} className="group hover:shadow-lg transition-shadow">
+            <Card 
+              key={enrollment.enrollment_id} 
+              className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-none bg-gradient-to-br from-background to-muted/50"
+            >
               <CardContent className="p-0">
                 {/* Course Image */}
                 <div className="relative aspect-video">
                   <img 
                     src={enrollment.course_image}
                     alt={enrollment.course_title}
-                    className="object-cover w-full h-full rounded-t-lg"
+                    className="object-cover w-full h-full rounded-t-xl transform group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <Badge 
-                    className="absolute top-4 right-4"
-                    variant={enrollment.payment_status === 'fully_paid' ? "default" : "destructive"}
-                  >
-                    {enrollment.payment_status === 'fully_paid' ? "Paid" : "Payment Required"}
-                  </Badge>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <h3 className="font-semibold text-lg mb-2 text-white line-clamp-1">
+                      {enrollment.course_title}
+                    </h3>
+                    <div className="flex items-center gap-3 text-white/90">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span className="text-xs">
+                          {new Date(enrollment.enrolled_at.replace(' ', 'T')).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <Badge 
+                        className="bg-white/10 border-white/20 backdrop-blur-sm text-white"
+                        variant={enrollment.payment_status === 'fully_paid' ? "default" : "destructive"}
+                      >
+                        {enrollment.payment_status === 'fully_paid' ? "Paid" : "Payment Required"}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Course Info */}
-                <div className="p-6 space-y-4">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1 line-clamp-1">
-                      {enrollment.course_title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        {(() => {
-                          const enrolledDate = enrollment.enrolled_at 
-                            ? new Date(enrollment.enrolled_at.replace(' ', 'T'))
-                            : null;
-                          
-                          return enrolledDate 
-                            ? `Enrolled on ${enrolledDate.toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}` 
-                            : 'Not yet enrolled';
-                        })()}
-                      </span>
-                    </div>
-                  </div>
-
+                <div className="p-5 space-y-4">
                   {/* Progress Section */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Progress</span>
-                      <span className="text-primary">{Math.round(enrollment.progress || 0)}%</span>
+                      <span className="text-muted-foreground">Course Progress</span>
+                      <span className="font-medium text-primary">{Math.round(enrollment.progress || 0)}%</span>
                     </div>
                     <Progress value={enrollment.progress || 0} className="h-2" />
                   </div>
 
                   {/* Next Up Section */}
-                  <div className="space-y-2 pt-2 border-t">
-                    <div className="flex items-start gap-2 text-sm">
-                      <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div className="space-y-3 pt-3 border-t border-border/50">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Calendar className="h-4 w-4 text-primary" />
+                      </div>
                       <div>
-                        <p className="text-muted-foreground">Next Class</p>
-                        <p className="font-medium">
-                          {(() => {
-                            console.log('Next Lesson:', enrollment.nextLesson);
-                            return enrollment.nextLesson || 'No upcoming classes';
-                          })()}
+                        <p className="text-xs text-muted-foreground font-medium">Next Class</p>
+                        <p className="text-sm">
+                          {enrollment.nextLesson || 'No upcoming classes'}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <Clock className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Clock className="h-4 w-4 text-primary" />
+                      </div>
                       <div>
-                        <p className="text-muted-foreground">Next Payment Deadline</p>
-                        <p className="font-medium">
-                          {enrollment.nextDeadline || 'No upcoming payment deadlines'}
+                        <p className="text-xs text-muted-foreground font-medium">Next Payment</p>
+                        <p className="text-sm">
+                          {enrollment.nextDeadline || 'No upcoming payments'}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Payment Section - Add this before Action Buttons */}
+                  {/* Payment Section */}
                   {enrollment.payment_status !== 'fully_paid' && (
-                    <div className="space-y-3 pt-2 border-t">
+                    <div className="space-y-4 pt-3 border-t border-border/50">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-sm">Total Tuition</p>
-                          <p className="text-lg font-bold">{formatCurrency(enrollment.total_tuition, settings?.default_currency)}</p>
+                          <p className="text-xs text-muted-foreground font-medium">Total Tuition</p>
+                          <p className="text-lg font-bold text-primary">{formatCurrency(enrollment.total_tuition, settings?.default_currency)}</p>
                         </div>
-                        <Badge variant="destructive">Payment Required</Badge>
+                        <Badge variant="destructive" className="font-medium">
+                          Payment Required
+                        </Badge>
                       </div>
                       
                       {enrollment.installments && enrollment.installments.length > 0 ? (
@@ -732,31 +730,24 @@ export default function MyCourses() {
                           {[...enrollment.installments]
                             .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
                             .map((installment, index) => {
-                              // Get sorted installments
                               const sortedInstallments = [...enrollment.installments]
                                 .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
-                              
-                              // Find current installment's index in sorted array
                               const currentInstallmentIndex = sortedInstallments
                                 .findIndex(inst => inst.id === installment.id);
-                              
-                              // Check if previous installments in sorted order are paid
                               const previousInstallmentsPaid = sortedInstallments
                                 .slice(0, currentInstallmentIndex)
                                 .every(inst => inst.status === 'paid');
 
                               return (
-                                <div key={installment.id} className="space-y-2">
-                                  <div className="flex justify-between items-center">
+                                <div key={installment.id} className="p-3 rounded-xl bg-muted/50">
+                                  <div className="flex justify-between items-center mb-2">
                                     <div>
-                                      <p className="text-sm">Installment {index + 1}</p>
+                                      <p className="text-sm font-medium">Installment {index + 1}</p>
                                       <p className="text-xs text-muted-foreground">
                                         Due: {new Date(installment.due_date).toLocaleDateString('en-US', { 
-                                                weekday: 'long', 
-                                                year: 'numeric', 
-                                                month: 'long', 
-                                                day: 'numeric' 
-                                              })}
+                                          month: 'long', 
+                                          day: 'numeric' 
+                                        })}
                                       </p>
                                     </div>
                                     <Badge 
@@ -765,6 +756,7 @@ export default function MyCourses() {
                                         (new Date(installment.due_date) < new Date() && installment.status !== 'paid') ? "destructive" : 
                                         "secondary"
                                       }
+                                      className="font-medium"
                                     >
                                       {installment.status === 'paid' ? "Paid" : 
                                        (new Date(installment.due_date) < new Date() && installment.status !== 'paid') ? "Overdue" : 
@@ -773,16 +765,11 @@ export default function MyCourses() {
                                   </div>
                                   {installment.status !== 'paid' && (
                                     <Button 
-                                      className="w-full text-white"
+                                      className="w-full text-white font-medium h-9"
                                       onClick={() => handleInstallmentPayment(enrollment, installment.id)}
-                                      disabled={
-                                        installment.status === 'paid' || 
-                                        !previousInstallmentsPaid
-                                      }
+                                      disabled={installment.status === 'paid' || !previousInstallmentsPaid}
                                     >
-                                      {installment.status === 'paid' 
-                                        ? 'Paid' 
-                                        : `Pay ${formatCurrency(installment.amount, settings?.default_currency)}`}
+                                      Pay {formatCurrency(installment.amount, settings?.default_currency)}
                                     </Button>
                                   )}
                                 </div>
@@ -791,7 +778,7 @@ export default function MyCourses() {
                         </div>
                       ) : (
                         <Button 
-                          className="w-full text-white"
+                          className="w-full text-white font-medium h-10"
                           onClick={() => handlePayment(enrollment)}
                         >
                           Select Payment Plan
@@ -800,16 +787,14 @@ export default function MyCourses() {
                     </div>
                   )}
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 pt-4 border-t">
+                  {/* Action Button */}
+                  <div className="pt-3 border-t border-border/50">
                     <Button 
-                      className="flex-1 text-white"
+                      className="w-full font-medium bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors h-10"
                       onClick={() => navigate(`/dashboard/academy/course/${enrollment.course_id}/manage`)}
                     >
-                      <>
-                        Manage Course
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
+                      Manage Course
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
                 </div>
