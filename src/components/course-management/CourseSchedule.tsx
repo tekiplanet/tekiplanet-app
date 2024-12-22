@@ -207,53 +207,63 @@ export default function CourseSchedule({ courseId }: { courseId?: string }) {
     <div className="space-y-6">
       {/* Next Class Highlight */}
       {nextClass && (
-        <Card className="bg-primary/10">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+        <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-none shadow-sm">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <Badge variant="secondary" className="bg-background/50">Next Class</Badge>
+                <Badge variant="outline" className="capitalize bg-background/50">
+                  {nextClass.type}
+                </Badge>
+              </div>
+              
               <div>
-                <h3 className="text-lg font-semibold">Next Class</h3>
-                <p className="text-sm text-muted-foreground">{nextClass.title}</p>
+                <h3 className="text-lg font-semibold mb-1">{nextClass.title}</h3>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <CalendarIcon className="h-3.5 w-3.5" />
+                    <span>
+                      {nextClass.date.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>
+                      {nextClass.date.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" />
+                    <span>{nextClass.instructor}</span>
+                  </div>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-medium">
-                  {nextClass.date.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {nextClass.date.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
+
+              {nextClass.location === 'online' && nextClass.meetingLink && (
+                <Button 
+                  variant="secondary" 
+                  className="w-full sm:w-auto bg-background/50 hover:bg-background/80"
+                  onClick={() => window.open(nextClass.meetingLink, '_blank')}
+                >
+                  Join Meeting
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Calendar and Schedule Grid */}
-      <div className="flex flex-col gap-6">
-        {/* Calendar - now visible on all screens */}
-        <Card>
-          <CardContent className="p-4">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              month={calendarMonth}
-              onMonthChange={setCalendarMonth}
-              onSelect={setSelectedDate}
-              modifiers={calendarModifiers}
-              modifiersStyles={calendarModifiersStyles}
-              className="rounded-md mx-auto"
-            />
-          </CardContent>
-        </Card>
-
+      <div className="grid md:grid-cols-[1fr,300px] gap-6">
         {/* Schedule List */}
-        <div className="space-y-4">
+        <div className="space-y-4 order-2 md:order-1">
           {/* Filter classes based on selected date */}
           {schedules
             .filter(session => 
@@ -261,35 +271,49 @@ export default function CourseSchedule({ courseId }: { courseId?: string }) {
               session.date.toDateString() === selectedDate.toDateString()
             )
             .map((session) => (
-              <Card key={session.id} className="overflow-hidden">
-                <CardContent className="p-6">
-                  <div className="flex flex-col gap-4">
+              <Card key={session.id} className="group hover:shadow-md transition-all duration-200 border-none shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex flex-col gap-3">
                     {/* Title and Type */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="capitalize">
-                          {session.type}
-                        </Badge>
-                        <Badge variant="secondary">
-                          {session.location}
-                        </Badge>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <Badge variant="outline" className="capitalize bg-background">
+                            {session.type}
+                          </Badge>
+                          <Badge variant="secondary" className="bg-background">
+                            {session.location}
+                          </Badge>
+                        </div>
+                        <h3 className="font-medium text-base truncate group-hover:text-primary transition-colors">
+                          {session.title}
+                        </h3>
                       </div>
-                      <h3 className="font-semibold text-lg">{session.title}</h3>
+                      
+                      {session.location === 'online' && session.meetingLink && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => window.open(session.meetingLink, '_blank')}
+                        >
+                          Join
+                        </Button>
+                      )}
                     </div>
 
                     {/* Details */}
-                    <div className="grid gap-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4 shrink-0" />
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" />
                         <span>{session.duration}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CalendarIcon className="h-4 w-4 shrink-0" />
+                      <div className="flex items-center gap-1.5">
+                        <CalendarIcon className="h-3.5 w-3.5" />
                         <span>
                           {session.date.toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
+                            weekday: 'short',
+                            month: 'short',
                             day: 'numeric',
                           })}
                           {' at '}
@@ -299,9 +323,9 @@ export default function CourseSchedule({ courseId }: { courseId?: string }) {
                           })}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Users className="h-4 w-4 shrink-0" />
-                        <span>Instructor: {session.instructor}</span>
+                      <div className="flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5" />
+                        <span>{session.instructor}</span>
                       </div>
                     </div>
                   </div>
@@ -311,7 +335,7 @@ export default function CourseSchedule({ courseId }: { courseId?: string }) {
 
           {/* No classes for selected date */}
           {schedules.length === 0 && (
-            <Card>
+            <Card className="border-none shadow-sm">
               <CardContent className="p-8 text-center">
                 <div className="text-muted-foreground">
                   <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -324,6 +348,22 @@ export default function CourseSchedule({ courseId }: { courseId?: string }) {
             </Card>
           )}
         </div>
+
+        {/* Calendar - now sticky on desktop */}
+        <Card className="order-1 md:order-2 border-none shadow-sm">
+          <CardContent className="p-3">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              month={calendarMonth}
+              onMonthChange={setCalendarMonth}
+              onSelect={setSelectedDate}
+              modifiers={calendarModifiers}
+              modifiersStyles={calendarModifiersStyles}
+              className="rounded-md mx-auto"
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

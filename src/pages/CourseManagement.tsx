@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Bell, GraduationCap, FileText, BookOpen, Wallet } from "lucide-react";
+import { Calendar, Clock, Bell, GraduationCap, FileText, BookOpen, Wallet, PlayCircle } from "lucide-react";
 import PagePreloader from '@/components/ui/PagePreloader';
 
 // Components for each tab
@@ -289,7 +289,6 @@ const CourseManagement: React.FC = () => {
   const renderCurriculum = () => {
     console.log('Rendering Curriculum - Course:', course);
     
-    // Try different possible curriculum paths
     const curriculumData = 
       course?.curriculum || 
       course?.modules || 
@@ -300,55 +299,78 @@ const CourseManagement: React.FC = () => {
 
     if (!curriculumData || curriculumData.length === 0) {
       return (
-        <div className="text-center text-muted-foreground">
-          No curriculum available for this course. 
-          <pre className="mt-2 text-xs">{JSON.stringify(course, null, 2)}</pre>
+        <div className="flex flex-col items-center justify-center py-12">
+          <BookOpen className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <p className="text-muted-foreground font-medium">No curriculum available yet</p>
+          <p className="text-sm text-muted-foreground/70">Check back soon for updates</p>
         </div>
       );
     }
 
     return (
       <div className="space-y-4">
-        <div className="space-y-4">
-          {curriculumData.map((module, moduleIndex) => (
-            <div key={module.id || moduleIndex} className="border rounded-lg p-4">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="text-lg font-semibold">
-                  Module {moduleIndex + 1}: {module.title || module.name || `Unnamed Module`}
-                </h4>
-                <span className="text-sm text-muted-foreground">
-                  {(module.topics?.length || module.lessons?.length || 0) + " " + 
-                   (module.topics ? "Topics" : module.lessons ? "Lessons" : "Items")}
-                </span>
+        {curriculumData.map((module, moduleIndex) => (
+          <div key={module.id || moduleIndex} className="group">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-sm font-semibold text-primary">{moduleIndex + 1}</span>
               </div>
-              
-              {/* Handle different curriculum structures */}
-              {(module.topics || module.lessons || module.content)?.map((item, itemIndex) => (
-                <div 
-                  key={item.id || itemIndex} 
-                  className="bg-secondary/50 p-3 rounded-md mt-2"
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">
-                      {item.title || item.name || `Item ${itemIndex + 1}`}
-                    </span>
-                    {item.duration && (
-                      <span className="text-sm text-muted-foreground">
-                        {item.duration} min
-                      </span>
-                    )}
-                  </div>
-                  
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {item.description}
-                    </p>
-                  )}
-                </div>
-              ))}
+              <div className="flex-grow min-w-0">
+                <h4 className="text-base font-semibold group-hover:text-primary transition-colors truncate">
+                  {module.title || module.name || `Module ${moduleIndex + 1}`}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {module.topics?.length || module.lessons?.length || 0} Topics • {module.topics?.reduce((acc, topic) => acc + (topic.lessons?.length || 0), 0)} Lessons
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+            
+            {/* Topics and Lessons */}
+            {(module.topics || module.lessons || module.content) && (
+              <div className="ml-4 pl-8 border-l border-border/50 space-y-3">
+                {(module.topics || module.lessons || module.content)?.map((item, itemIndex) => (
+                  <div key={item.id || itemIndex} className="relative">
+                    <div className="absolute -left-[2.45rem] top-3 h-0.5 w-4 bg-border/50" />
+                    
+                    <Card className="bg-muted/50 hover:bg-muted/80 transition-colors border-none shadow-sm">
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-background flex items-center justify-center">
+                            <span className="text-xs font-medium">{moduleIndex + 1}.{itemIndex + 1}</span>
+                          </div>
+                          <h5 className="text-sm font-medium truncate">
+                            {item.title || item.name || `Topic ${itemIndex + 1}`}
+                          </h5>
+                        </div>
+                        
+                        {item.lessons && item.lessons.length > 0 && (
+                          <div className="space-y-1.5 ml-8">
+                            {item.lessons.map((lesson, lessonIndex) => (
+                              <div 
+                                key={lesson.id || lessonIndex}
+                                className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background transition-colors"
+                              >
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <PlayCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                  <span className="text-xs truncate">{lesson.title}</span>
+                                </div>
+                                {lesson.duration && (
+                                  <Badge variant="secondary" className="text-[10px] h-5">
+                                    {lesson.duration} mins
+                                  </Badge>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     );
   };

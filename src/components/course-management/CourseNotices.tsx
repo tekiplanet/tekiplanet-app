@@ -130,77 +130,112 @@ export default function CourseNotices({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="w-full space-y-4">
-        <div className="flex justify-between items-center flex-wrap gap-2">
-          <div>
-            <h2 className="text-lg font-semibold">Course Notifications</h2>
+    <div className="space-y-6">
+      <div className="w-full">
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Course Notifications</h2>
             <p className="text-sm text-muted-foreground">
               {showFallbackNotices 
                 ? 'Default notifications - please check other communication channels' 
-                : 'Stay updated with course announcements and updates'}
+                : `${displayNotices.filter(n => !n.read).length} unread notifications`}
             </p>
           </div>
-          <Badge variant="secondary">
-            {displayNotices.filter(n => !n.read).length} New
-          </Badge>
+          {displayNotices.filter(n => !n.read).length > 0 && (
+            <Badge variant="secondary" className="bg-primary text-primary-foreground">
+              {displayNotices.filter(n => !n.read).length} New
+            </Badge>
+          )}
         </div>
 
-        <ScrollArea className="h-[500px] w-full pr-2">
-          <div className="space-y-3">
+        <ScrollArea className="h-[600px] w-full pr-4">
+          <div className="space-y-4">
             {displayNotices.map((notice) => (
               <Card 
                 key={notice.id}
-                className={`relative ${!notice.read ? 'bg-muted/50' : ''} ${
-                  showFallbackNotices ? 'border-yellow-500/50' : ''
-                }`}
+                className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md ${
+                  !notice.read ? 'bg-primary/5' : ''
+                } ${
+                  showFallbackNotices ? 'border-yellow-500/20' : 'border-none'
+                } shadow-sm`}
               >
                 {!notice.read && (
-                  <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary" />
+                  <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
                 )}
+                
                 <CardContent className="p-4">
                   <div className="flex gap-4">
-                    <div className={`w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full flex-shrink-0 flex items-center justify-center bg-muted ${
-                      notice.priority === 'high' ? 'text-destructive' : 'text-muted-foreground'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      notice.priority === 'high' 
+                        ? 'bg-destructive/10 text-destructive' 
+                        : 'bg-muted text-muted-foreground'
+                    } transition-colors group-hover:bg-primary/10 group-hover:text-primary`}>
                       {getNoticeIcon(notice.type)}
                     </div>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-1">
-                          <h3 className="font-medium leading-none">
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-1 flex-1 min-w-0">
+                          <h3 className="font-medium leading-none truncate group-hover:text-primary transition-colors">
                             {notice.title}
                           </h3>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground line-clamp-2">
                             {notice.content}
                           </p>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                      {(notice.priority === 'high' || showFallbackNotices) && (
-                          <Badge variant="destructive" className="text-xs">
-                            {showFallbackNotices ? 'Fallback' : 'Important'}
-                          </Badge>
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(notice.date)}
-                        </span>
-  
+                        
                         {!showFallbackNotices && (
                           <button 
                             onClick={() => handleDeleteNotice(notice.id)}
-                            className="ml-auto text-muted-foreground hover:text-destructive transition-colors"
+                            className="shrink-0 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
                             title="Remove Notice"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         )}
                       </div>
+                      
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge 
+                          variant={notice.priority === 'high' ? "destructive" : "secondary"} 
+                          className="capitalize text-[10px]"
+                        >
+                          {notice.type}
+                        </Badge>
+                        
+                        {(notice.priority === 'high' || showFallbackNotices) && (
+                          <Badge 
+                            variant="destructive" 
+                            className="text-[10px] bg-destructive/10 text-destructive border-none"
+                          >
+                            {showFallbackNotices ? 'Fallback' : 'Important'}
+                          </Badge>
+                        )}
+                        
+                        <span className="text-[10px] text-muted-foreground ml-auto">
+                          {formatDate(notice.date)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
+            
+            {/* Empty state */}
+            {displayNotices.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <Bell className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold">No Notifications</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {showFallbackNotices 
+                    ? 'Unable to retrieve course notices. Please contact support.' 
+                    : "You're all caught up! Check back later for new notifications."}
+                </p>
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
