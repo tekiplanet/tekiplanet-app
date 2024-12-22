@@ -336,90 +336,115 @@ function ProjectDetails() {
 
           <div className="flex-1 overflow-auto">
             <TabsContent value="overview" className="p-4 space-y-6 m-0">
+              {/* Project Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-primary/5 border-none">
+                <Card className="bg-card border-none">
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-full">
+                    <div className="flex flex-col gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                         <DollarSign className="h-4 w-4 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Budget</p>
-                        <p className="text-lg font-semibold">{project.budget}</p>
+                      <div className="space-y-0.5">
+                        <p className="text-xs text-muted-foreground">Budget</p>
+                        <p className="text-base font-semibold truncate">{project.budget}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-primary/5 border-none">
+                <Card className="bg-card border-none">
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-full">
+                    <div className="flex flex-col gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Clock className="h-4 w-4 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Timeline</p>
-                        <p className="text-lg font-semibold">{project.progress}%</p>
+                      <div className="space-y-0.5">
+                        <p className="text-xs text-muted-foreground">Timeline</p>
+                        <p className="text-base font-semibold">{project.progress}%</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-primary/5 border-none">
+                <Card className="bg-card border-none">
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-full">
+                    <div className="flex flex-col gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Server className="h-4 w-4 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Business</p>
-                        <p className="text-lg font-semibold">{project.business_name}</p>
+                      <div className="space-y-0.5">
+                        <p className="text-xs text-muted-foreground">Business</p>
+                        <p className="text-base font-semibold truncate">{project.business_name}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-primary/5 border-none">
+                <Card className="bg-card border-none">
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-full">
+                    <div className="flex flex-col gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                         <CheckCircle className="h-4 w-4 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Completion</p>
-                        <p className="text-lg font-semibold">{project.progress}%</p>
+                      <div className="space-y-0.5">
+                        <p className="text-xs text-muted-foreground">Completion</p>
+                        <p className="text-base font-semibold">{project.progress}%</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">Progress</CardTitle>
+              {/* Progress Card */}
+              <Card className="bg-card border-none">
+                <CardHeader className="p-6 pb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <ListTodo className="h-4 w-4 text-primary" />
+                    </div>
+                    <CardTitle className="text-base font-semibold">Project Progress</CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
+                <CardContent className="px-6 pb-6">
+                  <div className="space-y-4">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Completion</span>
+                      <span className="text-muted-foreground">Overall Completion</span>
                       <span className="font-medium">{project.progress}%</span>
                     </div>
-                    <div className="h-2 bg-muted rounded-full">
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div 
-                        className={`h-2 rounded-full transition-all ${getProgressColor(project.status)}`} 
+                        className={`h-full rounded-full transition-all duration-500 ease-in-out ${getProgressColor(project.status)}`} 
                         style={{ width: `${project.progress}%` }}
                       />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Start:</span>
+                        <span className="font-medium">{project.start_date}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Timer className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">End:</span>
+                        <span className="font-medium">{project.end_date}</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">Description</CardTitle>
+              {/* Description Card */}
+              <Card className="bg-card border-none">
+                <CardHeader className="p-6 pb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <FileText className="h-4 w-4 text-primary" />
+                    </div>
+                    <CardTitle className="text-base font-semibold">Project Description</CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">
+                <CardContent className="px-6 pb-6">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {project.description}
                   </p>
                 </CardContent>

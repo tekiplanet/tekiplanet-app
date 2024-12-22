@@ -49,20 +49,18 @@ function ProjectsList() {
     const fetchProjects = async () => {
       try {
         const data = await projectService.getProjects();
-        if (data.success) {
-          setProjects(data.projects);
-          setFilteredProjects(data.projects);
-        } else if (data.message === 'Business profile not found') {
+        setProjects(data.projects);
+        setFilteredProjects(data.projects);
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          setProjects([]);
+          setFilteredProjects([]);
+        } else {
+          toast.error('Failed to fetch projects');
+          console.error(error);
           setProjects([]);
           setFilteredProjects([]);
         }
-      } catch (error) {
-        if (error.response?.status !== 404) {
-          toast.error('Failed to fetch projects');
-          console.error(error);
-        }
-        setProjects([]);
-        setFilteredProjects([]);
       } finally {
         setIsLoading(false);
       }
@@ -91,9 +89,18 @@ function ProjectsList() {
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed': return 'success';
-      case 'in_progress': return 'warning';
-      case 'pending': return 'secondary';
+      case 'in_progress': return 'secondary';
+      case 'pending': return 'outline';
       default: return 'secondary';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed': return 'bg-green-500';
+      case 'in_progress': return 'bg-yellow-500';
+      case 'pending': return 'bg-blue-500';
+      default: return 'bg-blue-500';
     }
   };
 
@@ -246,11 +253,7 @@ function ProjectsList() {
                           <div 
                             className={cn(
                               "h-full rounded-full transition-all", 
-                              project.status === 'completed' 
-                                ? 'bg-green-500' 
-                                : project.status === 'in_progress' 
-                                ? 'bg-yellow-500' 
-                                : 'bg-blue-500'
+                              getStatusColor(project.status)
                             )}
                             style={{ width: `${project.progress}%` }}
                           />
