@@ -336,16 +336,18 @@ const HustleDetails = () => {
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent group-hover:from-green-500/10 transition-colors" />
             <CardContent className="p-3 h-full">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
-                  <DollarSign className="h-4 w-4 text-green-500" />
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+                    <DollarSign className="h-4 w-4 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Budget</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Budget</p>
-                  <p className="font-semibold text-sm truncate">
-                    {formatCurrency(hustle.budget)}
-                  </p>
-                </div>
+                <p className="font-semibold text-sm px-2">
+                  {formatCurrency(hustle.budget)}
+                </p>
               </div>
             </CardContent>
           </Card>
