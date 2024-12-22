@@ -84,35 +84,45 @@ export default function StudentDashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="relative mb-3 sm:mb-8"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-background rounded-3xl blur-3xl" />
-        <div className="relative bg-background/50 backdrop-blur-xl rounded-xl sm:rounded-3xl border border-primary/10 p-4 sm:p-6 overflow-hidden">
-          <div className="flex items-center gap-4">
-            <motion.div 
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="relative"
-            >
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl" />
-              <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-            </motion.div>
-            <div className="space-y-2 flex-1">
-              <h1 className="text-lg sm:text-2xl font-bold">Welcome back, John! ✨</h1>
-              <div className="flex flex-wrap gap-2 sm:gap-3">
-                <Badge variant="outline" className="bg-background/50">
-                  <Trophy className="h-3 w-3 mr-1 text-yellow-500" />
-                  12 Achievements
-                </Badge>
-                <Badge variant="outline" className="bg-background/50">
-                  <Clock className="h-3 w-3 mr-1 text-blue-500" />
-                  24.5h Study Time
-                </Badge>
+        <Card className={cn(
+          "relative overflow-hidden border-none bg-gradient-to-br backdrop-blur-xl",
+          "hover:shadow-lg transition-all dark:shadow-none",
+          "dark:bg-background/50",
+          "from-blue-500/10 via-blue-500/5 to-transparent",
+          "dark:from-blue-500/20 dark:via-blue-500/10 dark:to-transparent"
+        )}>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center gap-4">
+              <motion.div 
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className={cn(
+                  "p-3 rounded-xl bg-background/50 dark:bg-background/80 backdrop-blur-xl",
+                  "group-hover:bg-background/80 dark:group-hover:bg-background/60 transition-colors",
+                  "shadow-sm dark:shadow-none relative"
+                )}
+              >
+                <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20">
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+              </motion.div>
+              <div className="space-y-2 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold">Welcome back, John! ✨</h1>
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  <Badge variant="outline" className="bg-background/50">
+                    <Trophy className="h-3 w-3 mr-1 text-yellow-500" />
+                    12 Achievements
+                  </Badge>
+                  <Badge variant="outline" className="bg-background/50">
+                    <Clock className="h-3 w-3 mr-1 text-blue-500" />
+                    24.5h Study Time
+                  </Badge>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Stats Grid - Make it scrollable on mobile */}
