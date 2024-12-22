@@ -439,7 +439,7 @@ export default function WalletDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 py-4 md:py-6">
       {/* Header Section - Stack on mobile */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
@@ -447,28 +447,14 @@ export default function WalletDashboard() {
           <p className="text-sm text-muted-foreground">Manage your funds and transactions</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex-1 md:flex-none">
-                <HelpCircle className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Help</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Wallet Help</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <p>Learn how to use your wallet effectively:</p>
-                <ul className="list-disc pl-4 space-y-2">
-                  <li>Fund your wallet using various payment methods</li>
-                  <li>Track your spending with detailed transaction history</li>
-                  <li>Monitor your balance and spending patterns</li>
-                  <li>Export transactions for record keeping</li>
-                </ul>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            variant="outline" 
+            className="flex-1 md:flex-none"
+            onClick={() => setShowFundWalletModal(true)}
+          >
+            <Upload className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Fund Wallet</span>
+          </Button>
           <Dialog>
             <DialogTrigger asChild>
               <Button className="text-white flex-1 md:flex-none">
@@ -541,7 +527,7 @@ export default function WalletDashboard() {
       </div>
 
       {/* Stats Grid - 2x2 on mobile, 3 columns on desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Current Balance - Full width on mobile */}
         <Card className="bg-primary text-primary-foreground col-span-2 lg:col-span-1">
           <CardContent className="p-4 md:p-6">
@@ -1009,6 +995,12 @@ export const FundWalletModal = ({
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Add settings query
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
+  });
+
   const handlePaystackPayment = async () => {
     try {
       // Validate amount
@@ -1076,7 +1068,7 @@ export const FundWalletModal = ({
                   amount === quickAmount.toString() && "bg-primary text-primary-foreground"
                 )}
               >
-                {formatCurrency(quickAmount)}
+                {formatCurrency(quickAmount, settings?.default_currency)}
               </Button>
             ))}
           </div>
@@ -1086,7 +1078,7 @@ export const FundWalletModal = ({
             <Label className="text-sm font-medium">Or enter custom amount</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                ₦
+                {settings?.currency_symbol || '₦'}
               </span>   
               <Input
                 type="number"
