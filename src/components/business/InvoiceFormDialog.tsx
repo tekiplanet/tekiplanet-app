@@ -152,18 +152,18 @@ export default function InvoiceFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] mt-8">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] p-0">
+        <DialogHeader className="p-6 pb-2">
           <DialogTitle>Create New Invoice</DialogTitle>
           <DialogDescription>
             Create a new invoice for this customer
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[calc(80vh-8rem)] pr-4">
+        <ScrollArea className="max-h-[calc(80vh-8rem)] px-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="invoice_number"
@@ -225,8 +225,8 @@ export default function InvoiceFormDialog({
                           />
                         </div>
                       )}
-                      <FormDescription>
-                        Select when this invoice is due. Past dates are disabled.
+                      <FormDescription className="text-xs">
+                        Select when this invoice is due
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -255,8 +255,8 @@ export default function InvoiceFormDialog({
                           />
                         </div>
                       </FormControl>
-                      <FormDescription>
-                        Choose a color for invoice headers and accents
+                      <FormDescription className="text-xs">
+                        Choose a color for invoice headers
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -290,7 +290,7 @@ export default function InvoiceFormDialog({
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormDescription>
+                      <FormDescription className="text-xs">
                         Using customer's preferred currency
                       </FormDescription>
                       <FormMessage />
@@ -302,7 +302,7 @@ export default function InvoiceFormDialog({
               {/* Invoice Items */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <FormLabel>Items</FormLabel>
+                  <FormLabel className="text-base">Items</FormLabel>
                   <Button
                     type="button"
                     variant="outline"
@@ -315,102 +315,104 @@ export default function InvoiceFormDialog({
                 </div>
 
                 {form.watch('items')?.map((item, index) => (
-                  <div key={index} className="space-y-4 p-4 border rounded-lg">
-                    <div className="flex justify-between items-start">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.description`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Item description" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="mt-8"
-                        onClick={() => removeItem(index)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  <div key={index} className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex justify-between items-start gap-2">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.description`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Item description" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="mt-8 shrink-0"
+                          onClick={() => removeItem(index)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
 
-                    <div className="grid grid-cols-3 gap-4">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.quantity`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Quantity</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="1"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(Number(e.target.value));
-                                  calculateItemAmount(index);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.quantity`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Quantity</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(Number(e.target.value));
+                                    calculateItemAmount(index);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.unit_price`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Unit Price</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(Number(e.target.value));
-                                  calculateItemAmount(index);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.unit_price`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Unit Price</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(Number(e.target.value));
+                                    calculateItemAmount(index);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.amount`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Amount</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                disabled
-                                value={field.value}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.amount`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Amount</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  disabled
+                                  value={field.value}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
 
-                <div className="flex justify-end">
+                <div className="flex justify-end pt-4">
                   <div className="text-right">
-                    <Label>Total Amount</Label>
+                    <Label className="text-muted-foreground">Total Amount</Label>
                     <p className="text-2xl font-bold">
                       {formatCurrency(calculateTotal(), form.getValues('currency'))}
                     </p>
@@ -427,7 +429,7 @@ export default function InvoiceFormDialog({
                     <FormControl>
                       <Textarea
                         placeholder="Add any additional notes for this invoice"
-                        className="resize-none"
+                        className="resize-none min-h-[100px]"
                         {...field}
                       />
                     </FormControl>
@@ -435,26 +437,27 @@ export default function InvoiceFormDialog({
                   </FormItem>
                 )}
               />
-
-              <div className="flex justify-end gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>Creating...</>
-                  ) : (
-                    'Create Invoice'
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
         </ScrollArea>
+
+        {/* Footer */}
+        <div className="border-t p-4 flex justify-end gap-4 bg-background">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            onClick={form.handleSubmit(onSubmit)}
+          >
+            {isSubmitting ? 'Creating...' : 'Create Invoice'}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

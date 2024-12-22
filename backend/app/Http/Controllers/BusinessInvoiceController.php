@@ -456,6 +456,8 @@ class BusinessInvoiceController extends Controller
                 'notes' => 'nullable|string'
             ]);
 
+            DB::beginTransaction();
+
             $invoice = BusinessInvoice::findOrFail($invoiceId);
 
             // Convert amount to NGN at the time of payment
@@ -480,12 +482,28 @@ class BusinessInvoiceController extends Controller
                 'notes' => $request->notes
             ]);
 
+            // Update invoice paid_amount
+            $invoice->paid_amount += $request->amount;
+            
+            // Update invoice status if fully paid
+            if ($invoice->paid_amount >= $invoice->amount) {
+                $invoice->status = 'paid';
+            } else if ($invoice->paid_amount > 0) {
+                $invoice->status = 'partially_paid';
+            }
+            
+            $invoice->save();
+
+            DB::commit();
+
             return response()->json([
                 'message' => 'Payment recorded successfully',
                 'payment' => $payment
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('Error recording invoice payment:', [
                 'invoice_id' => $invoiceId,
                 'error' => $e->getMessage(),
