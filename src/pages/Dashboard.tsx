@@ -692,12 +692,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
             <PullToRefresh
               onRefresh={handleRefresh}
               pullingContent={
-                <div className="flex items-center justify-center py-1.5 text-sm text-muted-foreground bg-background/80 backdrop-blur-sm border-b">
+                <div className="flex items-center justify-center py-1 text-sm text-muted-foreground bg-background/80 backdrop-blur-sm border-b">
                   Pull down to refresh...
                 </div>
               }
               refreshingContent={
-                <div className="flex items-center justify-center gap-2 py-1.5 text-sm bg-background/80 backdrop-blur-sm border-b">
+                <div className="flex items-center justify-center gap-2 py-1 text-sm bg-background/80 backdrop-blur-sm border-b">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
               }
@@ -707,7 +707,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
               className="h-full"
             >
               <main className="h-full">
-                <div className="container mx-auto px-4 py-1 md:px-6 md:py-2 max-w-7xl">
+                <div className="container mx-auto px-3 py-0.5 md:px-4 md:py-1 max-w-7xl">
                   <Outlet />
                 </div>
               </main>
