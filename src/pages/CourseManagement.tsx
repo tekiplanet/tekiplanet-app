@@ -376,143 +376,191 @@ const CourseManagement: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Main container with proper padding */}
-      <div className="flex-1 px-4 md:px-6 py-4 max-w-[100vw] overflow-x-hidden">
-        {/* Header Section with Course Image */}
-        <div className="mb-6 flex flex-col md:flex-row items-center gap-6">
-
-
-          {/* Course Details */}
-          <div className="flex-1">
-            <h1 className="text-xl md:text-3xl font-bold break-words mb-2">{course.title}</h1>
-            <p className="text-sm text-muted-foreground mb-3">{course.description}</p>
-            <Badge 
-              variant={enrollment?.payment_status === 'fully_paid' ? "secondary" : "default"}
-              className="mb-2 text-xs"
-            >
-              {enrollment?.payment_status === 'fully_paid' ? "Tuition Paid" : "Payment Required"}
-            </Badge>
-            
-            {/* Additional Course Info */}
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <span>Level: {course.level}</span>
-              <span>•</span>
-              <span>Duration: {course.duration_hours} Months</span>
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Main container with mobile-first padding */}
+      <div className="flex-1 w-full">
+        {/* Hero Section */}
+        <div className="relative bg-gradient-to-b from-primary/10 to-background px-4 md:px-6 pt-4 pb-6 md:pt-6 md:pb-8">
+          <div className="max-w-[1200px] mx-auto">
+            {/* Course Details */}
+            <div className="flex flex-col space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="px-2.5 py-0.5 text-xs">
+                  {course.category || 'General'}
+                </Badge>
+                <Badge 
+                  variant={enrollment?.status === 'completed' ? "default" : "secondary"}
+                  className="px-2.5 py-0.5 text-xs"
+                >
+                  {enrollment?.status || 'Enrolled'}
+                </Badge>
+              </div>
+              
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold mb-2">{course.title}</h1>
+                <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+              </div>
+              
+              {/* Course Meta Info */}
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-2">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>{course.duration_hours} Months</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>
+                    {enrollment?.enrolled_at ? new Date(enrollment.enrolled_at).toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  <span>{course.level}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-                  <Clock className="h-4 w-4 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm text-muted-foreground truncate">Duration</p>
-                  <p className="text-sm font-medium truncate">{course.duration_hours} Months</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Calendar className="h-4 w-4 text-primary" />
-                </div>
-                <div className="text-sm">
-                  <p className="text-muted-foreground">Enrolled On</p>
-                  <p className="text-sm font-medium">
-                    {enrollment?.enrolled_at ? new Date(enrollment.enrolled_at).toLocaleDateString() : 'N/A'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <GraduationCap className="h-4 w-4 text-primary" />
-                </div>
-                <div className="text-sm">
-                  <p className="text-muted-foreground">Progress</p>
-                  <p className="text-sm font-medium">{enrollment?.progress || 0}%</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Wallet className="h-4 w-4 text-primary" />
-                </div>
-                <div className="text-sm">
-                  <p className="text-muted-foreground">Tuition Fee</p>
-                  <p className="text-sm font-medium">{formatCurrency(Number(course.price), settings?.default_currency)}</p>
-                </div>
-              </div>
+        <div className="px-4 md:px-6 -mt-4">
+          <div className="max-w-[1200px] mx-auto">
+            <div className="grid gap-3 md:gap-4">
+              <Card className="bg-card/50 backdrop-blur-sm border-none shadow-sm">
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <GraduationCap className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Progress</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{enrollment?.progress || 0}%</p>
+                        <Progress value={enrollment?.progress || 0} className="w-24 h-1.5" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur-sm border-none shadow-sm">
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Wallet className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Tuition Fee</p>
+                      <p className="text-sm font-medium">
+                        {formatCurrency(Number(course.price), settings?.default_currency)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            {enrollment?.progress !== undefined && (
-              <div className="mt-4">
-                <Progress value={enrollment.progress} className="w-full" />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-
+          </div>
+        </div>
 
         {/* Tabs Section */}
-        <Tabs defaultValue="content" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-4">
-            <TabsTrigger value="content">
-              <BookOpen className="h-4 w-4 mr-2" /> Content
-            </TabsTrigger>
-            <TabsTrigger value="schedule">
-              <Calendar className="h-4 w-4 mr-2" /> Schedule
-            </TabsTrigger>
-            <TabsTrigger value="notices" className="relative">
-              <Bell className="h-4 w-4 mr-2" /> Notices
-              {notices.length > 0 && (
-                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="exams" className="relative">
-              <FileText className="h-4 w-4 mr-2" /> Exams
-              {upcomingExamsCount > 0 && (
-                <span 
-                  className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full animate-pulse"
-                ></span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="payment">
-              <Wallet className="h-4 w-4 mr-2" /> Payment
-            </TabsTrigger>
-          </TabsList>
+        <div className="px-4 md:px-6 mt-6">
+          <div className="max-w-[1200px] mx-auto">
+            <Tabs defaultValue="content" className="w-full">
+              <div className="relative">
+                <div className="overflow-x-auto scrollbar-none">
+                  <TabsList className="w-full h-10 p-1 bg-muted rounded-lg grid grid-cols-5">
+                    <TabsTrigger value="content" className="rounded-md data-[state=active]:bg-background">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        <span className="hidden md:inline text-sm">Content</span>
+                      </div>
+                    </TabsTrigger>
+                    <TabsTrigger value="schedule" className="rounded-md data-[state=active]:bg-background">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span className="hidden md:inline text-sm">Schedule</span>
+                      </div>
+                    </TabsTrigger>
+                    <TabsTrigger value="notices" className="rounded-md data-[state=active]:bg-background relative">
+                      <div className="flex items-center gap-2">
+                        <Bell className="h-4 w-4" />
+                        <span className="hidden md:inline text-sm">Notices</span>
+                        {notices.length > 0 && (
+                          <span className="absolute top-1 right-1 h-1.5 w-1.5 bg-primary rounded-full" />
+                        )}
+                      </div>
+                    </TabsTrigger>
+                    <TabsTrigger value="exams" className="rounded-md data-[state=active]:bg-background relative">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        <span className="hidden md:inline text-sm">Exams</span>
+                        {upcomingExamsCount > 0 && (
+                          <span className="absolute top-1 right-1 h-1.5 w-1.5 bg-primary rounded-full" />
+                        )}
+                      </div>
+                    </TabsTrigger>
+                    <TabsTrigger value="payment" className="rounded-md data-[state=active]:bg-background">
+                      <div className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4" />
+                        <span className="hidden md:inline text-sm">Payment</span>
+                      </div>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
 
-          {/* Tab Content */}
-          <div className="mt-6">
-            <TabsContent value="content" className="space-y-4">
-              {renderCurriculum()}
-            </TabsContent>
-            <TabsContent value="schedule">
-              <CourseSchedule courseId={courseIdState} />
-            </TabsContent>
-            <TabsContent value="notices">
-              <CourseNotices 
-                courseId={courseIdState} 
-                notices={notices} 
-                loading={noticesLoading} 
-                onNoticeDelete={handleNoticeDelete} 
-              />
-            </TabsContent>
-            <TabsContent value="exams">
-            <ExamSchedule 
-              courseId={courseIdState} 
-              refreshExams={refreshExams}
-              onUpcomingExamsCountChange={handleUpcomingExamsCountChange}
-            />
-            </TabsContent>
-            <TabsContent value="payment">
-            {courseIdState && (
-  <PaymentInfo courseId={courseIdState} settings={settings} />
-)}            </TabsContent>
+              {/* Tab Content */}
+              <div className="mt-6 space-y-4">
+                <TabsContent value="content">
+                  <Card className="border-none shadow-sm">
+                    <CardContent className="p-4">
+                      {renderCurriculum()}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="schedule">
+                  <Card className="border-none shadow-sm">
+                    <CardContent className="p-4">
+                      <CourseSchedule courseId={courseIdState} />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="notices">
+                  <Card className="border-none shadow-sm">
+                    <CardContent className="p-4">
+                      <CourseNotices 
+                        courseId={courseIdState} 
+                        notices={notices} 
+                        loading={noticesLoading} 
+                        onNoticeDelete={handleNoticeDelete} 
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="exams">
+                  <Card className="border-none shadow-sm">
+                    <CardContent className="p-4">
+                      <ExamSchedule 
+                        courseId={courseIdState} 
+                        refreshExams={refreshExams}
+                        onUpcomingExamsCountChange={handleUpcomingExamsCountChange}
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="payment">
+                  <Card className="border-none shadow-sm">
+                    <CardContent className="p-4">
+                      {courseIdState && (
+                        <PaymentInfo courseId={courseIdState} settings={settings} />
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </div>
+            </Tabs>
           </div>
-        </Tabs>
+        </div>
       </div>
     </div>
   );
