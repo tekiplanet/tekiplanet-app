@@ -1,10 +1,17 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bell, BookOpen, Calendar, FileText, MessageSquare, AlertTriangle, Trash2 } from "lucide-react";
+import { Bell, BookOpen, Calendar, FileText, MessageSquare, AlertTriangle, Trash2, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from 'sonner';
 import { courseManagementService } from "@/services/courseManagementService";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Notice {
   id: string;
@@ -28,8 +35,12 @@ export default function CourseNotices({
   onNoticeDelete?: (noticeId: string) => void 
 }) {
   const [showFallbackNotices, setShowFallbackNotices] = React.useState(false);
+  const [selectedNotice, setSelectedNotice] = React.useState<Notice | null>(null);
 
-  const handleDeleteNotice = React.useCallback(async (noticeId: string) => {
+  const handleDeleteNotice = React.useCallback(async (noticeId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     try {
       const result = await courseManagementService.deleteUserCourseNotice(noticeId);
       
@@ -148,12 +159,13 @@ export default function CourseNotices({
           )}
         </div>
 
-        <ScrollArea className="h-[600px] w-full pr-4">
-          <div className="space-y-4">
+        <ScrollArea className="h-[calc(100vh-16rem)] w-full pr-4 md:pr-6">
+          <div className="space-y-3">
             {displayNotices.map((notice) => (
               <Card 
                 key={notice.id}
-                className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md ${
+                onClick={() => setSelectedNotice(notice)}
+                className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md cursor-pointer active:scale-[0.99] ${
                   !notice.read ? 'bg-primary/5' : ''
                 } ${
                   showFallbackNotices ? 'border-yellow-500/20' : 'border-none'
@@ -163,9 +175,9 @@ export default function CourseNotices({
                   <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
                 )}
                 
-                <CardContent className="p-4">
-                  <div className="flex gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex gap-3 md:gap-4">
+                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
                       notice.priority === 'high' 
                         ? 'bg-destructive/10 text-destructive' 
                         : 'bg-muted text-muted-foreground'
@@ -174,19 +186,19 @@ export default function CourseNotices({
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start justify-between gap-3 md:gap-4">
                         <div className="space-y-1 flex-1 min-w-0">
                           <h3 className="font-medium leading-none truncate group-hover:text-primary transition-colors">
                             {notice.title}
                           </h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
+                          <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
                             {notice.content}
                           </p>
                         </div>
                         
                         {!showFallbackNotices && (
                           <button 
-                            onClick={() => handleDeleteNotice(notice.id)}
+                            onClick={(e) => handleDeleteNotice(notice.id, e)}
                             className="shrink-0 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
                             title="Remove Notice"
                           >
@@ -195,7 +207,7 @@ export default function CourseNotices({
                         )}
                       </div>
                       
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
                         <Badge 
                           variant={notice.priority === 'high' ? "destructive" : "secondary"} 
                           className="capitalize text-[10px]"
@@ -238,6 +250,71 @@ export default function CourseNotices({
             )}
           </div>
         </ScrollArea>
+
+        {/* Notice Details Modal */}
+        <Dialog open={!!selectedNotice} onOpenChange={() => setSelectedNotice(null)}>
+          <DialogContent className="sm:max-w-[500px]">
+            {selectedNotice && (
+              <>
+                <DialogHeader>
+                  <div className="flex items-center gap-3 mb-1">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      selectedNotice.priority === 'high' 
+                        ? 'bg-destructive/10 text-destructive' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {getNoticeIcon(selectedNotice.type)}
+                    </div>
+                    <DialogTitle>{selectedNotice.title}</DialogTitle>
+                  </div>
+                </DialogHeader>
+
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge 
+                      variant={selectedNotice.priority === 'high' ? "destructive" : "secondary"} 
+                      className="capitalize"
+                    >
+                      {selectedNotice.type}
+                    </Badge>
+                    
+                    {(selectedNotice.priority === 'high' || showFallbackNotices) && (
+                      <Badge 
+                        variant="destructive" 
+                        className="bg-destructive/10 text-destructive border-none"
+                      >
+                        {showFallbackNotices ? 'Fallback' : 'Important'}
+                      </Badge>
+                    )}
+                    
+                    <span className="text-sm text-muted-foreground">
+                      {formatDate(selectedNotice.date)}
+                    </span>
+                  </div>
+
+                  <p className="text-sm leading-relaxed">
+                    {selectedNotice.content}
+                  </p>
+
+                  {!showFallbackNotices && (
+                    <div className="flex justify-end">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          handleDeleteNotice(selectedNotice.id);
+                          setSelectedNotice(null);
+                        }}
+                      >
+                        Delete Notification
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
