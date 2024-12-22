@@ -18,6 +18,7 @@ import {
 import { useDebounce } from '@/hooks/useDebounce';
 import { hustleService, type Hustle, type Category } from '@/services/hustleService';
 import { formatCurrency } from '@/lib/utils';
+import { settingsService } from '@/services/settingsService';
 
 const container = {
   hidden: { opacity: 0 },
@@ -51,6 +52,11 @@ const Hustles = () => {
   const { data: categories } = useQuery({
     queryKey: ['professional-categories'],
     queryFn: hustleService.getCategories
+  });
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
   });
 
   const handleHustleClick = (id: string) => {
@@ -238,7 +244,7 @@ const Hustles = () => {
                       <div className="flex items-center justify-between pt-4">
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Budget</p>
-                          <p className="font-semibold">{formatCurrency(hustle.budget)}</p>
+                          <p className="font-semibold">{formatCurrency(hustle.budget, settings?.default_currency)}</p>
                         </div>
                         <Button 
                           size="sm" 

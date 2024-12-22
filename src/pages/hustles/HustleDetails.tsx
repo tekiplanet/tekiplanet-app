@@ -28,6 +28,7 @@ import ApplyHustleDialog from '@/components/hustles/ApplyHustleDialog';
 import { ChatNotificationBadge } from '@/components/hustles/ChatNotificationBadge';
 import HustleChat from '@/components/hustles/HustleChat';
 import PaymentTab from '@/components/hustles/PaymentTab';
+import { settingsService } from '@/services/settingsService';
 
 const container = {
   hidden: { opacity: 0 },
@@ -55,6 +56,11 @@ const HustleDetails = () => {
     queryKey: ['hustle', id],
     queryFn: () => hustleService.getHustleDetails(id!),
     enabled: !!id
+  });
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.fetchSettings
   });
 
   const hustle = data?.hustle;
@@ -346,7 +352,7 @@ const HustleDetails = () => {
                   </div>
                 </div>
                 <p className="font-semibold text-sm px-2">
-                  {formatCurrency(hustle.budget)}
+                  {formatCurrency(hustle.budget, settings?.default_currency)}
                 </p>
               </div>
             </CardContent>
