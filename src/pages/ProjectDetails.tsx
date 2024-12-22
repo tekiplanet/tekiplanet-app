@@ -578,159 +578,156 @@ function ProjectDetails() {
             </TabsContent>
 
             <TabsContent value="files" className="p-4 space-y-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-primary" />
+                  </div>
+                  <h2 className="text-base font-semibold">Project Files</h2>
+                </div>
+              </div>
+
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {project.files.map((file) => (
-                  <Card 
-                    key={file.id} 
-                    className="hover:shadow-md transition-all"
+                  <motion.div
+                    key={file.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          {getFileIcon(file.file_type)}
+                    <Card className="bg-card border-none hover:shadow-lg transition-all duration-300">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            {getFileIcon(file.file_type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm truncate mb-1">{file.name}</h3>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Badge variant="outline" className="bg-primary/5 text-primary border-0 capitalize">
+                                {file.file_type}
+                              </Badge>
+                              <span>{file.file_size}</span>
+                            </div>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="shrink-0 h-8 w-8"
+                            onClick={() => window.open(file.file_path, '_blank')}
+                          >
+                            <Download className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                          </Button>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium truncate">{file.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {file.file_size}
-                          </p>
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {file.file_type}
-                          </p>
-                        </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => window.open(file.file_path, '_blank')}
-                        >
-                          <Download className="h-4 w-4 text-muted-foreground hover:text-primary" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </TabsContent>
 
             <TabsContent value="invoices" className="p-4 space-y-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Project Invoices</h2>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <CreditCard className="h-4 w-4 text-primary" />
+                  </div>
+                  <h2 className="text-base font-semibold">Project Invoices</h2>
+                </div>
               </div>
 
               <div className="grid gap-4">
                 {project.invoices.map((invoice) => (
-                  <Card 
-                    key={invoice.id} 
-                    className="hover:shadow-md transition-all"
+                  <motion.div
+                    key={invoice.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                   >
-                    <CardContent className="p-4">
-                      {/* Invoice Header */}
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="p-2 bg-primary/10 rounded-full shrink-0">
-                          <CreditCard className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold truncate">
-                            Invoice #{invoice.invoice_number}
-                          </h3>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            <Badge variant="outline" className={getStatusColor(invoice.status)}>
-                              {invoice.status}
-                            </Badge>
+                    <Card className="bg-card border-none hover:shadow-lg transition-all duration-300">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <CreditCard className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <h3 className="font-semibold truncate">Invoice #{invoice.invoice_number}</h3>
+                              <Badge variant="outline" className={`${getStatusColor(invoice.status)} shrink-0`}>
+                                {formatStatus(invoice.status)}
+                              </Badge>
+                            </div>
+                            
                             {invoice.status === 'pending' && (
-                              <span className="text-sm text-destructive font-medium">
-                                Due: {invoice.due_date}
-                              </span>
+                              <p className="text-sm text-destructive mt-1">Due: {invoice.due_date}</p>
+                            )}
+
+                            <div className="mt-4 flex items-center justify-between">
+                              <div>
+                                <p className="text-sm text-muted-foreground">Amount</p>
+                                <p className="text-lg font-bold">{invoice.amount}</p>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                {invoice.status === 'pending' && (
+                                  <>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      disabled={isDownloading === invoice.id}
+                                      onClick={() => handleDownloadInvoice(String(invoice.id))}
+                                    >
+                                      {isDownloading === invoice.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                      ) : (
+                                        <Download className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                                      )}
+                                    </Button>
+                                    <Button 
+                                      variant="default" 
+                                      size="sm"
+                                      className="gap-2"
+                                      onClick={() => {
+                                        setSelectedInvoice(invoice);
+                                        setIsPaymentModalOpen(true);
+                                      }}
+                                    >
+                                      <DollarSign className="h-4 w-4" />
+                                      Pay Now
+                                    </Button>
+                                  </>
+                                )}
+                                {invoice.status === 'paid' && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="gap-2"
+                                    onClick={() => handleViewReceipt(invoice.id)}
+                                  >
+                                    <FileText className="h-4 w-4" />
+                                    View Receipt
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+
+                            {invoice.status === 'paid' && invoice.paid_at && (
+                              <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="truncate">Paid on {invoice.paid_at}</span>
+                              </div>
+                            )}
+
+                            {invoice.status === 'cancelled' && (
+                              <div className="mt-3 flex items-center gap-2 text-sm text-destructive">
+                                <XCircle className="h-4 w-4" />
+                                <span className="truncate">Invoice cancelled</span>
+                              </div>
                             )}
                           </div>
                         </div>
-                      </div>
-
-                      {/* Invoice Amount */}
-                      <div className="mt-3 flex items-center justify-between border-t pt-3">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Amount</p>
-                          <p className="font-bold text-lg">{invoice.amount}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          {invoice.status === 'pending' && (
-                            <>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                className="shrink-0"
-                                disabled={isDownloading === invoice.id}
-                                onClick={() => {
-                                  console.log('Full invoice object:', invoice);
-                                  console.log('Invoice ID:', invoice.id);
-                                  console.log('Invoice ID type:', typeof invoice.id);
-                                  
-                                  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-                                  const isValidUUID = uuidRegex.test(String(invoice.id));
-                                  console.log('Is valid UUID?', isValidUUID);
-
-                                  if (!isValidUUID) {
-                                    toast.error('Invalid invoice ID format');
-                                    return;
-                                  }
-                                  handleDownloadInvoice(String(invoice.id));
-                                }}
-                              >
-                                {isDownloading === invoice.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                ) : (
-                                  <Download className="h-4 w-4 text-muted-foreground" />
-                                )}
-                              </Button>
-                              <Button 
-                                variant="default" 
-                                size="sm"
-                                className="shrink-0"
-                                onClick={() => {
-                                  setSelectedInvoice(invoice);
-                                  setIsPaymentModalOpen(true);
-                                }}
-                              >
-                                <DollarSign className="h-4 w-4 mr-2" />
-                                Pay Now
-                              </Button>
-                            </>
-                          )}
-                          {invoice.status === 'paid' && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              className="shrink-0"
-                              onClick={() => handleViewReceipt(invoice.id)}
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              View Receipt
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Paid Status */}
-                      {invoice.status === 'paid' && invoice.paid_at && (
-                        <div className="mt-3 pt-3 border-t">
-                          <div className="flex items-center gap-2 text-sm text-green-600">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="truncate">Paid on {invoice.paid_at}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Cancelled Status */}
-                      {invoice.status === 'cancelled' && (
-                        <div className="mt-3 pt-3 border-t">
-                          <div className="flex items-center gap-2 text-sm text-destructive">
-                            <XCircle className="h-4 w-4" />
-                            <span className="truncate">Invoice cancelled</span>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </TabsContent>
