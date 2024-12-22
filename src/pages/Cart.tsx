@@ -114,7 +114,7 @@ export default function Cart() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">Shopping Cart ({cartData.items.length})</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Shopping Cart ({cartData.items.length})</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -133,19 +133,21 @@ export default function Cart() {
                   <img
                     src={item.product.images[0]}
                     alt={item.product.name}
-                    className="w-24 h-24 object-cover rounded-md"
+                    className="w-20 h-20 object-cover rounded-md shrink-0"
                   />
-                  <div className="flex-1 space-y-2">
-                    <div className="flex justify-between">
-                      <h3 className="font-semibold">{item.product.name}</h3>
-                      <p className="font-bold">
-                        {formatPrice(item.product.price * item.quantity, cartData.currency)}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex justify-between items-start gap-4">
+                        <h3 className="font-semibold truncate">{item.product.name}</h3>
+                        <p className="font-bold whitespace-nowrap">
+                          {formatPrice(item.product.price * item.quantity, cartData.currency)}
+                        </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {formatPrice(item.product.price, cartData.currency)} each
                       </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formatPrice(item.product.price, cartData.currency)} each
-                    </p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-4">
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
@@ -197,7 +199,7 @@ export default function Cart() {
 
           {/* Cart Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-card p-6 rounded-lg space-y-4 sticky top-4">
+            <div className="bg-card p-6 rounded-lg space-y-4 lg:sticky lg:top-4">
               <h2 className="text-lg font-semibold">Order Summary</h2>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">

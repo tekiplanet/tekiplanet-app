@@ -430,7 +430,7 @@ export default function Checkout() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4">
                     <Button
                       variant="outline"
                       onClick={() => setCurrentStep('shipping')}
@@ -470,10 +470,10 @@ export default function Checkout() {
                         <div className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg">
                           <div className="flex items-center gap-3 flex-1">
                             <Wallet className="h-5 w-5 shrink-0 text-primary" />
-                            <div className="min-w-0"> {/* Prevent text overflow */}
+                            <div className="min-w-0">
                               <p className="font-medium truncate">Wallet Balance</p>
                               <p className="text-sm text-muted-foreground">
-                                Available: {formatPrice(user?.wallet_balance || 0, cartData.currency)}
+                                Available: {formatPrice(user?.wallet_balance ?? 0, cartData.currency)}
                               </p>
                             </div>
                           </div>
@@ -505,7 +505,7 @@ export default function Checkout() {
                           {user?.wallet_balance && user.wallet_balance < total && (
                             <div className="space-y-3">
                               <p className="text-sm text-destructive break-words">
-                                You need {formatPrice(total - user.wallet_balance, cartData.currency)} more in your wallet
+                                You need {formatPrice(total - (user.wallet_balance ?? 0), cartData.currency)} more in your wallet
                               </p>
                               <Button 
                                 variant="outline" 
@@ -525,7 +525,7 @@ export default function Checkout() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4">
                     <Button
                       variant="outline"
                       onClick={() => setCurrentStep('review')}
@@ -588,7 +588,7 @@ export default function Checkout() {
                               Qty: {item.quantity}
                             </p>
                           </div>
-                          <p>{formatPrice(item.total, orderData.currency)}</p>
+                          <p className="whitespace-nowrap">{formatPrice(item.total, orderData.currency)}</p>
                         </div>
                       ))}
                     </div>
@@ -596,15 +596,15 @@ export default function Checkout() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <p>Subtotal</p>
-                        <p>{formatPrice(orderData.subtotal, orderData.currency)}</p>
+                        <p className="whitespace-nowrap">{formatPrice(orderData.subtotal, orderData.currency)}</p>
                       </div>
                       <div className="flex justify-between">
                         <p>Shipping</p>
-                        <p>{formatPrice(orderData.shipping_cost, orderData.currency)}</p>
+                        <p className="whitespace-nowrap">{formatPrice(orderData.shipping_cost, orderData.currency)}</p>
                       </div>
                       <div className="flex justify-between font-semibold">
                         <p>Total</p>
-                        <p>{formatPrice(orderData.total, orderData.currency)}</p>
+                        <p className="whitespace-nowrap">{formatPrice(orderData.total, orderData.currency)}</p>
                       </div>
                     </div>
                   </div>

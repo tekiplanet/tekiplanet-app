@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/formatters';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/axios';
 import { useInView } from 'react-intersection-observer';
@@ -93,10 +94,7 @@ export default function Orders() {
   };
 
   const formatAmount = (amount: number) => {
-    return `${currency}${amount.toLocaleString('en-US', { 
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })}`;
+    return formatPrice(amount, currency);
   };
 
   // Fetch orders with infinite scroll
