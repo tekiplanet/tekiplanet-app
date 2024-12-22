@@ -35,6 +35,7 @@ use App\Http\Controllers\BusinessCustomerController;
 use App\Http\Controllers\BusinessInvoiceController;
 use App\Http\Controllers\BusinessMetricsController;
 use App\Http\Controllers\BusinessActivityController;
+use App\Http\Controllers\BusinessTransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -287,4 +288,5 @@ Route::middleware('auth:sanctum')->prefix('business')->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/business/metrics', [BusinessMetricsController::class, 'getMetrics']);
     Route::get('/business/activities', [BusinessActivityController::class, 'index']);
+    Route::get('/business/transactions', [BusinessTransactionController::class, 'index']);
 });

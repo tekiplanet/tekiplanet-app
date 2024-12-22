@@ -22,6 +22,29 @@ interface ActivityResponse {
   total: number;
 }
 
+interface GetTransactionsParams {
+  page: number;
+  search?: string;
+  from?: Date;
+  to?: Date;
+}
+
+interface TransactionResponse {
+  data: Transaction[];
+  next_page: number | null;
+  total: number;
+}
+
+interface Transaction {
+  id: string;
+  invoice_number: string;
+  customer_name: string;
+  amount: number;
+  currency: string;
+  payment_date: string;
+  notes?: string;
+}
+
 export const businessService = {
   checkProfile: async () => {
     const { data } = await apiClient.get('/business/profile/check');
@@ -138,6 +161,18 @@ export const businessService = {
         page: params.page,
         search: params.search,
         type: params.type !== 'all' ? params.type : undefined,
+        from: params.from?.toISOString(),
+        to: params.to?.toISOString()
+      }
+    });
+    return data;
+  },
+
+  getTransactions: async (params: GetTransactionsParams): Promise<TransactionResponse> => {
+    const { data } = await apiClient.get('/business/transactions', {
+      params: {
+        page: params.page,
+        search: params.search,
         from: params.from?.toISOString(),
         to: params.to?.toISOString()
       }

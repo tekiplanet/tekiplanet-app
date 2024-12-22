@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import TransactionList from './TransactionList';
 
 // Helper function for formatting currency
 const formatAmount = (amount: number) => {
@@ -467,7 +468,9 @@ export default function BusinessDashboard() {
 
         </TabsContent>
 
-        {/* Add other tab contents */}
+        <TabsContent value="transactions" className="space-y-6">
+          <TransactionList />
+        </TabsContent>
       </Tabs>
     </div>
   );
