@@ -20,13 +20,13 @@ export interface Customer {
 
 export interface CreateCustomerDto {
   name: string;
-  email?: string;
-  phone?: string;
+  email: string;
+  phone: string;
+  currency: string;
   address?: string;
   city: string;
   state: string;
   country: string;
-  currency: string;
   tags?: string[];
   notes?: string;
 }

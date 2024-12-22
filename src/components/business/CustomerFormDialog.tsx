@@ -115,7 +115,9 @@ export default function CustomerFormDialog({
   const handleAddTag = () => {
     if (tagInput.trim()) {
       const currentTags = form.getValues('tags') || [];
-      form.setValue('tags', [...currentTags, tagInput.trim()]);
+      if (!currentTags.includes(tagInput.trim())) {
+        form.setValue('tags', [...currentTags, tagInput.trim()]);
+      }
       setTagInput('');
     }
   };
@@ -138,10 +140,11 @@ export default function CustomerFormDialog({
         country: values.country,
         currency: values.currency,
         notes: values.notes || '',
-        tags: values.tags || []
+        tags: Array.isArray(values.tags) ? values.tags : []
       } satisfies CreateCustomerDto;
 
       if (mode === 'create') {
+        console.log('Submitting customer data:', customerData);
         await businessService.createCustomer(customerData);
         toast.success('Customer created successfully');
       } else {

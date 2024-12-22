@@ -441,7 +441,7 @@ const CourseManagement: React.FC = () => {
                   <Wallet className="h-4 w-4 text-primary" />
                 </div>
                 <div className="text-sm">
-                  <p className="text-muted-foreground">Total Cost</p>
+                  <p className="text-muted-foreground">Tuition Fee</p>
                   <p className="text-sm font-medium">{formatCurrency(Number(course.price), settings?.default_currency)}</p>
                 </div>
               </div>

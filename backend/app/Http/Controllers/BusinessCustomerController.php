@@ -76,6 +76,8 @@ class BusinessCustomerController extends Controller
                 'phone' => 'required|string|min:10',
                 'currency' => 'required|string|size:3',
                 'address' => 'nullable|string',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string'
             ]);
 
             if ($validator->fails()) {
@@ -94,6 +96,7 @@ class BusinessCustomerController extends Controller
                 'phone' => $request->phone,
                 'currency' => $request->currency,
                 'address' => $request->address,
+                'tags' => $request->tags ?? []
             ]);
 
             return response()->json([
