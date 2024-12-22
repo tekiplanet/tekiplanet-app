@@ -33,7 +33,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import axios from '@/lib/axios';
+import { apiClient } from '@/lib/axios';
 import { useInView } from 'react-intersection-observer';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useDebounce } from '@/hooks/useDebounce';
@@ -110,7 +110,7 @@ export default function Orders() {
   } = useInfiniteQuery({
     queryKey: ['orders', statusFilter, sortBy, debouncedSearch],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await axios.get('/orders', {
+      const response = await apiClient.get('/orders', {
         params: {
           page: pageParam,
           status: statusFilter,

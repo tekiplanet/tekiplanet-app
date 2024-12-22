@@ -506,151 +506,6 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
           {/* Mobile Header */}
           <header className="flex h-16 items-center gap-4 border-b bg-background px-4 md:hidden">
             <div className="flex items-center gap-3 flex-1">
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-72 p-0">
-                  <div className="flex flex-col h-full">
-                    {/* Fixed Header */}
-                    <div className="border-b p-4 shrink-0">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage 
-                            src={user?.avatar || undefined} 
-                            alt={user?.name || user?.first_name || user?.last_name || "User Avatar"} 
-                          />
-                          <AvatarFallback>
-                            {user?.name 
-                              ? user.name.charAt(0).toUpperCase() 
-                              : (user?.first_name 
-                                ? user.first_name.charAt(0).toUpperCase() 
-                                : '?')
-                            }
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-medium">{user?.name || 
-                           (user?.first_name && user?.last_name 
-                             ? `${user.first_name} ${user.last_name}` 
-                             : user?.first_name || 
-                               user?.last_name || 
-                               user?.email || 
-                               'User')}</h3>
-                          <p className="text-sm text-muted-foreground">{user?.email || 'No email'}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Scrollable Content Area */}
-                    <div className="flex-1 overflow-y-auto">
-                      {/* Menu Items */}
-                      <nav className="space-y-1 p-4">
-                        {menuItems.map((item) => (
-                          <div key={item.path}>
-                            {/* Main Menu Item */}
-                            <Button
-                              variant={location.pathname === item.path ? "default" : "ghost"}
-                              className="w-full justify-start gap-2"
-                              onClick={() => {
-                                navigate(item.path);
-                                setIsSheetOpen(false);
-                              }}
-                            >
-                              {item.icon}
-                              <span>{item.label}</span>
-                              {item.badge && (
-                                <Badge variant="secondary" className="ml-auto">
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </Button>
-                          </div>
-                        ))}
-                      </nav>
-                    </div>
-
-                    {/* Fixed Footer */}
-                    <div className="border-t p-4 mt-auto shrink-0">
-                      <div className="space-y-2">
-                        {/* Profile Switcher */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start gap-2">
-                              <GraduationCap className="h-4 w-4" />
-                              {user?.account_type === "student" ? "Student" : user?.account_type === "business" ? "Business" : "Professional"}
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem 
-                              disabled={user?.account_type === "student"}
-                              onClick={() => {
-                                handleProfileSwitch("student");
-                                setIsSheetOpen(false);
-                              }}
-                            >
-                              Switch to Student
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              disabled={user?.account_type === "business"}
-                              onClick={() => {
-                                handleProfileSwitch("business");
-                                setIsSheetOpen(false);
-                              }}
-                            >
-                              Switch to Business
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              disabled={user?.account_type === "professional"}
-                              onClick={() => {
-                                handleProfileSwitch("professional");
-                                setIsSheetOpen(false);
-                              }}
-                            >
-                              Switch to Professional
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        {/* Theme Toggle */}
-                        <div className="flex items-center justify-between px-3 py-2">
-                          <h4 className="text-xs font-medium text-muted-foreground">
-                            Theme
-                          </h4>
-                          <ThemeToggle />
-                        </div>
-
-                        {/* Logout Button */}
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start gap-2 text-red-500"
-                          onClick={() => {
-                            handleLogout();
-                            setIsSheetOpen(false);
-                          }}
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Logout
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-
-              {location.pathname !== "/dashboard" && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => navigate(-1)}
-                  className="md:hidden"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              )}
-
               <h3 className="text-sm font-semibold">
                 {getPageTitle(location.pathname)}
               </h3>
@@ -773,7 +628,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
           </header>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-y-auto bg-background">
+          <div className="flex-1 overflow-y-auto bg-background pb-16 md:pb-0">
             <PullToRefresh
               onRefresh={handleRefresh}
               pullingContent={
@@ -798,6 +653,190 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                 </div>
               </main>
             </PullToRefresh>
+          </div>
+
+          {/* Mobile Bottom Navigation */}
+          <div className="fixed bottom-0 left-0 right-0 border-t bg-background/80 backdrop-blur-sm md:hidden">
+            <div className="flex items-center justify-around h-16">
+              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className={cn(
+                      "w-12 h-12 rounded-full",
+                      "transition-all duration-200 ease-in-out",
+                      isSheetOpen && "text-primary"
+                    )}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-72 p-0">
+                  <div className="flex flex-col h-full">
+                    {/* Fixed Header - User Profile Section */}
+                    <div className="border-b px-6 py-4 shrink-0">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <Avatar className="h-10 w-10 ring-2 ring-primary/10">
+                            <AvatarImage 
+                              src={user?.avatar || undefined} 
+                              alt={user?.name || user?.first_name || user?.last_name || "User Avatar"} 
+                            />
+                            <AvatarFallback>
+                              {user?.name 
+                                ? user.name.charAt(0).toUpperCase() 
+                                : (user?.first_name 
+                                  ? user.first_name.charAt(0).toUpperCase() 
+                                  : '?')
+                              }
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-background bg-green-500" />
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                          <h3 className="truncate text-sm font-medium">
+                            {user?.name || 
+                             (user?.first_name && user?.last_name 
+                               ? `${user.first_name} ${user.last_name}` 
+                               : user?.first_name || 
+                                 user?.last_name || 
+                                 user?.email || 
+                                 'User')}
+                          </h3>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {user?.email || 'No email'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Scrollable Menu Items */}
+                    <div className="flex-1 overflow-y-auto">
+                      <nav className="flex-1 space-y-1 px-4 py-2 overflow-y-auto">
+                        {menuItems.map((item) => (
+                          <div key={item.path}>
+                            <Button
+                              variant={location.pathname === item.path ? "secondary" : "ghost"}
+                              className={cn(
+                                "w-full justify-start mb-1",
+                                item.submenu && "mb-2"
+                              )}
+                              onClick={() => {
+                                navigate(item.path);
+                                setIsSheetOpen(false);
+                              }}
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                  {item.icon}
+                                  <span className="ml-3">{item.label}</span>
+                                </div>
+                                {item.badge && (
+                                  <Badge variant="secondary" className="ml-auto mr-2">
+                                    {item.badge}
+                                  </Badge>
+                                )}
+                              </div>
+                            </Button>
+                          </div>
+                        ))}
+                      </nav>
+                    </div>
+
+                    {/* Fixed Bottom Section */}
+                    <div className="border-t p-3 space-y-2 shrink-0">
+                      {/* Profile Type Switcher */}
+                      <div className="px-3 py-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start gap-2">
+                              <GraduationCap className="h-4 w-4" />
+                              {user?.account_type === "student" ? "Student" : user?.account_type === "business" ? "Business" : "Professional"}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem 
+                              disabled={user?.account_type === "student"}
+                              onClick={() => handleProfileSwitch("student")}
+                            >
+                              Switch to Student
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              disabled={user?.account_type === "business"}
+                              onClick={() => handleProfileSwitch("business")}
+                            >
+                              Switch to Business
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              disabled={user?.account_type === "professional"}
+                              onClick={() => handleProfileSwitch("professional")}
+                            >
+                              Switch to Professional
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Theme Toggle */}
+                      <div className="flex items-center justify-between px-3 py-2">
+                        <h4 className="text-xs font-medium text-muted-foreground">
+                          Theme
+                        </h4>
+                        <ThemeToggle />
+                      </div>
+
+                      {/* Settings & Logout */}
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2"
+                        onClick={() => {
+                          navigate('/dashboard/settings');
+                          setIsSheetOpen(false);
+                        }}
+                      >
+                        <Settings className="h-4 w-4" />
+                        Settings
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2 text-red-500 hover:text-red-500 hover:bg-red-50"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Logout
+                      </Button>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/dashboard')}
+                className={cn(
+                  "w-14 h-14 rounded-full bg-primary/10",
+                  "transition-all duration-200 ease-in-out",
+                  location.pathname === '/dashboard' && "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-110"
+                )}
+              >
+                <Home className="h-6 w-6" />
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/dashboard/settings')}
+                className={cn(
+                  "w-12 h-12 rounded-full",
+                  "transition-all duration-200 ease-in-out",
+                  location.pathname.includes('/settings') && "text-primary"
+                )}
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
