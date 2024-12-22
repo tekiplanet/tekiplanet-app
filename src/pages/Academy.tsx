@@ -162,61 +162,73 @@ export default function Academy() {
 
       {/* Course Grid */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
             <Card 
               key={course.id} 
-              className="overflow-hidden hover:shadow-lg transition-shadow"
+              className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-none bg-gradient-to-br from-background to-muted/50"
             >
               <CardContent className="p-0">
-                <div className="relative aspect-video">
+                <div className="relative aspect-video overflow-hidden">
                   <img 
-                    src={course.image_url} 
+                    src={course.image_url || '/placeholder-course.jpg'} 
                     alt={course.title}
-                    className="object-cover w-full h-full"
+                    className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <Badge 
-                    className="absolute top-4 right-4"
-                    variant={
-                      course.level === "Beginner" ? "default" :
-                      course.level === "Intermediate" ? "secondary" : 
-                      "destructive"
-                    }
-                  >
-                    {course.level}
-                  </Badge>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <Badge 
+                      className="mb-2"
+                      variant={
+                        course.level === "Beginner" ? "default" :
+                        course.level === "Intermediate" ? "secondary" : 
+                        "destructive"
+                      }
+                    >
+                      {course.level}
+                    </Badge>
+                    <h3 className="text-lg font-semibold text-white mb-1 line-clamp-2">{course.title}</h3>
+                    <div className="flex items-center gap-3 text-white/90">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span className="text-xs">{course.duration_hours}h</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3.5 w-3.5 text-yellow-400" />
+                        <span className="text-xs">4.5</span>
+                      </div>
+                      <Badge variant="outline" className="bg-white/10 text-white border-white/20 backdrop-blur-sm">
+                        {course.category}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-4 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <Badge variant="secondary">{course.category}</Badge>
-                    <div className="flex items-center text-muted-foreground">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span>{course.duration_hours} hours</span>
+                <div className="p-4 space-y-4">
+                  <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+                  
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
+                      <span>{course.instructor}</span>
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold line-clamp-2">{course.title}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-3">{course.description}</p>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <GraduationCap className="h-4 w-4 mr-1 text-primary" />
-                      <span className="text-sm">{course.instructor}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                      <span className="text-sm font-semibold">4.5</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="text-lg font-bold text-primary">
-                      {settings.currency_symbol}{formatPrice(course.price)}
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground">Course Fee</p>
+                      <div className="text-lg font-bold text-primary">
+                        {settings.currency_symbol}{formatPrice(course.price)}
+                      </div>
                     </div>
                     <Button 
                       size="sm" 
                       onClick={() => navigate(`/dashboard/academy/${course.id}`)}
+                      className="rounded-full px-4 gap-1 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
                     >
                       View Course
-                      <ChevronRight className="h-4 w-4 ml-1" />
+                      <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
