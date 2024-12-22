@@ -40,7 +40,9 @@ import {
   Phone,
   MapPin,
   CircleDollarSign,
-  Wallet
+  Wallet,
+  MoreVertical,
+  Users
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getStatusBadgeProps } from "@/lib/format";
@@ -49,6 +51,8 @@ import { format } from "date-fns";
 import InvoiceFormDialog from '@/components/business/InvoiceFormDialog';
 import CustomerFormDialog from '@/components/business/CustomerFormDialog';
 import { DeleteConfirmDialog } from '@/components/business/DeleteConfirmDialog';
+import { motion } from 'framer-motion';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const CustomerDetailsSkeleton = () => (
   <div className="container mx-auto p-4 md:p-8 max-w-7xl space-y-8">
@@ -423,341 +427,400 @@ export default function CustomerDetails() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
-      {/* Header with Back Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/dashboard/business/customers')}
-            className="shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{customer.name}</h1>
-            <p className="text-muted-foreground">
-              Customer since {formatDate(customer.created_at)}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2 sm:ml-auto">
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditDialogOpen(true)}
-            className="flex-1 sm:flex-none"
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-          <Button 
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="flex-1 sm:flex-none"
-          >
-            <Trash className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        </div>
-      </div>
+    <div className="container mx-auto p-0 sm:p-4 max-w-7xl">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col min-h-[calc(100vh-4rem)] bg-background"
+      >
+        {/* Header */}
+        <header className="sticky top-0 z-20 bg-gradient-to-r from-background to-background/80 backdrop-blur-lg border-b">
+          <div className="p-4 flex flex-col space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 min-w-0">
 
-      {/* Customer Overview */}
-      <div className="bg-card rounded-lg border p-6 space-y-6">
-        {/* Header with Status */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold">Customer Overview</h3>
-            <p className="text-sm text-muted-foreground">
-              Customer since {new Date(customer.created_at).toLocaleDateString()}
-            </p>
-          </div>
-          <Badge 
-            variant={customer.status === 'active' ? 'success' : 'secondary'}
-            className="capitalize px-3 py-1"
-          >
-            {customer.status}
-          </Badge>
-        </div>
-
-        {/* Stats */}
-        <div className="flex flex-col sm:flex-row gap-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Wallet className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Spent</p>
-                <p className="text-lg font-semibold">
-                  {formatCurrency(customer.total_spent || 0)}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Calendar className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Last Order</p>
-                <p className="text-lg font-semibold">
-                  {customer.last_order_date 
-                    ? new Date(customer.last_order_date).toLocaleDateString() 
-                    : 'No orders yet'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tags */}
-        {customer.tags?.length > 0 && (
-          <div className="pt-4 border-t">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-muted-foreground">Tags:</span>
-              {customer.tags.map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant="secondary" 
-                  className="px-2 py-0.5 text-xs"
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Contact Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-medium">Contact Information</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg shrink-0">
-              <Mail className="h-4 w-4 text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{customer.email || 'Not provided'}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg shrink-0">
-              <Phone className="h-4 w-4 text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Phone</p>
-              <p className="font-medium">{customer.phone || 'Not provided'}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg shrink-0">
-              <MapPin className="h-4 w-4 text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Address</p>
-              <p className="font-medium">
-                {[customer.address, customer.city, customer.state, customer.country]
-                  .filter(Boolean)
-                  .join(', ') || 'Not provided'}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notes Section */}
-      {customer.notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground whitespace-pre-wrap">{customer.notes}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Tabs Section */}
-      <Tabs defaultValue="invoices" className="space-y-6">
-        <div className="relative -mx-4 md:mx-0">
-          <div className="border-b overflow-x-auto scrollbar-none">
-            <div className="min-w-full inline-block px-4 md:px-0">
-              <TabsList className="flex w-auto bg-transparent p-0">
-                <TabsTrigger 
-                  value="invoices" 
-                  className="flex items-center gap-1 px-3 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none whitespace-nowrap text-sm"
-                >
-                  <FileText className="h-4 w-4" />
-                  Invoices
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="transactions" 
-                  className="flex items-center gap-1 px-3 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none whitespace-nowrap text-sm"
-                >
-                  <CircleDollarSign className="h-4 w-4" />
-                  Transactions
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="activity" 
-                  className="flex items-center gap-1 px-3 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none whitespace-nowrap text-sm"
-                >
-                  <Clock className="h-4 w-4" />
-                  Activity
-                </TabsTrigger>
-              </TabsList>
-            </div>
-          </div>
-        </div>
-
-        <TabsContent value="invoices" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Invoices</h3>
-            <Button 
-              size="sm"
-              onClick={() => setIsInvoiceFormOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Invoice
-            </Button>
-          </div>
-          <Card>
-            <CardContent className="p-0">
-              {isLoadingInvoices ? (
-                <div className="p-8 flex items-center justify-center">
-                  <div className="space-y-4 w-full max-w-md">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="space-y-2">
-                        <div className="h-4 bg-muted rounded w-full animate-pulse" />
-                        <div className="h-4 bg-muted rounded w-2/3 animate-pulse" />
-                      </div>
-                    ))}
-                  </div>
+                <div className="min-w-0">
+                  <h1 className="text-2xl font-bold tracking-tight truncate">{customer.name}</h1>
+                  <p className="text-sm text-muted-foreground">
+                    Customer since {formatDate(customer.created_at)}
+                  </p>
                 </div>
-              ) : !invoices?.length ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  No invoices found
-                </div>
-              ) : (
-                <>
-                  {/* Desktop View */}
-                  <div className="hidden md:block">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Invoice #</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Due Date</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {invoices.map((invoice) => (
-                          <TableRow key={invoice.id}>
-                            <TableCell>{invoice.invoice_number}</TableCell>
-                            <TableCell>{formatDate(invoice.created_at)}</TableCell>
-                            <TableCell>{formatDate(invoice.due_date)}</TableCell>
-                            <TableCell>{formatCurrency(invoice.amount, invoice.currency)}</TableCell>
-                            <TableCell>
-                              {invoice.status_details ? (
-                                <Badge {...getStatusBadgeProps(invoice.status_details)}>
-                                  {invoice.status_details.label}
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary">
-                                  {invoice.status.replace('_', ' ')}
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => navigate(`/dashboard/business/customers/${customerId}/invoices/${invoice.id}`)}
-                              >
-                                <FileText className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditDialogOpen(true)}
+                  className="hidden sm:flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
+                <Button 
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="hidden sm:flex items-center gap-2"
+                >
+                  <Trash className="h-4 w-4" />
+                  Delete
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="sm:hidden">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Customer
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                      className="text-destructive"
+                    >
+                      <Trash className="h-4 w-4 mr-2" />
+                      Delete Customer
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </div>
+        </header>
 
-                  {/* Mobile View */}
-                  <div className="block md:hidden divide-y divide-border">
-                    {invoices.map((invoice) => (
-                      <div 
-                        key={invoice.id} 
-                        className="p-4 space-y-3"
-                        onClick={() => navigate(`/dashboard/business/customers/${customerId}/invoices/${invoice.id}`)}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">#{invoice.invoice_number}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {formatDate(invoice.created_at)}
-                            </p>
-                          </div>
-                          <Badge {...getStatusBadgeProps(invoice.status_details)}>
-                            {invoice.status_details?.label ?? invoice.status}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <div>
-                            <p className="text-muted-foreground">Due Date</p>
-                            <p>{formatDate(invoice.due_date)}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-muted-foreground">Amount</p>
-                            <p className="font-medium">{formatCurrency(invoice.amount)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="transactions" className="space-y-4">
-          <TransactionsTab customerId={customerId!} />
-        </TabsContent>
-
-        <TabsContent value="activity" className="space-y-4">
-          <Card>
-            <CardContent className="p-0">
-              <ScrollArea className="h-[400px]">
-                <div className="p-4 space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-primary/10 rounded-full">
-                      <Clock className="h-4 w-4 text-primary" />
+        {/* Main Content */}
+        <div className="p-4 space-y-6 w-full overflow-hidden">
+          {/* Customer Overview Card */}
+          <Card className="border-none bg-card w-full overflow-hidden">
+            <CardContent className="p-4 space-y-6">
+              {/* Header with Status */}
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Users className="h-4 w-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-medium">Customer Created</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatDate(customer.created_at)}
+                    <h3 className="text-lg font-semibold">Customer Overview</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Customer since {formatDate(customer.created_at)}
+                  </p>
+                </div>
+                <Badge 
+                  variant={customer.status === 'active' ? 'success' : 'secondary'}
+                  className="capitalize px-3 py-1"
+                >
+                  {customer.status}
+                </Badge>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-muted/50 rounded-lg p-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <Wallet className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm text-muted-foreground">Total Spent</p>
+                      <p className="text-lg font-semibold truncate">
+                        {formatCurrency(customer.total_spent || 0)}
                       </p>
                     </div>
                   </div>
-                  {/* Add more activity items here */}
                 </div>
-              </ScrollArea>
+                <div className="bg-muted/50 rounded-lg p-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <Calendar className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm text-muted-foreground">Last Order</p>
+                      <p className="text-lg font-semibold truncate">
+                        {customer.last_order_date 
+                          ? formatDate(customer.last_order_date)
+                          : 'No orders yet'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tags */}
+              {customer.tags?.length > 0 && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm text-muted-foreground">Tags:</span>
+                    {customer.tags.map((tag) => (
+                      <Badge 
+                        key={tag} 
+                        variant="secondary" 
+                        className="bg-primary/5 text-primary border-0"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+
+          {/* Contact Information */}
+          <Card className="border-none bg-card w-full overflow-hidden">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Mail className="h-4 w-4 text-primary" />
+                </div>
+                <CardTitle className="text-lg font-semibold">Contact Information</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="bg-muted/50 rounded-lg p-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <Mail className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="font-medium truncate">{customer.email || 'Not provided'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <Phone className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-muted-foreground">Phone</p>
+                      <p className="font-medium truncate">{customer.phone || 'Not provided'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <MapPin className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-muted-foreground">Address</p>
+                      <p className="font-medium truncate">
+                        {[customer.address, customer.city, customer.state, customer.country]
+                          .filter(Boolean)
+                          .join(', ') || 'Not provided'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notes Section */}
+          {customer.notes && (
+            <Card className="border-none bg-card w-full overflow-hidden">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg font-semibold">Notes</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground whitespace-pre-wrap">{customer.notes}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tabs Section */}
+          <Tabs defaultValue="invoices" className="w-full">
+            <div className="relative -mx-4 md:mx-0">
+              <div className="border-b overflow-x-auto scrollbar-none">
+                <div className="px-4 md:px-0">
+                  <TabsList className="w-auto bg-transparent p-0">
+                    <TabsTrigger 
+                      value="invoices" 
+                      className="flex items-center gap-1 px-3 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none whitespace-nowrap text-sm"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Invoices
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="transactions" 
+                      className="flex items-center gap-1 px-3 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none whitespace-nowrap text-sm"
+                    >
+                      <CircleDollarSign className="h-4 w-4" />
+                      Transactions
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="activity" 
+                      className="flex items-center gap-1 px-3 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none whitespace-nowrap text-sm"
+                    >
+                      <Clock className="h-4 w-4" />
+                      Activity
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
+            </div>
+
+            <TabsContent value="invoices" className="space-y-4 mt-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Invoices</h3>
+                <Button 
+                  size="sm"
+                  onClick={() => setIsInvoiceFormOpen(true)}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Invoice
+                </Button>
+              </div>
+              <Card className="border-none bg-card w-full overflow-hidden">
+                <CardContent className="p-0">
+                  {isLoadingInvoices ? (
+                    <div className="p-8 flex items-center justify-center">
+                      <div className="space-y-4 w-full max-w-md">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="space-y-2">
+                            <div className="h-4 bg-muted rounded w-full animate-pulse" />
+                            <div className="h-4 bg-muted rounded w-2/3 animate-pulse" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : !invoices?.length ? (
+                    <div className="p-8 text-center">
+                      <FileText className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">No invoices found</p>
+                      <Button
+                        variant="outline"
+                        className="mt-4"
+                        onClick={() => setIsInvoiceFormOpen(true)}
+                      >
+                        Create First Invoice
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Desktop View */}
+                      <div className="hidden md:block">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Invoice #</TableHead>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Due Date</TableHead>
+                              <TableHead>Amount</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {invoices.map((invoice) => (
+                              <TableRow key={invoice.id}>
+                                <TableCell>{invoice.invoice_number}</TableCell>
+                                <TableCell>{formatDate(invoice.created_at)}</TableCell>
+                                <TableCell>{formatDate(invoice.due_date)}</TableCell>
+                                <TableCell>{formatCurrency(invoice.amount, invoice.currency)}</TableCell>
+                                <TableCell>
+                                  {invoice.status_details ? (
+                                    <Badge {...getStatusBadgeProps(invoice.status_details)}>
+                                      {invoice.status_details.label}
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="secondary">
+                                      {invoice.status.replace('_', ' ')}
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => navigate(`/dashboard/business/customers/${customerId}/invoices/${invoice.id}`)}
+                                  >
+                                    <FileText className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      {/* Mobile View */}
+                      <div className="block md:hidden divide-y divide-border">
+                        {invoices.map((invoice) => (
+                          <div 
+                            key={invoice.id} 
+                            className="p-4 space-y-3 hover:bg-muted/50 transition-colors cursor-pointer"
+                            onClick={() => navigate(`/dashboard/business/customers/${customerId}/invoices/${invoice.id}`)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-medium">#{invoice.invoice_number}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {formatDate(invoice.created_at)}
+                                </p>
+                              </div>
+                              <Badge {...getStatusBadgeProps(invoice.status_details)}>
+                                {invoice.status_details?.label ?? invoice.status}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                              <div>
+                                <p className="text-muted-foreground">Due Date</p>
+                                <p>{formatDate(invoice.due_date)}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-muted-foreground">Amount</p>
+                                <p className="font-medium">{formatCurrency(invoice.amount)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="transactions" className="space-y-4 mt-4">
+              <TransactionsTab customerId={customerId!} />
+            </TabsContent>
+
+            <TabsContent value="activity" className="space-y-4 mt-4">
+              <Card className="border-none bg-card w-full overflow-hidden">
+                <CardContent className="p-0">
+                  <ScrollArea className="h-[400px]">
+                    <div className="p-4 space-y-4">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                          <Clock className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Customer Created</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(customer.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </motion.div>
 
       {/* Dialogs */}
       <CustomerFormDialog
@@ -776,7 +839,6 @@ export default function CustomerDetails() {
         description="Are you sure you want to delete this customer? This action cannot be undone."
       />
 
-      {/* Add Invoice Form Dialog */}
       <InvoiceFormDialog 
         open={isInvoiceFormOpen}
         onOpenChange={setIsInvoiceFormOpen}
