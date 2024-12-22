@@ -208,25 +208,35 @@ const HustleDetails = () => {
         variants={container}
         initial="hidden"
         animate="show"
-        className="container mx-auto p-4 space-y-6 max-w-5xl"
+        className="container mx-auto px-4 py-4 md:py-6 space-y-4 max-w-5xl"
       >
         {/* Header Section */}
         <motion.div variants={item} className="relative">
-          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg" />
-          <div className="relative pt-6 px-4">
-            {/* Category Badge */}
-            <Badge variant="secondary" className="mb-4">
-              <Briefcase className="h-3 w-3 mr-1" />
-              {hustle.category.name}
-            </Badge>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl" />
+          <div className="relative p-4 md:p-6">
+            {/* Back Button and Category */}
+            <div className="flex items-center gap-3 mb-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="h-8 w-8 rounded-full hover:bg-background/80"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Badge variant="secondary" className="bg-background/50 backdrop-blur-sm">
+                <Briefcase className="h-3 w-3 mr-1" />
+                {hustle.category.name}
+              </Badge>
+            </div>
 
             {/* Title */}
-            <h1 className="text-2xl md:text-3xl font-bold mb-6">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4">
               {hustle.title}
             </h1>
 
             {/* Application Status Section */}
-            <div className="bg-muted/50 rounded-lg p-4 space-y-4">
+            <div className="bg-background/50 backdrop-blur-sm rounded-xl p-4 space-y-3">
               {/* Status Badge and Reason */}
               <div className="flex flex-col gap-2">
                 {hustle.application_status && (
@@ -237,14 +247,14 @@ const HustleDetails = () => {
                         hustle.application_status === 'rejected' ? 'destructive' :
                         'secondary'
                       }
+                      className="px-2.5 py-0.5 text-xs font-medium"
                     >
                       {hustle.application_status.toUpperCase()}
                     </Badge>
                   </div>
                 )}
-                {/* Show reason if user cannot apply - moved outside the application status check */}
                 {!applicationStatus.can_apply && (
-                  <span className="text-sm text-primary">
+                  <span className="text-sm text-primary font-medium">
                     {applicationStatus.reason}
                   </span>
                 )}
@@ -256,7 +266,7 @@ const HustleDetails = () => {
                 onClick={() => setIsApplyDialogOpen(true)}
                 disabled={!applicationStatus.can_apply || applyMutation.isPending}
                 className={cn(
-                  "w-full",
+                  "w-full h-12 rounded-xl text-sm font-medium transition-all",
                   applicationStatus.can_apply 
                     ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                     : hustle.application_status === 'approved'
@@ -282,51 +292,42 @@ const HustleDetails = () => {
                 )}
               </Button>
             </div>
-
-            <ApplyHustleDialog
-              isOpen={isApplyDialogOpen}
-              onClose={() => setIsApplyDialogOpen(false)}
-              onConfirm={() => {
-                applyMutation.mutate(id!);
-                setIsApplyDialogOpen(false);
-              }}
-              isLoading={applyMutation.isPending}
-              hustleTitle={hustle.title}
-            />
           </div>
         </motion.div>
 
         {/* Stats Grid */}
-        <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent group-hover:from-primary/10 transition-colors" />
-            <CardContent className="p-4 h-full">
-              <div className="flex items-center gap-2">
+            <CardContent className="p-3 h-full">
+              <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
-                  <Timer className="h-5 w-5 text-primary" />
+                  <Timer className="h-4 w-4 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Time Left</p>
-                  <p className="font-semibold break-words">{daysRemaining} days</p>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Time Left</p>
+                  <p className="font-semibold text-sm truncate">{daysRemaining} days</p>
                 </div>
               </div>
               <Progress 
                 value={Math.max(0, Math.min(100, (daysRemaining / 30) * 100))} 
-                className="mt-3"
+                className="mt-2 h-1"
               />
             </CardContent>
           </Card>
 
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent group-hover:from-blue-500/10 transition-colors" />
-            <CardContent className="p-4 h-full">
-              <div className="flex items-center gap-2">
+            <CardContent className="p-3 h-full">
+              <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-500/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
-                  <Calendar className="h-5 w-5 text-blue-500" />
+                  <Calendar className="h-4 w-4 text-blue-500" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Deadline</p>
-                  <p className="font-semibold break-words">{new Date(hustle.deadline).toLocaleDateString()}</p>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Deadline</p>
+                  <p className="font-semibold text-sm truncate">
+                    {new Date(hustle.deadline).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -334,14 +335,16 @@ const HustleDetails = () => {
 
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent group-hover:from-green-500/10 transition-colors" />
-            <CardContent className="p-4 h-full">
-              <div className="flex items-center gap-2">
+            <CardContent className="p-3 h-full">
+              <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-500/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
-                  <DollarSign className="h-5 w-5 text-green-500" />
+                  <DollarSign className="h-4 w-4 text-green-500" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Budget</p>
-                  <p className="font-semibold break-words">{formatCurrency(hustle.budget)}</p>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Budget</p>
+                  <p className="font-semibold text-sm truncate">
+                    {formatCurrency(hustle.budget)}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -349,14 +352,16 @@ const HustleDetails = () => {
 
           <Card className="relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent group-hover:from-purple-500/10 transition-colors" />
-            <CardContent className="p-4 h-full">
-              <div className="flex items-center gap-2">
+            <CardContent className="p-3 h-full">
+              <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-500/10 rounded-lg group-hover:scale-110 transition-transform shrink-0">
-                  <Users className="h-5 w-5 text-purple-500" />
+                  <Users className="h-4 w-4 text-purple-500" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Applications</p>
-                  <p className="font-semibold break-words">{hustle.applications_count}</p>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Applications</p>
+                  <p className="font-semibold text-sm truncate">
+                    {hustle.applications_count}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -366,21 +371,21 @@ const HustleDetails = () => {
         {/* Main Content */}
         <motion.div variants={item}>
           <Tabs defaultValue="details" className="space-y-4">
-            <TabsList className="w-full justify-start">
-              <TabsTrigger value="details" className="flex items-center gap-2">
+            <TabsList className="w-full justify-start h-11 p-1 bg-muted/50 backdrop-blur-sm">
+              <TabsTrigger value="details" className="flex items-center gap-2 rounded-lg">
                 <Briefcase className="h-4 w-4" />
                 Details
               </TabsTrigger>
               {hustle.application_status === 'approved' && (
                 <>
-                  <TabsTrigger value="chat" className="flex items-center gap-2 relative">
+                  <TabsTrigger value="chat" className="flex items-center gap-2 relative rounded-lg">
                     <Send className="h-4 w-4" />
                     Chat
                     <ChatNotificationBadge 
                       count={hustle.unread_messages_count || 0}
                     />
                   </TabsTrigger>
-                  <TabsTrigger value="payments" className="flex items-center gap-2">
+                  <TabsTrigger value="payments" className="flex items-center gap-2 rounded-lg">
                     <DollarSign className="h-4 w-4" />
                     Payments
                   </TabsTrigger>
@@ -389,22 +394,22 @@ const HustleDetails = () => {
             </TabsList>
 
             <TabsContent value="details" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Description</CardTitle>
+              <Card className="overflow-hidden">
+                <CardHeader className="p-4 md:p-6 bg-muted/5">
+                  <CardTitle className="text-lg">Description</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="whitespace-pre-wrap leading-relaxed">
+                <CardContent className="p-4 md:p-6">
+                  <p className="whitespace-pre-wrap leading-relaxed text-sm md:text-base">
                     {hustle.description}
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Requirements</CardTitle>
+              <Card className="overflow-hidden">
+                <CardHeader className="p-4 md:p-6 bg-muted/5">
+                  <CardTitle className="text-lg">Requirements</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 md:p-6">
                   <div className="space-y-3">
                     {hustle.requirements.split('\n').map((req, index) => (
                       <motion.div
@@ -417,7 +422,7 @@ const HustleDetails = () => {
                         <div className="h-6 w-6 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                           <CheckCircle2 className="h-4 w-4 text-primary" />
                         </div>
-                        <p className="text-sm leading-relaxed">{req}</p>
+                        <p className="text-sm md:text-base leading-relaxed">{req}</p>
                       </motion.div>
                     ))}
                   </div>
@@ -428,11 +433,11 @@ const HustleDetails = () => {
             {hustle.application_status === 'approved' && (
               <>
                 <TabsContent value="chat">
-                  <Card className="h-[500px]">
-                    <CardHeader>
-                      <CardTitle>Chat with Admin</CardTitle>
+                  <Card className="h-[calc(100vh-20rem)] overflow-hidden">
+                    <CardHeader className="p-4 bg-muted/5">
+                      <CardTitle className="text-lg">Chat with Admin</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0 h-[calc(500px-4rem)]">
+                    <CardContent className="p-0 h-[calc(100%-4rem)]">
                       <HustleChat hustleId={id!} />
                     </CardContent>
                   </Card>
@@ -445,6 +450,17 @@ const HustleDetails = () => {
           </Tabs>
         </motion.div>
       </motion.div>
+
+      <ApplyHustleDialog
+        isOpen={isApplyDialogOpen}
+        onClose={() => setIsApplyDialogOpen(false)}
+        onConfirm={() => {
+          applyMutation.mutate(id!);
+          setIsApplyDialogOpen(false);
+        }}
+        isLoading={applyMutation.isPending}
+        hustleTitle={hustle.title}
+      />
     </ScrollArea>
   );
 };
