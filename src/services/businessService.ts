@@ -8,6 +8,20 @@ interface RecordPaymentDto {
   notes?: string;
 }
 
+interface GetActivitiesParams {
+  page: number;
+  search?: string;
+  type?: string;
+  from?: Date;
+  to?: Date;
+}
+
+interface ActivityResponse {
+  data: Activity[];
+  next_page: number | null;
+  total: number;
+}
+
 export const businessService = {
   checkProfile: async () => {
     const { data } = await apiClient.get('/business/profile/check');
@@ -118,6 +132,19 @@ export const businessService = {
     }
   },
 
+  getActivities: async (params: GetActivitiesParams): Promise<ActivityResponse> => {
+    const { data } = await apiClient.get('/business/activities', {
+      params: {
+        page: params.page,
+        search: params.search,
+        type: params.type !== 'all' ? params.type : undefined,
+        from: params.from?.toISOString(),
+        to: params.to?.toISOString()
+      }
+    });
+    return data;
+  },
+
   // Add other business-related API calls
 }; 
 
@@ -132,4 +159,13 @@ export interface BusinessMetrics {
     value: number;
   }[];
   recent_activities: Activity[];
+} 
+
+// Update the Activity interface
+export interface Activity {
+  type: 'customer_added' | 'invoice_created' | 'payment_received';
+  title: string;
+  time: string;
+  amount: number | null;
+  currency: string | null;
 } 

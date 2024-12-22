@@ -25,6 +25,8 @@ import CreateBusinessProfile from "@/pages/business/CreateBusinessProfile";
 import Customers from "@/pages/business/Customers";
 import CustomerDetails from "@/pages/business/CustomerDetails";
 import InvoiceDetails from "@/pages/business/InvoiceDetails";
+import BusinessDashboard from "@/components/dashboard/BusinessDashboard";
+import BusinessActivities from "@/pages/business/BusinessActivities";
 
 // Lazy load pages
 const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
@@ -153,6 +155,8 @@ const AppContent = () => {
                 </ProtectedRoute>
               } 
             />
+            <Route path="business/dashboard" element={<BusinessDashboard />} />
+            <Route path="business/activities" element={<BusinessActivities />} />
           </Route>
 
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

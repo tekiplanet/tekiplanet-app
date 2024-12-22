@@ -45,6 +45,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 // Helper function for formatting currency
 const formatAmount = (amount: number) => {
@@ -197,6 +198,7 @@ const ActivityItem = ({
 
 export default function BusinessDashboard() {
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { data: profileData, isLoading: profileLoading } = useQuery({
     queryKey: ['business-profile'],
@@ -412,7 +414,12 @@ export default function BusinessDashboard() {
                   <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
                   <CardDescription>Latest business transactions</CardDescription>
                 </div>
-                <Button variant="ghost" size="sm" className="text-xs">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => navigate('/dashboard/business/activities')}
+                >
                   View All
                 </Button>
               </CardHeader>
