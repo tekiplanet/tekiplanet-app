@@ -259,20 +259,6 @@ const AccountSettingsForm = () => {
               >
                 Change Avatar
               </Button>
-              {avatarUrl && (
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={() => {
-                    setPreviewUrl(null);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = '';
-                    }
-                  }}
-                >
-                  Remove
-                </Button>
-              )}
             </div>
             <p className="text-sm text-muted-foreground">
               JPG, PNG. Maximum size 2MB.
