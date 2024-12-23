@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService } from '@/services/authService';
-import axios from '@/lib/axios';
+import { apiClient } from '@/lib/axios';
 
 type UserData = {
   id: number;
@@ -37,7 +37,7 @@ type AuthState = {
   setTheme: (theme: 'light' | 'dark') => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateUser: (userData: Partial<UserData>) => void;
+  updateUser: (userData: Partial<UserData>) => Promise<boolean>;
   updateUserPreferences: (preferences: UserPreferences) => Promise<UserData>;
   updateUserType: (type: 'student' | 'business' | 'professional') => Promise<void>;
   refreshToken: () => Promise<UserData | null>;
@@ -151,7 +151,7 @@ const useAuthStore = create<AuthState>(
           localStorage.setItem('theme', theme);
 
           // Update user preferences in backend - only send dark_mode
-          const response = await axios.put('/settings/preferences', {
+          const response = await apiClient.put('/settings/preferences', {
             dark_mode: theme === 'dark'
           });
 
@@ -240,10 +240,20 @@ const useAuthStore = create<AuthState>(
         }
       },
 
-      updateUser: (userData: Partial<UserData>) => {
-        set(state => ({
-          user: state.user ? { ...state.user, ...userData } : null
-        }));
+      updateUser: async (userData: Partial<UserData>) => {
+        try {
+          set(state => ({
+            user: state.user ? { ...state.user, ...userData } : null
+          }));
+          
+          // Optionally refresh user data from server
+          await get().refreshToken();
+          
+          return true;
+        } catch (error) {
+          console.error('Error updating user:', error);
+          throw error;
+        }
       },
 
       updateUserPreferences: async (preferences: UserPreferences) => {
@@ -348,7 +358,7 @@ const useAuthStore = create<AuthState>(
         language?: string;
       }) => {
         try {
-          const response = await axios.put('/api/settings/preferences', preferences);
+          const response = await apiClient.put('/api/settings/preferences', preferences);
           set({ user: response.data.user });
           return response.data;
         } catch (error) {

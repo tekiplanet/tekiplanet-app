@@ -28,6 +28,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { apiClient } from '@/lib/axios';
 
 // Animation variants
 const pageTransition = {
@@ -120,15 +121,21 @@ const AccountSettingsForm = () => {
 
   const onSubmit = async (values: z.infer<typeof accountFormSchema>) => {
     try {
-      await updateUser(values);
+      // Make API call to update profile using apiClient
+      const response = await apiClient.put('/settings/profile', values);
+
+      // Update local user state
+      await updateUser(response.data.user);
+
       toast({
         title: "Profile updated",
         description: "Your profile information has been updated successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Profile update error:', error);
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error.response?.data?.message || "Failed to update profile. Please try again.",
         variant: "destructive",
       });
     }
@@ -594,8 +601,8 @@ const ProfessionalProfileForm = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            />
-                      </div>
+                      />
+                    </div>
 
           {/* Contact Preference */}
           <FormField
@@ -608,15 +615,15 @@ const ProfessionalProfileForm = () => {
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
-                  <SelectTrigger>
+                        <SelectTrigger>
                     <SelectValue placeholder="Select contact method" />
-                  </SelectTrigger>
-                  <SelectContent>
+                        </SelectTrigger>
+                        <SelectContent>
                     <SelectItem value="email">Email</SelectItem>
                     <SelectItem value="phone">Phone</SelectItem>
                     <SelectItem value="platform">Platform Messages</SelectItem>
-                  </SelectContent>
-                </Select>
+                        </SelectContent>
+                      </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -636,8 +643,6 @@ const ProfessionalProfileForm = () => {
 
 const SecuritySettingsForm = () => {
   const { toast } = useToast();
-  const { user, updateUser } = useAuthStore();
-
   const form = useForm<z.infer<typeof securityFormSchema>>({
     resolver: zodResolver(securityFormSchema),
     defaultValues: {
@@ -649,108 +654,79 @@ const SecuritySettingsForm = () => {
 
   const onSubmit = async (values: z.infer<typeof securityFormSchema>) => {
     try {
-      await updateUser({ 
-        password: values.new_password,
-        current_password: values.current_password 
+      await apiClient.put('/settings/password', {
+        current_password: values.current_password,
+        new_password: values.new_password,
+        confirm_password: values.confirm_password
       });
+
       toast({
         title: "Password updated",
         description: "Your password has been updated successfully.",
       });
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update password. Please check your current password.",
+        description: error.response?.data?.message || "Failed to update password",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="space-y-8">
-      {/* Two-Factor Authentication */}
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-          <Label className="text-base">Two-Factor Authentication</Label>
-                        <p className="text-sm text-muted-foreground">
-            Add an extra layer of security to your account
-                        </p>
-                      </div>
-                      <Switch 
-          checked={user?.two_factor_enabled}
-          onCheckedChange={async (checked) => {
-            try {
-              await updateUser({ two_factor_enabled: checked });
-              toast({
-                title: "2FA settings updated",
-                description: `Two-factor authentication has been ${checked ? 'enabled' : 'disabled'}.`,
-              });
-            } catch (error) {
-              toast({
-                title: "Error",
-                description: "Failed to update 2FA settings.",
-                variant: "destructive",
-              });
-            }
-          }}
-                      />
-                    </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="current_password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Current Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      {/* Password Change Form */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="current_password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Current Password</FormLabel>
-                <FormControl>
-                  <Input type="password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="new_password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <Input type="password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="confirm_password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm New Password</FormLabel>
-                <FormControl>
-                  <Input type="password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="new_password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <Button 
-            type="submit"
-            disabled={!form.formState.isDirty || form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting ? "Updating..." : "Update Password"}
-          </Button>
-        </form>
-      </Form>
-                    </div>
+        <FormField
+          control={form.control}
+          name="confirm_password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm New Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button 
+          type="submit" 
+          disabled={!form.formState.isDirty || form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Updating..." : "Update Password"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 
@@ -882,41 +858,41 @@ const NotificationsForm = () => {
 };
 
 const ThemeToggle = () => {
-    const { theme, setTheme } = useAuthStore();
-    const { toast } = useToast();
+  const { theme, setTheme } = useAuthStore();
+  const { toast } = useToast();
 
-    const handleThemeChange = async (checked: boolean) => {
-        try {
-            const newTheme = checked ? 'dark' : 'light';
-            await setTheme(newTheme);
-            
-            toast({
-                title: "Theme updated",
-                description: `Theme changed to ${newTheme} mode`,
-            });
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to update theme. Please try again.",
-                variant: "destructive",
-            });
-        }
-    };
+  const handleThemeChange = async (checked: boolean) => {
+    try {
+      const newTheme = checked ? 'dark' : 'light';
+      await setTheme(newTheme);
+      
+      toast({
+        title: "Theme updated",
+        description: `Theme changed to ${newTheme} mode`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update theme. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-    return (
+  return (
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                <Label className="text-base">Dark Mode</Label>
+        <Label className="text-base">Dark Mode</Label>
                         <p className="text-sm text-muted-foreground">
-                    {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
+          {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
                         </p>
                       </div>
-            <Switch
-                checked={theme === 'dark'}
-                onCheckedChange={handleThemeChange}
-            />
+      <Switch
+        checked={theme === 'dark'}
+        onCheckedChange={handleThemeChange}
+      />
                     </div>
-    );
+  );
 };
 
 const Settings = () => {
@@ -993,10 +969,34 @@ const Settings = () => {
       description: 'Manage your security settings',
       items: [
         {
-          id: 'security-settings',
-          title: 'Security Settings',
-          description: 'Update your security preferences',
+          id: 'password',
+          title: 'Password',
+          description: 'Change your password',
           component: <SecuritySettingsForm />
+        },
+        {
+          id: 'two-factor',
+          title: 'Two-Factor Authentication',
+          description: 'Add an extra layer of security',
+          component: (
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-base">Two-Factor Authentication</Label>
+                      <p className="text-sm text-muted-foreground">
+                  Protect your account with 2FA
+                      </p>
+                    </div>
+              <Switch 
+                checked={false}
+                onCheckedChange={() => {
+                  toast({
+                    title: "Coming Soon",
+                    description: "This feature will be available soon.",
+                  });
+                }}
+              />
+                  </div>
+          )
         }
       ]
     },
