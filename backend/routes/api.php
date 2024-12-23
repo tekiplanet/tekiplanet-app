@@ -334,3 +334,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/avatar', [UserSettingsController::class, 'updateAvatar']);
     });
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/settings/business/logo', [BusinessSettingsController::class, 'updateLogo']);
+});

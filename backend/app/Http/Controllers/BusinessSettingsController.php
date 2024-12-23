@@ -6,6 +6,7 @@ use App\Models\BusinessProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessSettingsController extends Controller
 {
@@ -52,6 +53,54 @@ class BusinessSettingsController extends Controller
 
             return response()->json([
                 'message' => 'Failed to update business profile',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateLogo(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'logo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $user = auth()->user();
+            $businessProfile = $user->businessProfile;
+
+            if ($request->hasFile('logo')) {
+                // Delete old logo if it exists
+                if ($businessProfile->logo) {
+                    Storage::disk('public')->delete($businessProfile->logo);
+                }
+
+                // Store new logo
+                $path = $request->file('logo')->store('business-logos', 'public');
+                $businessProfile->logo = $path;
+                $businessProfile->save();
+            }
+
+            return response()->json([
+                'message' => 'Logo updated successfully',
+                'user' => $user->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating business logo:', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to update logo',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessProfile extends Model
 {
@@ -28,6 +29,8 @@ class BusinessProfile extends Model
         'status' => 'string'
     ];
 
+    protected $appends = ['logo_url'];
+
     public function isActive()
     {
         return $this->status === 'active';
@@ -46,5 +49,13 @@ class BusinessProfile extends Model
     public function scopeVerified($query)
     {
         return $query->where('is_verified', true);
+    }
+
+    public function getLogoUrlAttribute()
+    {
+        if (!$this->logo) {
+            return null;
+        }
+        return $this->logo ? Storage::disk('public')->url($this->logo) : null;
     }
 } 

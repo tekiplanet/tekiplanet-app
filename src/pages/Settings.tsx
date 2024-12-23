@@ -34,6 +34,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { NIGERIA_STATES } from '@/lib/constants/nigeria-states';
 import { StateSelect } from "@/components/ui/state-selector";
+import { Textarea } from "@/components/ui/textarea";
 
 // Animation variants
 const pageTransition = {
@@ -74,7 +75,8 @@ const businessFormSchema = z.object({
   address: z.string().min(5, "Address must be at least 5 characters"),
   city: z.string().min(2, "City must be at least 2 characters"),
   state: z.string().min(2, "State must be at least 2 characters"),
-  country: z.literal('Nigeria')
+  country: z.literal('Nigeria'),
+  logo: z.any().optional()
 });
 
 const professionalFormSchema = z.object({
@@ -341,6 +343,63 @@ const AccountSettingsForm = () => {
 const BusinessProfileForm = () => {
   const { user, updateUser } = useAuthStore();
   const businessProfile = user?.business_profile;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handleLogoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please select a valid image file (JPEG, PNG, or JPG)');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB
+      toast.error('Image size should not exceed 2MB');
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    const loadingToast = toast.loading('Uploading logo...');
+
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const response = await apiClient.post('/settings/business/logo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('Logo update response:', response.data);
+      
+      await updateUser(response.data.user);
+      
+      console.log('User after update:', user);
+
+      toast.dismiss(loadingToast);
+      toast.success('Logo updated successfully');
+    } catch (error: any) {
+      console.error('Logo update error:', error);
+      toast.dismiss(loadingToast);
+      toast.error(
+        error.response?.data?.message || 
+        'Failed to update logo. Please try again.'
+      );
+      // Reset preview on error
+      setPreviewUrl(null);
+    }
+  };
 
   if (!businessProfile) {
     return (
@@ -425,6 +484,55 @@ const BusinessProfileForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <div className="h-24 w-24 relative rounded-lg border overflow-hidden">
+            <img 
+              src={previewUrl || businessProfile?.logo_url || '/placeholder-logo.png'} 
+              alt="Business Logo"
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                console.error('Logo image failed to load:', e);
+                const img = e.target as HTMLImageElement;
+                console.log('Failed URL:', img.src);
+                // Try to fetch the URL directly to see the response
+                fetch(img.src)
+                  .then(response => {
+                    console.log('Logo fetch response:', {
+                      status: response.status,
+                      statusText: response.statusText,
+                      headers: Object.fromEntries(response.headers),
+                      url: response.url
+                    });
+                  })
+                  .catch(error => {
+                    console.error('Logo fetch error:', error);
+                  });
+                img.src = '/placeholder-logo.png';
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/jpeg,image/png,image/jpg"
+              onChange={handleLogoChange}
+            />
+            <div className="flex flex-col gap-2">
+              <Button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Change Logo
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              JPG, PNG. Maximum size 2MB.
+            </p>
+          </div>
+        </div>
+
         <div className="grid gap-6">
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -519,7 +627,12 @@ const BusinessProfileForm = () => {
               <FormItem>
                 <FormLabel>Business Description</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Textarea 
+                    placeholder="Describe your business..."
+                    className="resize-none"
+                    {...field}
+                    rows={4}  // Set a reasonable default height
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
