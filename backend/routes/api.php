@@ -331,5 +331,6 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Professional Settings  
         Route::put('/professional/profile', [ProfessionalSettingsController::class, 'updateProfile']);
+        Route::post('/avatar', [UserSettingsController::class, 'updateAvatar']);
     });
 });

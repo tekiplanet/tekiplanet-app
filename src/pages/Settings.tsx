@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -108,6 +108,14 @@ const notificationsFormSchema = z.object({
 
 const AccountSettingsForm = () => {
   const { user, updateUser } = useAuthStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Get the full avatar URL
+  const avatarUrl = user?.avatar 
+    ? `${import.meta.env.VITE_API_URL}/storage/${user.avatar}`
+    : null;
+
   const form = useForm<z.infer<typeof accountFormSchema>>({
     resolver: zodResolver(accountFormSchema),
     defaultValues: {
@@ -145,17 +153,106 @@ const AccountSettingsForm = () => {
     }
   };
 
-    return (
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please select a valid image file (JPEG, PNG, or JPG)');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB
+      toast.error('Image size should not exceed 2MB');
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    const loadingToast = toast.loading('Uploading avatar...');
+
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await apiClient.post('/settings/avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      await updateUser(response.data.user);
+
+      toast.dismiss(loadingToast);
+      toast.success('Avatar updated successfully');
+    } catch (error: any) {
+      console.error('Avatar update error:', error);
+      toast.dismiss(loadingToast);
+      toast.error(
+        error.response?.data?.message || 
+        'Failed to update avatar. Please try again.'
+      );
+      // Reset preview on error
+      setPreviewUrl(null);
+    }
+  };
+
+  return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="flex items-center space-x-4">
-                    <Avatar className="h-24 w-24">
-            <AvatarImage src={user?.avatar || ''} />
-            <AvatarFallback>{user?.first_name?.[0]}{user?.last_name?.[0]}</AvatarFallback>
-                    </Avatar>
-          <Button type="button">Change Avatar</Button>
-                  </div>
-        
+          <Avatar className="h-24 w-24">
+            <AvatarImage 
+              src={previewUrl || avatarUrl || ''} 
+              alt={`${user?.first_name} ${user?.last_name}`}
+            />
+            <AvatarFallback>
+              {user?.first_name?.[0]}{user?.last_name?.[0]}
+            </AvatarFallback>
+          </Avatar>
+          <div className="space-y-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/jpeg,image/png,image/jpg"
+              onChange={handleAvatarChange}
+            />
+            <div className="flex flex-col gap-2">
+              <Button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Change Avatar
+              </Button>
+              {avatarUrl && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => {
+                    setPreviewUrl(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              JPG, PNG. Maximum size 2MB.
+            </p>
+          </div>
+        </div>
+
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -184,8 +281,8 @@ const AccountSettingsForm = () => {
                 </FormItem>
               )}
             />
-                      </div>
-          
+          </div>
+
           <FormField
             control={form.control}
             name="email"
@@ -199,7 +296,7 @@ const AccountSettingsForm = () => {
               </FormItem>
             )}
           />
-          
+
           <div className="space-y-2">
             <Label>Username</Label>
             <Input 
@@ -211,7 +308,7 @@ const AccountSettingsForm = () => {
               Username cannot be changed
             </p>
           </div>
-                      </div>
+        </div>
 
         <Button 
           type="submit" 
@@ -293,7 +390,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-                    </div>
+          </div>
 
           <FormField
             control={form.control}
@@ -336,7 +433,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-                    </div>
+          </div>
 
           <FormField
             control={form.control}
@@ -393,7 +490,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-                    </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -422,8 +519,8 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-                    </div>
-                  </div>
+          </div>
+        </div>
 
         <Button 
           type="submit" 
@@ -508,7 +605,7 @@ const ProfessionalProfileForm = () => {
                 </FormItem>
               )}
             />
-                </div>
+          </div>
 
           {/* Experience and Rate */}
           <div className="grid grid-cols-2 gap-4">
@@ -546,7 +643,7 @@ const ProfessionalProfileForm = () => {
                 </FormItem>
               )}
             />
-                    </div>
+          </div>
 
           {/* Bio */}
           <FormField
@@ -564,7 +661,7 @@ const ProfessionalProfileForm = () => {
           />
 
           {/* Professional Links */}
-                  <div className="space-y-4">
+          <div className="space-y-4">
             <FormField
               control={form.control}
               name="linkedin_url"
@@ -603,8 +700,8 @@ const ProfessionalProfileForm = () => {
                   <FormMessage />
                 </FormItem>
               )}
-                      />
-                    </div>
+            />
+          </div>
 
           {/* Contact Preference */}
           <FormField
@@ -617,20 +714,20 @@ const ProfessionalProfileForm = () => {
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
-                        <SelectTrigger>
+                  <SelectTrigger>
                     <SelectValue placeholder="Select contact method" />
-                        </SelectTrigger>
-                        <SelectContent>
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value="email">Email</SelectItem>
                     <SelectItem value="phone">Phone</SelectItem>
                     <SelectItem value="platform">Platform Messages</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-                    </div>
+        </div>
 
         <Button 
           type="submit" 
@@ -757,25 +854,25 @@ const NotificationsForm = () => {
   return (
     <Form {...form}>
       <form onChange={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="space-y-4">
+        <div className="space-y-4">
           <FormField
             control={form.control}
             name="email_notifications"
             render={({ field }) => (
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base">Email Notifications</Label>
-                        <p className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-base">Email Notifications</Label>
+                  <p className="text-sm text-muted-foreground">
                     Receive email notifications about important updates
-                        </p>
-                      </div>
+                  </p>
+                </div>
                 <FormControl>
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
-                    </div>
+              </div>
             )}
           />
 
@@ -783,20 +880,20 @@ const NotificationsForm = () => {
             control={form.control}
             name="push_notifications"
             render={({ field }) => (
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base">Push Notifications</Label>
-                        <p className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-base">Push Notifications</Label>
+                  <p className="text-sm text-muted-foreground">
                     Receive push notifications on your devices
-                        </p>
-                      </div>
+                  </p>
+                </div>
                 <FormControl>
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
-                    </div>
+              </div>
             )}
           />
 
@@ -804,20 +901,20 @@ const NotificationsForm = () => {
             control={form.control}
             name="marketing_notifications"
             render={({ field }) => (
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
                   <Label className="text-base">Marketing Communications</Label>
-                        <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Receive updates about new features and promotions
-                        </p>
-                      </div>
+                  </p>
+                </div>
                 <FormControl>
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
-                    </div>
+              </div>
             )}
           />
 
@@ -833,18 +930,18 @@ const NotificationsForm = () => {
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select visibility" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="public">Public</SelectItem>
-                          <SelectItem value="private">Private</SelectItem>
-                          <SelectItem value="friends">Friends Only</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="private">Private</SelectItem>
+                    <SelectItem value="friends">Friends Only</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-                    </div>
+        </div>
       </form>
     </Form>
   );
@@ -868,18 +965,18 @@ const ThemeToggle = () => {
   };
 
   return (
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+    <div className="flex items-center justify-between">
+      <div className="space-y-0.5">
         <Label className="text-base">Dark Mode</Label>
-                        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
-                        </p>
-                      </div>
+        </p>
+      </div>
       <Switch
         checked={theme === 'dark'}
         onCheckedChange={handleThemeChange}
       />
-                    </div>
+    </div>
   );
 };
 
@@ -970,10 +1067,10 @@ const Settings = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-base">Two-Factor Authentication</Label>
-                      <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Protect your account with 2FA
-                      </p>
-                    </div>
+                </p>
+              </div>
               <Switch 
                 checked={false}
                 onCheckedChange={() => {
@@ -983,7 +1080,7 @@ const Settings = () => {
                   });
                 }}
               />
-                  </div>
+            </div>
           )
         }
       ]
@@ -1024,7 +1121,7 @@ const Settings = () => {
 
   // Render mobile layout
   if (isMobile) {
-  return (
+    return (
       <div className="min-h-screen bg-background">
         <AnimatePresence mode="wait">
           {!activeGroup ? (
@@ -1037,7 +1134,7 @@ const Settings = () => {
               <div className="sticky top-0 z-10 bg-background p-4 border-b">
                 <div className="flex items-center space-x-2 mb-4">
                   <h1 className="text-2xl font-bold">Settings</h1>
-      </div>
+                </div>
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -1046,8 +1143,8 @@ const Settings = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
+                </div>
               </div>
-                  </div>
 
               <ScrollArea className="h-[calc(100vh-8rem)]">
                 <div className="p-4 space-y-4">
@@ -1061,14 +1158,14 @@ const Settings = () => {
                         <div className="flex-1 flex items-center space-x-4">
                           <div className="p-2 bg-primary/10 rounded-full">
                             {group.icon}
-                  </div>
+                          </div>
                           <div>
                             <h3 className="font-medium">{group.title}</h3>
                             <p className="text-sm text-muted-foreground">
                               {group.description}
                             </p>
-                </div>
-                </div>
+                          </div>
+                        </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </CardContent>
                     </Card>
@@ -1102,15 +1199,15 @@ const Settings = () => {
                 <div className="p-4">
                   {activeItem ? (
                     // Render active item component
-              <div className="space-y-4">
+                    <div className="space-y-4">
                       {settingsGroups
                         .find(g => g.id === activeGroup)
                         ?.items.find(i => i.id === activeItem)
                         ?.component}
-                </div>
+                    </div>
                   ) : (
                     // Render items list
-              <div className="space-y-4">
+                    <div className="space-y-4">
                       {settingsGroups
                         .find(g => g.id === activeGroup)
                         ?.items.map((item) => (
@@ -1122,22 +1219,22 @@ const Settings = () => {
                             <CardContent className="flex items-center justify-between p-4">
                               <div>
                                 <h3 className="font-medium">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-muted-foreground">
                                   {item.description}
-                    </p>
-                  </div>
+                                </p>
+                              </div>
                               <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </CardContent>
-          </Card>
+                            </CardContent>
+                          </Card>
                         ))}
-                  </div>
+                    </div>
                   )}
                 </div>
               </ScrollArea>
             </motion.div>
           )}
         </AnimatePresence>
-                </div>
+      </div>
     );
   }
 
@@ -1158,8 +1255,8 @@ const Settings = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                  </div>
-                </div>
+              </div>
+            </div>
             <div className="space-y-2">
               {filteredGroups.map((group) => (
                 <button
@@ -1175,9 +1272,9 @@ const Settings = () => {
                   <span>{group.title}</span>
                 </button>
               ))}
-                  </div>
-                </div>
-                  </div>
+            </div>
+          </div>
+        </div>
 
         {/* Main Content */}
         <div className="col-span-9">
@@ -1188,12 +1285,12 @@ const Settings = () => {
                 {...pageTransition}
                 className="space-y-6"
               >
-          <Card>
-            <CardHeader>
+                <Card>
+                  <CardHeader>
                     <CardTitle>
                       {settingsGroups.find(g => g.id === activeGroup)?.title}
                     </CardTitle>
-            </CardHeader>
+                  </CardHeader>
                   <CardContent>
                     {settingsGroups
                       .find(g => g.id === activeGroup)
@@ -1201,10 +1298,10 @@ const Settings = () => {
                         <div key={item.id} className="mb-8 last:mb-0">
                           <h3 className="text-lg font-semibold mb-4">{item.title}</h3>
                           {item.component}
-                  </div>
+                        </div>
                       ))}
-            </CardContent>
-          </Card>
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
           </AnimatePresence>

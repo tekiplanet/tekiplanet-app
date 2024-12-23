@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class UserSettingsController extends Controller
 {
@@ -210,6 +211,60 @@ class UserSettingsController extends Controller
 
             return response()->json([
                 'message' => 'Failed to update preferences',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048', // 2MB max
+            ], [
+                'avatar.required' => 'Please select an image to upload',
+                'avatar.image' => 'The file must be an image',
+                'avatar.mimes' => 'The image must be a JPEG, PNG or JPG file',
+                'avatar.max' => 'The image size cannot exceed 2MB'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $user = auth()->user();
+
+            // Delete old avatar if exists
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Store new avatar
+            $path = $request->file('avatar')->store('avatars', 'public');
+            
+            // Update user avatar path
+            $user->update([
+                'avatar' => $path
+            ]);
+
+            return response()->json([
+                'message' => 'Avatar updated successfully',
+                'user' => $user->fresh(),
+                'avatar_url' => Storage::disk('public')->url($path)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating avatar:', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to update avatar. Please try again.',
                 'error' => $e->getMessage()
             ], 500);
         }
