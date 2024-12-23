@@ -92,28 +92,9 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out successfully']);
     }
 
-    public function user(Request $request)
+    public function user()
     {
-        // Fetch the user from the database to ensure fresh data
-        $user = User::findOrFail($request->user()->id);
-        
-        Log::info('User data being returned', [
-            'id' => $user->id,
-            'wallet_balance' => $user->wallet_balance,
-            'attributes' => $user->getAttributes()
-        ]);
-
-        // Add cache-control headers to prevent caching
-        return response()->json(
-            $user->makeVisible([
-                'wallet_balance', 'dark_mode', 'two_factor_enabled', 
-                'email_notifications', 'push_notifications', 
-                'marketing_notifications', 'created_at', 'updated_at',
-                'email_verified_at', 'timezone', 'bio', 'profile_visibility',
-                'last_login_at', 'last_login_ip'
-            ])->toArray()
-        )->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-          ->header('Pragma', 'no-cache')
-          ->header('Expires', '0');
+        $user = auth()->user()->load('businessProfile');
+        return response()->json($user);
     }
 }

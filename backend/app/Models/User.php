@@ -108,6 +108,12 @@ class User extends Authenticatable
         return $this->hasOne(Professional::class);
     }
 
+    // Helper method to check if user has an active business profile
+    public function hasActiveBusiness()
+    {
+        return $this->businessProfile && $this->businessProfile->status === 'active';
+    }
+
     protected static function boot()
     {
         parent::boot();

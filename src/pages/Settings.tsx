@@ -20,7 +20,8 @@ import {
   Settings as SettingsIcon,
   Moon,
   Sun,
-  ArrowLeft
+  ArrowLeft,
+  AlertCircle
 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +31,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { apiClient } from '@/lib/axios';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 // Animation variants
 const pageTransition = {
@@ -335,9 +337,40 @@ const AccountSettingsForm = () => {
 };
 
 const BusinessProfileForm = () => {
-  const { toast } = useToast();
-  const { user, updateUser } = useAuthStore();
+  const { user } = useAuthStore();
   const businessProfile = user?.business_profile;
+
+  if (!businessProfile) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-semibold mb-2">No Business Profile</h3>
+        <p className="text-muted-foreground mb-4">
+          You don't have a business profile yet. Create one to access business features.
+        </p>
+        <Button asChild>
+          <Link to="/business/setup">Create Business Profile</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (businessProfile.status !== 'active') {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Inactive Business Profile</h3>
+        <p className="text-muted-foreground mb-4">
+          Your business profile is currently inactive. Please complete the setup process.
+        </p>
+        <Button asChild>
+          <Link to="/business/setup">Complete Setup</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof businessFormSchema>>({
     resolver: zodResolver(businessFormSchema),
@@ -1014,7 +1047,6 @@ const Settings = () => {
           description: 'Toggle between light and dark mode',
           component: <ThemeToggle />
         },
-        // Add more quick settings items
       ]
     },
     {
@@ -1029,23 +1061,25 @@ const Settings = () => {
           description: 'Update your basic information',
           component: <AccountSettingsForm />
         },
-        // Add more account settings items
       ]
     },
-    {
-      id: 'business',
-      title: 'Business Profile',
-      icon: <Building2 className="w-5 h-5" />,
-      description: 'Manage your business information',
-      items: [
-        {
-          id: 'business-info',
-          title: 'Business Information',
-          description: 'Update your business details',
-          component: <BusinessProfileForm />
-        }
-      ]
-    },
+    // Show business profile if it exists and is active
+    ...(user?.business_profile?.status === 'active' ? [
+      {
+        id: 'business',
+        title: 'Business Profile',
+        icon: <Building2 className="w-5 h-5" />,
+        description: 'Manage your business information',
+        items: [
+          {
+            id: 'business-info',
+            title: 'Business Information',
+            description: 'Update your business details',
+            component: <BusinessProfileForm />
+          }
+        ]
+      }
+    ] : []),
     {
       id: 'professional',
       title: 'Professional Profile',
@@ -1112,7 +1146,7 @@ const Settings = () => {
         }
       ]
     }
-  ];
+  ].filter(Boolean);
 
   // Filter settings based on search query
   const filteredGroups = settingsGroups.filter(group => 

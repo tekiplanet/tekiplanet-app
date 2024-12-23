@@ -10,29 +10,28 @@ class BusinessProfile extends Model
     use HasUuids;
 
     protected $fillable = [
-        'user_id',
         'business_name',
         'business_email',
         'phone_number',
+        'registration_number',
+        'tax_number',
+        'website',
+        'description',
         'address',
         'city',
         'state',
         'country',
-        'business_type',
-        'registration_number',
-        'tax_number',
-        'logo',
-        'website',
-        'description',
-        'status',
-        'is_verified',
-        'verified_at'
+        'status'
     ];
 
     protected $casts = [
-        'is_verified' => 'boolean',
-        'verified_at' => 'datetime',
+        'status' => 'string'
     ];
+
+    public function isActive()
+    {
+        return $this->status === 'active';
+    }
 
     public function user()
     {
