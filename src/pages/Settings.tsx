@@ -467,10 +467,10 @@ const BusinessProfileForm = () => {
     try {
       const response = await apiClient.put('/settings/business/profile', values);
       
-      // Fix: Update using camelCase
+      // Fix: Only update the businessProfile field, not the entire user object
       await updateUser({
         ...user,
-        businessProfile: response.data.business_profile
+        businessProfile: response.data.business_profile || response.data.businessProfile
       });
 
       toast.dismiss(loadingToast);

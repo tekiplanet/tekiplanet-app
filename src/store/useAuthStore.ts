@@ -303,7 +303,7 @@ const useAuthStore = create<AuthState>(
             return null;
           }
 
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user?_=${Date.now()}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/user?_=${Date.now()}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -345,7 +345,7 @@ const useAuthStore = create<AuthState>(
         language?: string;
       }) => {
         try {
-          const response = await apiClient.put('/api/settings/preferences', preferences);
+          const response = await apiClient.put('/settings/preferences', preferences);
           set({ user: response.data.user });
           return response.data;
         } catch (error) {
