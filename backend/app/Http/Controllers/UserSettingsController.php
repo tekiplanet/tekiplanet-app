@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
 
 class UserSettingsController extends Controller
 {
@@ -17,13 +18,28 @@ class UserSettingsController extends Controller
             $validator = Validator::make($request->all(), [
                 'first_name' => 'required|string|min:2',
                 'last_name' => 'required|string|min:2',
-                'email' => 'required|email|unique:users,email,' . auth()->id(),
-                'username' => 'required|string|min:3|unique:users,username,' . auth()->id(),
+                'email' => [
+                    'required',
+                    'email',
+                    Rule::unique('users')->ignore(auth()->id())
+                ],
+            ], [
+                // Custom validation messages
+                'first_name.required' => 'Please enter your first name',
+                'first_name.min' => 'First name must be at least 2 characters',
+                'last_name.required' => 'Please enter your last name',
+                'last_name.min' => 'Last name must be at least 2 characters',
+                'email.required' => 'Please enter your email address',
+                'email.email' => 'Please enter a valid email address',
+                'email.unique' => 'This email is already registered to another account'
             ]);
 
             if ($validator->fails()) {
+                // Get the first validation error message
+                $firstError = collect($validator->errors()->all())->first();
+                
                 return response()->json([
-                    'message' => 'Validation failed',
+                    'message' => $firstError, // Use the specific error message as the main message
                     'errors' => $validator->errors()
                 ], 422);
             }
@@ -32,8 +48,7 @@ class UserSettingsController extends Controller
             $user->update($request->only([
                 'first_name',
                 'last_name',
-                'email',
-                'username'
+                'email'
             ]));
 
             return response()->json([
@@ -48,8 +63,15 @@ class UserSettingsController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
+            if ($e instanceof \Illuminate\Database\QueryException && str_contains($e->getMessage(), 'Duplicate entry')) {
+                return response()->json([
+                    'message' => 'This email address is already being used by another account',
+                    'errors' => ['email' => ['Please use a different email address']]
+                ], 422);
+            }
+
             return response()->json([
-                'message' => 'Failed to update profile',
+                'message' => 'Something went wrong while updating your profile. Please try again.',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -65,11 +87,17 @@ class UserSettingsController extends Controller
                     ->numbers()
                     ->symbols()],
                 'confirm_password' => 'required|string|same:new_password'
+            ], [
+                'current_password.required' => 'Please enter your current password',
+                'new_password.required' => 'Please enter a new password',
+                'new_password.min' => 'Your new password must be at least 8 characters',
+                'confirm_password.required' => 'Please confirm your new password',
+                'confirm_password.same' => 'The passwords you entered do not match'
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
-                    'message' => 'Validation failed',
+                    'message' => 'Please check your password entries',
                     'errors' => $validator->errors()
                 ], 422);
             }
@@ -78,7 +106,8 @@ class UserSettingsController extends Controller
 
             if (!Hash::check($request->current_password, $user->password)) {
                 return response()->json([
-                    'message' => 'Current password is incorrect'
+                    'message' => 'The current password you entered is incorrect',
+                    'errors' => ['current_password' => ['Please check your current password and try again']]
                 ], 422);
             }
 
@@ -116,11 +145,14 @@ class UserSettingsController extends Controller
                 'profile_visibility' => 'string|in:public,private,friends',
                 'timezone' => 'string',
                 'language' => 'string'
+            ], [
+                'profile_visibility.in' => 'Please select a valid privacy option',
+                'theme.in' => 'Please select either light or dark theme'
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
-                    'message' => 'Validation failed',
+                    'message' => 'Some of your preferences could not be saved',
                     'errors' => $validator->errors()
                 ], 422);
             }

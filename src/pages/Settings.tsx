@@ -57,7 +57,6 @@ const accountFormSchema = z.object({
   first_name: z.string().min(2, "First name must be at least 2 characters"),
   last_name: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  username: z.string().min(3, "Username must be at least 3 characters"),
 });
 
 const businessFormSchema = z.object({
@@ -115,24 +114,34 @@ const AccountSettingsForm = () => {
       first_name: user?.first_name || "",
       last_name: user?.last_name || "",
       email: user?.email || "",
-      username: user?.username || "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof accountFormSchema>) => {
-    const loadingToast = toast.loading('Updating profile...');
+    const loadingToast = toast.loading('Updating your profile...');
 
     try {
       const response = await apiClient.put('/settings/profile', values);
       await updateUser(response.data.user);
 
       toast.dismiss(loadingToast);
-      toast.success('Profile updated successfully');
+      toast.success('Your profile has been updated successfully');
     } catch (error: any) {
       console.error('Profile update error:', error);
       
       toast.dismiss(loadingToast);
-      toast.error(error.response?.data?.message || 'Failed to update profile');
+      
+      // Show the first validation error message if it exists
+      if (error.response?.data?.errors) {
+        const firstError = Object.values(error.response.data.errors)[0];
+        toast.error(Array.isArray(firstError) ? firstError[0] : firstError);
+      } else {
+        // Fallback to the general error message
+        toast.error(
+          error.response?.data?.message || 
+          'Unable to update your profile. Please try again.'
+        );
+      }
     }
   };
 
@@ -191,19 +200,17 @@ const AccountSettingsForm = () => {
             )}
           />
           
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-2">
+            <Label>Username</Label>
+            <Input 
+              value={user?.username || ''} 
+              disabled 
+              className="bg-muted"
+            />
+            <p className="text-sm text-muted-foreground">
+              Username cannot be changed
+            </p>
+          </div>
                       </div>
 
         <Button 
