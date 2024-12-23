@@ -717,12 +717,11 @@ const BusinessProfileForm = () => {
 
 const ProfessionalProfileForm = () => {
   const { user, updateUser } = useAuthStore();
-  // Access the nested user object and then the professional relationship
-  const professionalProfile = user?.user?.professional;
+  // Fix: Access professional profile directly from user
+  const professionalProfile = user?.professional;
 
   console.log('Professional Profile Data:', {
     user,
-    userNested: user?.user,  // Let's see what's in the nested user object
     professionalProfile,
     title: professionalProfile?.title,
     specialization: professionalProfile?.specialization,
