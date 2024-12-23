@@ -16,16 +16,13 @@ class ProfessionalSettingsController extends Controller
                 'title' => 'required|string|min:2',
                 'specialization' => 'required|string|min:2',
                 'expertise_areas' => 'required|array|min:1',
-                'years_of_experience' => 'required|integer|min:0',
-                'hourly_rate' => 'required|numeric|min:0',
                 'bio' => 'required|string|max:500',
                 'certifications' => 'nullable|array',
                 'linkedin_url' => 'nullable|url',
                 'github_url' => 'nullable|url',
                 'portfolio_url' => 'nullable|url',
-                'preferred_contact_method' => 'required|in:email,phone,platform',
-                'timezone' => 'required|string',
-                'languages' => 'required|array|min:1'
+                'preferred_contact_method' => 'required|in:email,phone,whatsapp',
+                'languages' => 'required|array|min:1',
             ]);
 
             if ($validator->fails()) {
@@ -35,12 +32,25 @@ class ProfessionalSettingsController extends Controller
                 ], 422);
             }
 
-            $professional = Professional::where('user_id', auth()->id())->firstOrFail();
-            $professional->update($request->all());
+            $user = auth()->user();
+            $professional = $user->professional;
+
+            $professional->update($request->only([
+                'title',
+                'specialization',
+                'expertise_areas',
+                'bio',
+                'certifications',
+                'linkedin_url',
+                'github_url',
+                'portfolio_url',
+                'preferred_contact_method',
+                'languages'
+            ]));
 
             return response()->json([
                 'message' => 'Professional profile updated successfully',
-                'profile' => $professional->fresh()
+                'user' => $user->fresh()
             ]);
 
         } catch (\Exception $e) {
