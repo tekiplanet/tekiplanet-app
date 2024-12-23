@@ -298,14 +298,12 @@ const useAuthStore = create<AuthState>(
 
       refreshToken: async () => {
         try {
-          // If no token exists, do nothing
           const token = localStorage.getItem('token');
           if (!token) {
             return null;
           }
 
-          // Fetch current user data from the server with a unique cache-busting parameter
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/user?_=${Date.now()}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user?_=${Date.now()}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -317,33 +315,22 @@ const useAuthStore = create<AuthState>(
           });
 
           if (!response.ok) {
-            // If token is invalid or expired, logout
             get().logout();
             return null;
           }
 
           const userData = await response.json();
 
-          // Force a complete state update
-          set((state) => {
-            return {
-              ...state,
-              user: {
-                ...userData,
-                wallet_balance: Number(userData.wallet_balance || 0),
-                preferences: {
-                  dark_mode: userData.dark_mode ?? false,
-                  theme: userData.dark_mode ? 'dark' : 'light'
-                }
-              },
-              isAuthenticated: true
-            };
-          }, true);  // Force update
+          // Update state with user data directly
+          set((state) => ({
+            ...state,
+            user: userData,  // Store user data directly, not nested
+            isAuthenticated: true
+          }), true);
 
           return userData;
         } catch (error) {
           console.error('Failed to refresh user data:', error);
-          // Logout if there's an error
           get().logout();
           return null;
         }

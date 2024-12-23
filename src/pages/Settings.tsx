@@ -753,9 +753,6 @@ const ProfessionalProfileForm = () => {
     const loadingToast = toast.loading('Updating professional profile...');
 
     try {
-      // Log the data we're sending
-      console.log('Sending professional profile update:', values);
-
       const response = await apiClient.put('/settings/professional/profile', values);
       await updateUser(response.data.user);
 
@@ -763,21 +760,11 @@ const ProfessionalProfileForm = () => {
       toast.success('Professional profile updated successfully');
     } catch (error: any) {
       console.error('Professional profile update error:', error);
-      // Log the validation errors if they exist
-      console.error('Validation errors:', error.response?.data?.errors);
-      
       toast.dismiss(loadingToast);
-      
-      // Show validation errors if they exist
-      if (error.response?.data?.errors) {
-        const firstError = Object.values(error.response.data.errors)[0];
-        toast.error(Array.isArray(firstError) ? firstError[0] : firstError);
-      } else {
-        toast.error(
-          error.response?.data?.message || 
-          'Failed to update professional profile. Please try again.'
-        );
-      }
+      toast.error(
+        error.response?.data?.message || 
+        'Failed to update professional profile. Please try again.'
+      );
     }
   };
 

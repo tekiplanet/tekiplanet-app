@@ -75,6 +75,14 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleLogout = () => {
+    useAuthStore.getState().logout();
+    
+    toast.success("Logged out successfully");
+    navigate("/login");
+  }
 
   const { data: cartCount = 0 } = useQuery({
     queryKey: ['cartCount'],
@@ -82,75 +90,17 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
     initialData: 0
   });
 
-  useEffect(() => {
-    console.group('User Data Debug');
-    console.log('Full User Object:', user);
-    console.log('User Name:', user?.name);
-    console.log('User Email:', user?.email);
-    console.log('User Avatar:', user?.avatar);
-    console.log('User First Name:', user?.first_name);
-    console.log('User Last Name:', user?.last_name);
-    console.groupEnd();
-  }, [user]);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        // Force a refresh of user data
-        const freshUserData = await useAuthStore.getState().refreshToken();
-        
-        // Log the fetched data for debugging
-        console.group('User Data Refresh');
-        console.log('Fresh User Data:', freshUserData);
-        console.log('Current Wallet Balance:', freshUserData?.wallet_balance);
-        console.groupEnd();
-      } catch (error) {
-        console.error('Failed to refresh user data:', error);
-        toast.error('Failed to fetch latest user information');
-      }
-    };
-
-    // Fetch user data immediately on mount
-    fetchUserData();
-
-    // Optional: Set up an interval to periodically refresh user data
-    const intervalId = setInterval(fetchUserData, 5 * 60 * 1000); // Every 5 minutes
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const handleLogout = () => {
-    // Use the logout method from auth store
-    useAuthStore.getState().logout();
-    
-    toast.success("Logged out successfully");
-    navigate("/login");
-  }
-
-  const handleProfileSwitch = async (type: 'student' | 'business' | 'professional') => {
-    try {
-      await updateUserType(type);
-      
-      // Close the sheet menu
-      setIsSheetOpen(false);
-      
-      // Navigate to dashboard after profile type switch
-      navigate('/dashboard', { 
-        replace: true,  // Replace current history entry
-        state: { profileSwitched: true }  // Optional: pass state to indicate profile switch
-      });
-
-      // Show success toast
-      toast.success(`Switched to ${type} profile`);
-    } catch (error) {
-      console.error('Profile switch error:', error);
-      toast.error('Failed to switch profile type');
-    }
-  }
-
   const renderDashboard = () => {
-    switch (user?.account_type) {
+    if (!user) {
+      return <div>Loading dashboard...</div>;
+    }
+
+    console.log('Render Dashboard:', {
+      accountType: user.account_type,
+      user
+    });
+
+    switch (user.account_type) {
       case "student":
         return <StudentDashboard />;
       case "business":
@@ -158,7 +108,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
       case "professional":
         return <ProfessionalDashboard />;
       default:
-        return <div>Invalid user type</div>;
+        return <div>Loading dashboard...</div>;
     }
   }
 
@@ -374,12 +324,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                 <div className="relative">
                   <Avatar className="h-10 w-10 ring-2 ring-primary/10">
                     <AvatarImage 
-                      src={user?.avatar || undefined} 
-                      alt={user?.name || user?.first_name || user?.last_name || "User Avatar"} 
+                      src={user?.avatar} 
+                      alt={user?.username || `${user?.first_name} ${user?.last_name}`} 
                     />
                     <AvatarFallback>
-                      {user?.name 
-                        ? user.name.charAt(0).toUpperCase() 
+                      {user?.username 
+                        ? user.username.charAt(0).toUpperCase() 
                         : (user?.first_name 
                           ? user.first_name.charAt(0).toUpperCase() 
                           : '?')
@@ -390,7 +340,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <h3 className="truncate text-sm font-medium">
-                    {user?.name || 
+                    {user?.username || 
                      (user?.first_name && user?.last_name 
                        ? `${user.first_name} ${user.last_name}` 
                        : user?.first_name || 
@@ -519,12 +469,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage 
-                          src={user?.avatar || undefined} 
-                          alt={user?.name || user?.first_name || user?.last_name || "User Avatar"} 
+                          src={user?.avatar} 
+                          alt={user?.username || `${user?.first_name} ${user?.last_name}`} 
                         />
                         <AvatarFallback>
-                          {user?.name 
-                            ? user.name.charAt(0).toUpperCase() 
+                          {user?.username 
+                            ? user.username.charAt(0).toUpperCase() 
                             : (user?.first_name 
                               ? user.first_name.charAt(0).toUpperCase() 
                               : '?')
@@ -536,7 +486,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                   <DropdownMenuContent align="start" className="w-56">
                     <div className="flex items-center gap-2 p-2 border-b">
                       <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.name || 
+                        <p className="text-sm font-medium leading-none">{user?.username || 
                          (user?.first_name && user?.last_name 
                            ? `${user.first_name} ${user.last_name}` 
                            : user?.first_name || 
@@ -646,12 +596,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage 
-                          src={user?.avatar || undefined} 
-                          alt={user?.name || user?.first_name || user?.last_name || "User Avatar"} 
+                          src={user?.avatar} 
+                          alt={user?.username || `${user?.first_name} ${user?.last_name}`} 
                         />
                         <AvatarFallback>
-                          {user?.name 
-                            ? user.name.charAt(0).toUpperCase() 
+                          {user?.username 
+                            ? user.username.charAt(0).toUpperCase() 
                             : (user?.first_name 
                               ? user.first_name.charAt(0).toUpperCase() 
                               : '?')
@@ -663,7 +613,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                   <DropdownMenuContent align="end" className="w-56">
                     <div className="flex items-center gap-2 p-2 border-b">
                       <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.name || 
+                        <p className="text-sm font-medium leading-none">{user?.username || 
                          (user?.first_name && user?.last_name 
                            ? `${user.first_name} ${user.last_name}` 
                            : user?.first_name || 
@@ -741,12 +691,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                         <div className="relative">
                           <Avatar className="h-14 w-14 ring-4 ring-background">
                             <AvatarImage 
-                              src={user?.avatar || undefined} 
-                              alt={user?.name || user?.first_name || user?.last_name || "User Avatar"} 
+                              src={user?.avatar} 
+                              alt={user?.username || `${user?.first_name} ${user?.last_name}`} 
                             />
                             <AvatarFallback>
-                              {user?.name 
-                                ? user.name.charAt(0).toUpperCase() 
+                              {user?.username 
+                                ? user.username.charAt(0).toUpperCase() 
                                 : (user?.first_name 
                                   ? user.first_name.charAt(0).toUpperCase() 
                                   : '?')
@@ -757,7 +707,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-semibold truncate">
-                            {user?.name || 
+                            {user?.username || 
                              (user?.first_name && user?.last_name 
                                ? `${user.first_name} ${user.last_name}` 
                                : user?.first_name || 
