@@ -763,14 +763,31 @@ const ProfessionalProfileForm = () => {
   const onSubmit = async (values: z.infer<typeof professionalFormSchema>) => {
     const loadingToast = toast.loading('Updating professional profile...');
 
+    // Add debug logging
+    console.log('Professional Profile Form Values:', {
+      values,
+      schema: professionalFormSchema,
+    });
+
     try {
-      const response = await apiClient.put('/settings/professional/profile', values);
+      // Include the existing read-only values in the request
+      const requestData = {
+        ...values,
+        years_of_experience: professionalProfile?.years_of_experience,
+        hourly_rate: professionalProfile?.hourly_rate,
+        timezone: professionalProfile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      };
+
+      console.log('Sending data to API:', requestData);
+
+      const response = await apiClient.put('/settings/professional/profile', requestData);
       await updateUser(response.data.user);
 
       toast.dismiss(loadingToast);
       toast.success('Professional profile updated successfully');
     } catch (error: any) {
       console.error('Professional profile update error:', error);
+      console.log('Error response data:', error.response?.data);
       toast.dismiss(loadingToast);
       toast.error(
         error.response?.data?.message || 
@@ -782,7 +799,7 @@ const ProfessionalProfileForm = () => {
   // Show read-only experience info
   const experienceInfo = (
     <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="space-y-2">
+      <div className="space-y-2">
         <Label>Years of Experience</Label>
         <div className="p-2 bg-muted rounded-md">
           {professionalProfile?.years_of_experience || 0} years
@@ -984,21 +1001,21 @@ const ProfessionalProfileForm = () => {
                 <FormLabel>Preferred Contact Method</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                        <SelectTrigger>
+                    <SelectTrigger>
                       <SelectValue placeholder="Select contact method" />
-                        </SelectTrigger>
+                    </SelectTrigger>
                   </FormControl>
-                        <SelectContent>
+                  <SelectContent>
                     <SelectItem value="email">Email</SelectItem>
                     <SelectItem value="phone">Phone</SelectItem>
                     <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-                    </div>
+        </div>
 
         <Button type="submit">Update Profile</Button>
       </form>
