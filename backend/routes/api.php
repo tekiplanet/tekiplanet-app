@@ -321,8 +321,15 @@ Route::middleware('auth:sanctum')->group(function () {
 // User Settings Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('settings')->group(function () {
+        // User Settings
         Route::put('/profile', [UserSettingsController::class, 'updateProfile']);
         Route::put('/password', [UserSettingsController::class, 'updatePassword']);
         Route::put('/preferences', [UserSettingsController::class, 'updatePreferences']);
+        
+        // Business Settings
+        Route::put('/business/profile', [BusinessSettingsController::class, 'updateProfile']);
+        
+        // Professional Settings  
+        Route::put('/professional/profile', [ProfessionalSettingsController::class, 'updateProfile']);
     });
 });

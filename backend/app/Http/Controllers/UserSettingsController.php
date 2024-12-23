@@ -126,11 +126,47 @@ class UserSettingsController extends Controller
             }
 
             $user = auth()->user();
-            $user->update($request->all());
+            
+            // Only update dark_mode based on theme
+            if ($request->has('theme')) {
+                $user->dark_mode = $request->theme === 'dark';
+            }
+
+            // Update notification preferences
+            if ($request->has('email_notifications')) {
+                $user->email_notifications = $request->email_notifications;
+            }
+            if ($request->has('push_notifications')) {
+                $user->push_notifications = $request->push_notifications;
+            }
+            if ($request->has('marketing_notifications')) {
+                $user->marketing_notifications = $request->marketing_notifications;
+            }
+
+            // Update other preferences
+            if ($request->has('profile_visibility')) {
+                $user->profile_visibility = $request->profile_visibility;
+            }
+            if ($request->has('timezone')) {
+                $user->timezone = $request->timezone;
+            }
+            if ($request->has('language')) {
+                $user->language = $request->language;
+            }
+
+            $user->save();
 
             return response()->json([
                 'message' => 'Preferences updated successfully',
-                'preferences' => $user->fresh()
+                'user' => $user->makeVisible([
+                    'dark_mode',
+                    'email_notifications',
+                    'push_notifications',
+                    'marketing_notifications',
+                    'profile_visibility',
+                    'timezone',
+                    'language'
+                ])
             ]);
 
         } catch (\Exception $e) {

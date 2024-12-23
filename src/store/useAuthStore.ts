@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService } from '@/services/authService';
+import axios from '@/lib/axios';
 
 type UserData = {
   id: number;
@@ -33,7 +34,7 @@ type AuthState = {
   token: string | null;
   theme: 'light' | 'dark';
   isAuthenticated: boolean;
-  setTheme: (theme: 'light' | 'dark') => void;
+  setTheme: (theme: 'light' | 'dark') => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<UserData>) => void;
@@ -41,6 +42,14 @@ type AuthState = {
   updateUserType: (type: 'student' | 'business' | 'professional') => Promise<void>;
   refreshToken: () => Promise<UserData | null>;
   initialize: () => Promise<UserData | null>;
+  updatePreferences: (preferences: {
+    email_notifications?: boolean;
+    push_notifications?: boolean;
+    marketing_notifications?: boolean;
+    profile_visibility?: 'public' | 'private' | 'friends';
+    timezone?: string;
+    language?: string;
+  }) => Promise<UserData>;
 };
 
 const useAuthStore = create<AuthState>(
@@ -130,9 +139,53 @@ const useAuthStore = create<AuthState>(
         }
       },
 
-      setTheme: (theme: 'light' | 'dark') => {
-        set({ theme });
-        localStorage.setItem('theme', theme);
+      setTheme: async (theme: 'light' | 'dark') => {
+        try {
+          // Update document classes first for immediate visual feedback
+          const htmlElement = document.documentElement;
+          htmlElement.classList.remove('light', 'dark');
+          htmlElement.classList.add(theme);
+
+          // Update local state
+          set({ theme });
+          localStorage.setItem('theme', theme);
+
+          // Update user preferences in backend - only send dark_mode
+          const response = await axios.put('/settings/preferences', {
+            dark_mode: theme === 'dark'
+          });
+
+          // Update user data in store if the API call was successful
+          if (response.data.user) {
+            set(state => ({
+              ...state,
+              user: {
+                ...state.user,
+                ...response.data.user,
+                preferences: {
+                  ...state.user?.preferences,
+                  dark_mode: theme === 'dark'
+                }
+              }
+            }));
+          }
+
+        } catch (error) {
+          console.error('Failed to update theme:', error);
+          
+          // Revert changes on failure
+          const oldTheme = theme === 'light' ? 'dark' : 'light';
+          
+          // Revert document classes
+          htmlElement.classList.remove('light', 'dark');
+          htmlElement.classList.add(oldTheme);
+          
+          // Revert local state
+          set({ theme: oldTheme });
+          localStorage.setItem('theme', oldTheme);
+          
+          throw new Error('Failed to update theme preferences');
+        }
       },
 
       login: async (email: string, password: string) => {
@@ -285,6 +338,24 @@ const useAuthStore = create<AuthState>(
           return null;
         }
       },
+
+      updatePreferences: async (preferences: {
+        email_notifications?: boolean;
+        push_notifications?: boolean;
+        marketing_notifications?: boolean;
+        profile_visibility?: 'public' | 'private' | 'friends';
+        timezone?: string;
+        language?: string;
+      }) => {
+        try {
+          const response = await axios.put('/api/settings/preferences', preferences);
+          set({ user: response.data.user });
+          return response.data;
+        } catch (error) {
+          console.error('Failed to update preferences:', error);
+          throw error;
+        }
+      }
     }),
     {
       name: 'auth-storage',

@@ -881,6 +881,44 @@ const NotificationsForm = () => {
   );
 };
 
+const ThemeToggle = () => {
+    const { theme, setTheme } = useAuthStore();
+    const { toast } = useToast();
+
+    const handleThemeChange = async (checked: boolean) => {
+        try {
+            const newTheme = checked ? 'dark' : 'light';
+            await setTheme(newTheme);
+            
+            toast({
+                title: "Theme updated",
+                description: `Theme changed to ${newTheme} mode`,
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to update theme. Please try again.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    return (
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                <Label className="text-base">Dark Mode</Label>
+                        <p className="text-sm text-muted-foreground">
+                    {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
+                        </p>
+                      </div>
+            <Switch
+                checked={theme === 'dark'}
+                onCheckedChange={handleThemeChange}
+            />
+                    </div>
+    );
+};
+
 const Settings = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { theme, setTheme, user } = useAuthStore();
@@ -900,29 +938,7 @@ const Settings = () => {
           id: 'theme',
           title: 'Theme',
           description: 'Toggle between light and dark mode',
-          component: (
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                <Label className="text-base">Dark Mode</Label>
-                        <p className="text-sm text-muted-foreground">
-                  {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
-                        </p>
-                      </div>
-              <Switch 
-                checked={theme === 'dark'}
-                onCheckedChange={() => {
-                  const newTheme = theme === 'light' ? 'dark' : 'light';
-                  // Update document classes
-                  const htmlElement = document.documentElement;
-                  htmlElement.classList.remove('light', 'dark');
-                  htmlElement.classList.add(newTheme);
-                  
-                  // Set theme in store
-                  setTheme(newTheme);
-                }}
-              />
-      </div>
-          )
+          component: <ThemeToggle />
         },
         // Add more quick settings items
       ]
