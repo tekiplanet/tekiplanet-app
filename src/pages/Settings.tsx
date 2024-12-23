@@ -29,6 +29,7 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { apiClient } from '@/lib/axios';
+import { toast } from 'sonner';
 
 // Animation variants
 const pageTransition = {
@@ -107,7 +108,6 @@ const notificationsFormSchema = z.object({
 });
 
 const AccountSettingsForm = () => {
-  const { toast } = useToast();
   const { user, updateUser } = useAuthStore();
   const form = useForm<z.infer<typeof accountFormSchema>>({
     resolver: zodResolver(accountFormSchema),
@@ -120,24 +120,19 @@ const AccountSettingsForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof accountFormSchema>) => {
-    try {
-      // Make API call to update profile using apiClient
-      const response = await apiClient.put('/settings/profile', values);
+    const loadingToast = toast.loading('Updating profile...');
 
-      // Update local user state
+    try {
+      const response = await apiClient.put('/settings/profile', values);
       await updateUser(response.data.user);
 
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been updated successfully.",
-      });
+      toast.dismiss(loadingToast);
+      toast.success('Profile updated successfully');
     } catch (error: any) {
       console.error('Profile update error:', error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
+      
+      toast.dismiss(loadingToast);
+      toast.error(error.response?.data?.message || 'Failed to update profile');
     }
   };
 
@@ -642,7 +637,6 @@ const ProfessionalProfileForm = () => {
 };
 
 const SecuritySettingsForm = () => {
-  const { toast } = useToast();
   const form = useForm<z.infer<typeof securityFormSchema>>({
     resolver: zodResolver(securityFormSchema),
     defaultValues: {
@@ -653,6 +647,8 @@ const SecuritySettingsForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof securityFormSchema>) => {
+    const loadingToast = toast.loading('Updating password...');
+
     try {
       await apiClient.put('/settings/password', {
         current_password: values.current_password,
@@ -660,17 +656,12 @@ const SecuritySettingsForm = () => {
         confirm_password: values.confirm_password
       });
 
-      toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully.",
-      });
+      toast.dismiss(loadingToast);
+      toast.success('Password updated successfully');
       form.reset();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update password",
-        variant: "destructive",
-      });
+      toast.dismiss(loadingToast);
+      toast.error(error.response?.data?.message || 'Failed to update password');
     }
   };
 
@@ -731,33 +722,28 @@ const SecuritySettingsForm = () => {
 };
 
 const NotificationsForm = () => {
-  const { toast } = useToast();
-  const { user, updateUserPreferences } = useAuthStore();
-
+  const { user, updatePreferences } = useAuthStore();
   const form = useForm<z.infer<typeof notificationsFormSchema>>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues: {
-      email_notifications: user?.email_notifications ?? true,
-      push_notifications: user?.push_notifications ?? true,
-      marketing_notifications: user?.marketing_notifications ?? true,
-      profile_visibility: user?.profile_visibility || 'public',
-      data_collection: true,
+      email_notifications: user?.email_notifications || false,
+      push_notifications: user?.push_notifications || false,
+      marketing_notifications: user?.marketing_notifications || false,
+      profile_visibility: user?.profile_visibility || 'private',
+      data_collection: false,
     },
   });
 
   const onSubmit = async (values: z.infer<typeof notificationsFormSchema>) => {
+    const loadingToast = toast.loading('Updating notification preferences...');
+
     try {
-      await updateUserPreferences(values);
-      toast({
-        title: "Preferences updated",
-        description: "Your notification preferences have been updated.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update preferences.",
-        variant: "destructive",
-      });
+      await updatePreferences(values);
+      toast.dismiss(loadingToast);
+      toast.success('Notification preferences updated successfully');
+    } catch (error: any) {
+      toast.dismiss(loadingToast);
+      toast.error(error.response?.data?.message || 'Failed to update notification preferences');
     }
   };
 
@@ -859,23 +845,18 @@ const NotificationsForm = () => {
 
 const ThemeToggle = () => {
   const { theme, setTheme } = useAuthStore();
-  const { toast } = useToast();
 
   const handleThemeChange = async (checked: boolean) => {
+    const newTheme = checked ? 'dark' : 'light';
+    const loadingToast = toast.loading(`Switching to ${newTheme} mode...`);
+
     try {
-      const newTheme = checked ? 'dark' : 'light';
       await setTheme(newTheme);
-      
-      toast({
-        title: "Theme updated",
-        description: `Theme changed to ${newTheme} mode`,
-      });
+      toast.dismiss(loadingToast);
+      toast.success(`Theme changed to ${newTheme} mode`);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update theme. Please try again.",
-        variant: "destructive",
-      });
+      toast.dismiss(loadingToast);
+      toast.error('Failed to update theme');
     }
   };
 
