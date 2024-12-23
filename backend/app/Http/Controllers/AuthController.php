@@ -94,9 +94,20 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
+        // Load both profiles
         $user = $request->user()->load(['professional', 'businessProfile']);
         
-        // Return the user data with all necessary information
+        // Add more detailed logging
+        Log::info('User profiles debug:', [
+            'user_id' => $user->id,
+            'business_profile_raw' => $user->businessProfile,
+            'business_exists' => $user->businessProfile !== null,
+            'business_status' => $user->businessProfile?->status,
+            'business_name' => $user->businessProfile?->business_name,
+            'all_relations' => $user->getRelations()
+        ]);
+
+        // Return complete user data
         return response()->json([
             'id' => $user->id,
             'username' => $user->username,
@@ -106,13 +117,9 @@ class AuthController extends Controller
             'avatar' => $user->avatar,
             'account_type' => $user->account_type,
             'wallet_balance' => $user->wallet_balance,
-            'dark_mode' => $user->dark_mode,
             'professional' => $user->professional,
             'businessProfile' => $user->businessProfile,
-            'preferences' => [
-                'dark_mode' => $user->dark_mode ?? false,
-                'theme' => $user->dark_mode ? 'dark' : 'light'
-            ]
+            'dark_mode' => $user->dark_mode
         ]);
     }
 }

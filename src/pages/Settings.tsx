@@ -1243,6 +1243,15 @@ const Settings = () => {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<string | null>(null);
 
+  // Add this before the settingsGroups definition
+  console.log('Settings Debug:', {
+    fullUser: user,
+    businessProfile: user?.businessProfile,
+    hasBusinessProfile: Boolean(user?.businessProfile),
+    businessStatus: user?.businessProfile?.status,
+    showBusinessSettings: user?.businessProfile?.status === 'active'
+  });
+
   // Define settings groups
   const settingsGroups: SettingsGroup[] = [
     {
@@ -1286,7 +1295,7 @@ const Settings = () => {
           component: <BusinessProfileForm />
         }
       ],
-      show: user?.businessProfile !== undefined
+      show: Boolean(user?.businessProfile?.status === 'active')
     },
     {
       id: 'professional',
