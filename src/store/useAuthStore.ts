@@ -130,25 +130,9 @@ const useAuthStore = create<AuthState>(
         }
       },
 
-      setTheme: async (theme: 'light' | 'dark') => {
-        try {
-          // Update local storage
-          localStorage.setItem('theme', theme);
-
-          // Update user preferences with theme
-          const updatedUser = await get().updateUserPreferences({ 
-            dark_mode: theme === 'dark',
-            theme 
-          });
-          
-          // Update local theme state
-          set({ 
-            theme, 
-            user: updatedUser 
-          });
-        } catch (error) {
-          console.error('Failed to update theme:', error);
-        }
+      setTheme: (theme: 'light' | 'dark') => {
+        set({ theme });
+        localStorage.setItem('theme', theme);
       },
 
       login: async (email: string, password: string) => {
