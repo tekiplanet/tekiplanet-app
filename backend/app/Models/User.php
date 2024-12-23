@@ -8,6 +8,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -22,22 +25,19 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'username',
-        'email',
-        'password',
         'first_name',
         'last_name',
-        'bio',
-        'timezone',
+        'email',
+        'password',
+        'username',
         'avatar',
         'dark_mode',
-        'two_factor_enabled',
         'email_notifications',
         'push_notifications',
         'marketing_notifications',
         'profile_visibility',
-        'account_type',
-        'wallet_balance'
+        'timezone',
+        'language'
     ];
 
     /**
@@ -116,5 +116,35 @@ class User extends Authenticatable
                 $model->{$model->getKeyName()} = Str::uuid()->toString();
             }
         });
+    }
+
+    // Add an accessor to get the full avatar URL
+    protected function avatar(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if (!$value) {
+                    return null;
+                }
+
+                // Log debugging information
+                Log::info('Avatar accessor:', [
+                    'raw_value' => $value,
+                    'app_url' => config('app.url'),
+                    'full_path' => storage_path('app/public/' . $value),
+                    'exists' => Storage::disk('public')->exists($value),
+                    'public_path' => public_path('storage/' . $value),
+                    'file_exists' => file_exists(public_path('storage/' . $value))
+                ]);
+
+                // Check both storage and public paths
+                if (!Storage::disk('public')->exists($value) && !file_exists(public_path('storage/' . $value))) {
+                    return null;
+                }
+
+                // Return the full URL
+                return rtrim(config('app.url'), '/') . '/storage/' . ltrim($value, '/');
+            }
+        );
     }
 }

@@ -112,9 +112,14 @@ const AccountSettingsForm = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   // Get the full avatar URL
-  const avatarUrl = user?.avatar 
-    ? `${import.meta.env.VITE_API_URL}/storage/${user.avatar}`
-    : null;
+  const avatarUrl = user?.avatar || null;
+  
+  console.log('Avatar details:', {
+    userObject: user,
+    avatarUrl: avatarUrl,
+    baseUrl: import.meta.env.VITE_API_URL,
+    fullUrl: avatarUrl
+  });
 
   const form = useForm<z.infer<typeof accountFormSchema>>({
     resolver: zodResolver(accountFormSchema),
@@ -188,7 +193,11 @@ const AccountSettingsForm = () => {
         },
       });
 
+      console.log('Avatar update response:', response.data);
+      
       await updateUser(response.data.user);
+      
+      console.log('User after update:', user);
 
       toast.dismiss(loadingToast);
       toast.success('Avatar updated successfully');
@@ -212,6 +221,24 @@ const AccountSettingsForm = () => {
             <AvatarImage 
               src={previewUrl || avatarUrl || ''} 
               alt={`${user?.first_name} ${user?.last_name}`}
+              onError={(e) => {
+                console.error('Avatar image failed to load:', e);
+                const img = e.target as HTMLImageElement;
+                console.log('Failed URL:', img.src);
+                // Try to fetch the URL directly to see the response
+                fetch(img.src)
+                  .then(response => {
+                    console.log('Avatar fetch response:', {
+                      status: response.status,
+                      statusText: response.statusText,
+                      headers: Object.fromEntries(response.headers),
+                      url: response.url
+                    });
+                  })
+                  .catch(error => {
+                    console.error('Avatar fetch error:', error);
+                  });
+              }}
             />
             <AvatarFallback>
               {user?.first_name?.[0]}{user?.last_name?.[0]}

@@ -220,7 +220,7 @@ class UserSettingsController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048', // 2MB max
+                'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             ], [
                 'avatar.required' => 'Please select an image to upload',
                 'avatar.image' => 'The file must be an image',
@@ -237,23 +237,43 @@ class UserSettingsController extends Controller
 
             $user = auth()->user();
 
+            // Log the old avatar path if it exists
+            Log::info('Old avatar path:', ['path' => $user->avatar]);
+
             // Delete old avatar if exists
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            // Store new avatar
+            // Store new avatar and get path
             $path = $request->file('avatar')->store('avatars', 'public');
             
-            // Update user avatar path
-            $user->update([
-                'avatar' => $path
+            // Log the new avatar path
+            Log::info('New avatar path:', ['path' => $path]);
+
+            // After storing the file
+            Log::info('File exists check:', [
+                'path' => storage_path('app/public/' . $path),
+                'exists' => file_exists(storage_path('app/public/' . $path))
             ]);
+
+            // Update user avatar path
+            $user->update(['avatar' => $path]);
+
+            // Log the full URL that should be returned
+            $fullUrl = asset('storage/' . $path);
+            Log::info('Full avatar URL:', ['url' => $fullUrl]);
+
+            // Get fresh user data
+            $user = $user->fresh();
+            
+            // Log the user data being returned
+            Log::info('User data being returned:', ['user' => $user->toArray()]);
 
             return response()->json([
                 'message' => 'Avatar updated successfully',
-                'user' => $user->fresh(),
-                'avatar_url' => Storage::disk('public')->url($path)
+                'user' => $user,
+                'avatar_url' => $fullUrl
             ]);
 
         } catch (\Exception $e) {
