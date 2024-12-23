@@ -22,6 +22,12 @@ import {
   Sun,
   ArrowLeft
 } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 // Animation variants
 const pageTransition = {
@@ -44,6 +50,572 @@ interface SettingsItem {
   description: string;
   component: React.ReactNode;
 }
+
+const accountFormSchema = z.object({
+  first_name: z.string().min(2, "First name must be at least 2 characters"),
+  last_name: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+});
+
+const businessFormSchema = z.object({
+  business_name: z.string().min(2, "Business name must be at least 2 characters"),
+  business_email: z.string().email("Invalid business email"),
+  phone_number: z.string().min(10, "Phone number must be at least 10 characters"),
+  registration_number: z.string().optional(),
+  tax_number: z.string().optional(),
+  website: z.string().url("Invalid website URL").optional().or(z.literal('')),
+  description: z.string().max(500, "Description must be less than 500 characters"),
+  address: z.string().min(5, "Address must be at least 5 characters"),
+  city: z.string().min(2, "City must be at least 2 characters"),
+  state: z.string().min(2, "State must be at least 2 characters"),
+  country: z.string().min(2, "Country must be at least 2 characters"),
+});
+
+const professionalFormSchema = z.object({
+  title: z.string().min(2, "Professional title must be at least 2 characters"),
+  specialization: z.string().min(2, "Specialization must be at least 2 characters"),
+  expertise_areas: z.array(z.string()).min(1, "Select at least one area of expertise"),
+  years_of_experience: z.number().min(0, "Years of experience cannot be negative"),
+  hourly_rate: z.number().min(0, "Hourly rate cannot be negative"),
+  bio: z.string().max(500, "Bio must be less than 500 characters"),
+  certifications: z.array(z.string()).optional(),
+  linkedin_url: z.string().url("Invalid LinkedIn URL").optional().or(z.literal('')),
+  github_url: z.string().url("Invalid GitHub URL").optional().or(z.literal('')),
+  portfolio_url: z.string().url("Invalid Portfolio URL").optional().or(z.literal('')),
+  preferred_contact_method: z.enum(['email', 'phone', 'platform']),
+  timezone: z.string().min(1, "Timezone is required"),
+  languages: z.array(z.string()).min(1, "Select at least one language"),
+});
+
+const AccountSettingsForm = () => {
+  const { toast } = useToast();
+  const { user, updateUser } = useAuthStore();
+  const form = useForm<z.infer<typeof accountFormSchema>>({
+    resolver: zodResolver(accountFormSchema),
+    defaultValues: {
+      first_name: user?.first_name || "",
+      last_name: user?.last_name || "",
+      email: user?.email || "",
+      username: user?.username || "",
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof accountFormSchema>) => {
+    try {
+      await updateUser(values);
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Avatar className="h-24 w-24">
+            <AvatarImage src={user?.avatar || ''} />
+            <AvatarFallback>{user?.first_name?.[0]}{user?.last_name?.[0]}</AvatarFallback>
+          </Avatar>
+          <Button type="button">Change Avatar</Button>
+        </div>
+        
+        <div className="grid gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="first_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="last_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input {...field} type="email" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <Button 
+          type="submit" 
+          disabled={!form.formState.isDirty || form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+        </Button>
+      </form>
+    </Form>
+  );
+};
+
+const BusinessProfileForm = () => {
+  const { toast } = useToast();
+  const { user, updateUser } = useAuthStore();
+  const businessProfile = user?.business_profile;
+
+  const form = useForm<z.infer<typeof businessFormSchema>>({
+    resolver: zodResolver(businessFormSchema),
+    defaultValues: {
+      business_name: businessProfile?.business_name || "",
+      business_email: businessProfile?.business_email || "",
+      phone_number: businessProfile?.phone_number || "",
+      registration_number: businessProfile?.registration_number || "",
+      tax_number: businessProfile?.tax_number || "",
+      website: businessProfile?.website || "",
+      description: businessProfile?.description || "",
+      address: businessProfile?.address || "",
+      city: businessProfile?.city || "",
+      state: businessProfile?.state || "",
+      country: businessProfile?.country || "",
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof businessFormSchema>) => {
+    try {
+      await updateUser({ business_profile: values });
+      toast({
+        title: "Business profile updated",
+        description: "Your business information has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update business profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid gap-6">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="business_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Business Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="business_email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Business Email</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="email" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="phone_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input {...field} type="tel" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="registration_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Registration Number</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="tax_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tax Number</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="website"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Website</FormLabel>
+                <FormControl>
+                  <Input {...field} type="url" placeholder="https://" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Business Description</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>City</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>State</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Country</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <Button 
+          type="submit" 
+          disabled={!form.formState.isDirty || form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+        </Button>
+      </form>
+    </Form>
+  );
+};
+
+const ProfessionalProfileForm = () => {
+  const { toast } = useToast();
+  const { user, updateUser } = useAuthStore();
+  const professionalProfile = user?.professional;
+
+  const form = useForm<z.infer<typeof professionalFormSchema>>({
+    resolver: zodResolver(professionalFormSchema),
+    defaultValues: {
+      title: professionalProfile?.title || "",
+      specialization: professionalProfile?.specialization || "",
+      expertise_areas: professionalProfile?.expertise_areas || [],
+      years_of_experience: professionalProfile?.years_of_experience || 0,
+      hourly_rate: professionalProfile?.hourly_rate || 0,
+      bio: professionalProfile?.bio || "",
+      certifications: professionalProfile?.certifications || [],
+      linkedin_url: professionalProfile?.linkedin_url || "",
+      github_url: professionalProfile?.github_url || "",
+      portfolio_url: professionalProfile?.portfolio_url || "",
+      preferred_contact_method: professionalProfile?.preferred_contact_method || 'email',
+      timezone: professionalProfile?.timezone || "",
+      languages: professionalProfile?.languages || [],
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof professionalFormSchema>) => {
+    try {
+      await updateUser({ professional: values });
+      toast({
+        title: "Professional profile updated",
+        description: "Your professional information has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update professional profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid gap-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Professional Title</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="e.g., Senior Developer" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="specialization"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Specialization</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="e.g., Full Stack Development" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Experience and Rate */}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="years_of_experience"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Years of Experience</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      onChange={e => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="hourly_rate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hourly Rate ($)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      onChange={e => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Bio */}
+          <FormField
+            control={form.control}
+            name="bio"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Professional Bio</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Tell us about your professional journey" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Professional Links */}
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="linkedin_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>LinkedIn Profile</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="url" placeholder="https://linkedin.com/in/..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="github_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>GitHub Profile</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="url" placeholder="https://github.com/..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="portfolio_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Portfolio Website</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="url" placeholder="https://..." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Contact Preference */}
+          <FormField
+            control={form.control}
+            name="preferred_contact_method"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preferred Contact Method</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select contact method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="phone">Phone</SelectItem>
+                    <SelectItem value="platform">Platform Messages</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <Button 
+          type="submit" 
+          disabled={!form.formState.isDirty || form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+        </Button>
+      </form>
+    </Form>
+  );
+};
 
 const Settings = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -101,33 +673,7 @@ const Settings = () => {
           id: 'profile',
           title: 'Personal Information',
           description: 'Update your basic information',
-          component: (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={user?.avatar || ''} />
-                  <AvatarFallback>{user?.first_name?.[0]}{user?.last_name?.[0]}</AvatarFallback>
-                </Avatar>
-                <Button>Change Avatar</Button>
-              </div>
-              <div className="grid gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" defaultValue={user?.first_name} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" defaultValue={user?.last_name} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue={user?.email} />
-                </div>
-              </div>
-            </div>
-          )
+          component: <AccountSettingsForm />
         },
         // Add more account settings items
       ]
@@ -142,29 +688,7 @@ const Settings = () => {
           id: 'business-info',
           title: 'Business Information',
           description: 'Update your business details',
-          component: (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="businessName">Business Name</Label>
-                <Input id="businessName" placeholder="Enter business name" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessEmail">Business Email</Label>
-                <Input id="businessEmail" type="email" placeholder="business@example.com" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="registrationNumber">Registration Number</Label>
-                  <Input id="registrationNumber" placeholder="Enter registration number" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="taxNumber">Tax Number</Label>
-                  <Input id="taxNumber" placeholder="Enter tax number" />
-                </div>
-              </div>
-              <Button>Save Changes</Button>
-            </div>
-          )
+          component: <BusinessProfileForm />
         }
       ]
     },
@@ -178,23 +702,7 @@ const Settings = () => {
           id: 'professional-info',
           title: 'Professional Information',
           description: 'Update your professional details',
-          component: (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Professional Title</Label>
-                <Input id="title" placeholder="e.g., Senior Developer" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="specialization">Specialization</Label>
-                <Input id="specialization" placeholder="Your main expertise" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
-                <Input id="hourlyRate" type="number" placeholder="0.00" />
-              </div>
-              <Button>Save Changes</Button>
-            </div>
-          )
+          component: <ProfessionalProfileForm />
         }
       ]
     },
