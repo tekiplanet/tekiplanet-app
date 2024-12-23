@@ -344,7 +344,48 @@ const AccountSettingsForm = () => {
 
 const BusinessProfileForm = () => {
   const { user, updateUser } = useAuthStore();
-  const businessProfile = user?.business_profile;
+  // Fix: Use camelCase to access businessProfile
+  const businessProfile = user?.businessProfile;
+
+  // Add debug logging
+  console.log('BusinessProfileForm Debug:', {
+    user,
+    businessProfile,
+    status: businessProfile?.status,
+    hasProfile: Boolean(businessProfile),
+    isActive: businessProfile?.status === 'active'
+  });
+
+  if (!businessProfile) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-semibold mb-2">No Business Profile</h3>
+        <p className="text-muted-foreground mb-4">
+          You don't have a business profile yet. Create one to access business features.
+        </p>
+        <Button asChild>
+          <Link to="/business/setup">Create Business Profile</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (businessProfile.status !== 'active') {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Inactive Business Profile</h3>
+        <p className="text-muted-foreground mb-4">
+          Your business profile is currently inactive. Please complete the setup process.
+        </p>
+        <Button asChild>
+          <Link to="/business/setup">Complete Setup</Link>
+        </Button>
+      </div>
+    );
+  }
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -403,36 +444,6 @@ const BusinessProfileForm = () => {
     }
   };
 
-  if (!businessProfile) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No Business Profile</h3>
-        <p className="text-muted-foreground mb-4">
-          You don't have a business profile yet. Create one to access business features.
-        </p>
-        <Button asChild>
-          <Link to="/business/setup">Create Business Profile</Link>
-        </Button>
-                  </div>
-    );
-  }
-
-  if (businessProfile.status !== 'active') {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Inactive Business Profile</h3>
-        <p className="text-muted-foreground mb-4">
-          Your business profile is currently inactive. Please complete the setup process.
-        </p>
-        <Button asChild>
-          <Link to="/business/setup">Complete Setup</Link>
-        </Button>
-                </div>
-    );
-  }
-
   const form = useForm<z.infer<typeof businessFormSchema>>({
     resolver: zodResolver(businessFormSchema),
     defaultValues: {
@@ -456,10 +467,10 @@ const BusinessProfileForm = () => {
     try {
       const response = await apiClient.put('/settings/business/profile', values);
       
-      // Update the user state with the new business profile data
+      // Fix: Update using camelCase
       await updateUser({
         ...user,
-        business_profile: response.data.business_profile
+        businessProfile: response.data.business_profile
       });
 
       toast.dismiss(loadingToast);
@@ -1243,16 +1254,17 @@ const Settings = () => {
   const [activeItem, setActiveItem] = useState<string | null>(null);
 
   // Add this before the settingsGroups definition
-  console.log('Settings Debug:', {
+  console.log('Settings Debug (Detailed):', {
     fullUser: user,
-    businessProfile: user?.businessProfile,
-    professionalProfile: user?.professional,
-    hasBusinessProfile: Boolean(user?.businessProfile),
-    hasProfessionalProfile: Boolean(user?.professional),
-    businessStatus: user?.businessProfile?.status,
-    professionalStatus: user?.professional?.status,
-    showBusinessSettings: user?.businessProfile?.status === 'active',
-    showProfessionalSettings: user?.professional?.status === 'active'
+    rawBusinessProfile: user?.business_profile,
+    camelBusinessProfile: user?.businessProfile,
+    businessProfileCheck: {
+      snakeCase: Boolean(user?.business_profile?.status === 'active'),
+      camelCase: Boolean(user?.businessProfile?.status === 'active'),
+      rawStatus: user?.business_profile?.status,
+      rawCamelStatus: user?.businessProfile?.status
+    },
+    showCondition: Boolean(user?.business_profile?.status === 'active')
   });
 
   // Define settings groups
