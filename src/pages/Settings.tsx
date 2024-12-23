@@ -1247,9 +1247,13 @@ const Settings = () => {
   console.log('Settings Debug:', {
     fullUser: user,
     businessProfile: user?.businessProfile,
+    professionalProfile: user?.professional,
     hasBusinessProfile: Boolean(user?.businessProfile),
+    hasProfessionalProfile: Boolean(user?.professional),
     businessStatus: user?.businessProfile?.status,
-    showBusinessSettings: user?.businessProfile?.status === 'active'
+    professionalStatus: user?.professional?.status,
+    showBusinessSettings: user?.businessProfile?.status === 'active',
+    showProfessionalSettings: user?.professional?.status === 'active'
   });
 
   // Define settings groups
@@ -1310,7 +1314,7 @@ const Settings = () => {
           component: <ProfessionalProfileForm />
         }
       ],
-      show: user?.professional !== undefined
+      show: Boolean(user?.professional?.status === 'active')
     },
     {
       id: 'security',
