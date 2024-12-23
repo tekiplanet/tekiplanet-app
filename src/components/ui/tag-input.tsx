@@ -1,7 +1,8 @@
 import React, { KeyboardEvent, useState } from "react";
-import { X } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface TagInputProps {
@@ -19,13 +20,26 @@ export function TagInput({
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState("");
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && inputValue.trim()) {
-      e.preventDefault();
-      if (!tags.includes(inputValue.trim())) {
-        onTagsChange([...tags, inputValue.trim()]);
+  const addTag = () => {
+    const trimmedValue = inputValue.trim();
+    if (trimmedValue) {
+      // Handle comma-separated values
+      const newTags = trimmedValue
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag && !tags.includes(tag));
+      
+      if (newTags.length > 0) {
+        onTagsChange([...tags, ...newTags]);
       }
       setInputValue("");
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === "Enter" || e.key === ",") && inputValue.trim()) {
+      e.preventDefault();
+      addTag();
     } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
       onTagsChange(tags.slice(0, -1));
     }
@@ -52,14 +66,26 @@ export function TagInput({
           </Badge>
         ))}
       </div>
-      <Input
-        type="text"
-        placeholder={placeholder}
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-      />
+      <div className="flex gap-2 flex-1 items-center">
+        <Input
+          type="text"
+          placeholder={placeholder + " (press Enter or comma)"}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={addTag}
+          className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={addTag}
+          className="shrink-0"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 } 
