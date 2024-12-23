@@ -716,7 +716,20 @@ const BusinessProfileForm = () => {
 
 const ProfessionalProfileForm = () => {
   const { user, updateUser } = useAuthStore();
+  console.log('Full user object:', user); // Debug full user object
   const professionalProfile = user?.professional_profile;
+  console.log('Professional Profile:', professionalProfile);
+
+  // Add this to check the structure
+  useEffect(() => {
+    if (user) {
+      console.log('User structure:', {
+        hasProfessional: 'professional_profile' in user,
+        professionalKeys: user.professional_profile ? Object.keys(user.professional_profile) : null,
+        fullProfessional: user.professional_profile
+      });
+    }
+  }, [user]);
 
   const form = useForm<z.infer<typeof professionalFormSchema>>({
     resolver: zodResolver(professionalFormSchema),
@@ -733,6 +746,24 @@ const ProfessionalProfileForm = () => {
       languages: professionalProfile?.languages || ["English"],
     },
   });
+
+  // Add this useEffect to update form values when professionalProfile changes
+  useEffect(() => {
+    if (professionalProfile) {
+      form.reset({
+        title: professionalProfile.title || "",
+        specialization: professionalProfile.specialization || "",
+        expertise_areas: professionalProfile.expertise_areas || [],
+        bio: professionalProfile.bio || "",
+        certifications: professionalProfile.certifications || [],
+        linkedin_url: professionalProfile.linkedin_url || "",
+        github_url: professionalProfile.github_url || "",
+        portfolio_url: professionalProfile.portfolio_url || "",
+        preferred_contact_method: professionalProfile.preferred_contact_method || "email",
+        languages: professionalProfile.languages || ["English"],
+      });
+    }
+  }, [professionalProfile, form]);
 
   const onSubmit = async (values: z.infer<typeof professionalFormSchema>) => {
     const loadingToast = toast.loading('Updating professional profile...');
