@@ -27,7 +27,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { apiClient } from '@/lib/axios';
 import { toast } from 'sonner';
@@ -35,6 +35,10 @@ import { Link } from 'react-router-dom';
 import { NIGERIA_STATES } from '@/lib/constants/nigeria-states';
 import { StateSelect } from "@/components/ui/state-selector";
 import { Textarea } from "@/components/ui/textarea";
+import { TagInput } from "@/components/ui/tag-input";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+import { EXPERTISE_AREAS, LANGUAGES } from "@/lib/constants/professional";
 
 // Animation variants
 const pageTransition = {
@@ -83,15 +87,12 @@ const professionalFormSchema = z.object({
   title: z.string().min(2, "Professional title must be at least 2 characters"),
   specialization: z.string().min(2, "Specialization must be at least 2 characters"),
   expertise_areas: z.array(z.string()).min(1, "Select at least one area of expertise"),
-  years_of_experience: z.number().min(0, "Years of experience cannot be negative"),
-  hourly_rate: z.number().min(0, "Hourly rate cannot be negative"),
   bio: z.string().max(500, "Bio must be less than 500 characters"),
   certifications: z.array(z.string()).optional(),
   linkedin_url: z.string().url("Invalid LinkedIn URL").optional().or(z.literal('')),
   github_url: z.string().url("Invalid GitHub URL").optional().or(z.literal('')),
   portfolio_url: z.string().url("Invalid Portfolio URL").optional().or(z.literal('')),
   preferred_contact_method: z.enum(['email', 'phone', 'platform']),
-  timezone: z.string().min(1, "Timezone is required"),
   languages: z.array(z.string()).min(1, "Select at least one language"),
 });
 
@@ -714,9 +715,8 @@ const BusinessProfileForm = () => {
 };
 
 const ProfessionalProfileForm = () => {
-  const { toast } = useToast();
   const { user, updateUser } = useAuthStore();
-  const professionalProfile = user?.professional;
+  const professionalProfile = user?.professional_profile;
 
   const form = useForm<z.infer<typeof professionalFormSchema>>({
     resolver: zodResolver(professionalFormSchema),
@@ -724,54 +724,76 @@ const ProfessionalProfileForm = () => {
       title: professionalProfile?.title || "",
       specialization: professionalProfile?.specialization || "",
       expertise_areas: professionalProfile?.expertise_areas || [],
-      years_of_experience: professionalProfile?.years_of_experience || 0,
-      hourly_rate: professionalProfile?.hourly_rate || 0,
       bio: professionalProfile?.bio || "",
       certifications: professionalProfile?.certifications || [],
       linkedin_url: professionalProfile?.linkedin_url || "",
       github_url: professionalProfile?.github_url || "",
       portfolio_url: professionalProfile?.portfolio_url || "",
-      preferred_contact_method: professionalProfile?.preferred_contact_method || 'email',
-      timezone: professionalProfile?.timezone || "",
-      languages: professionalProfile?.languages || [],
+      preferred_contact_method: professionalProfile?.preferred_contact_method || "email",
+      languages: professionalProfile?.languages || ["English"],
     },
   });
 
   const onSubmit = async (values: z.infer<typeof professionalFormSchema>) => {
+    const loadingToast = toast.loading('Updating professional profile...');
+
     try {
-      await updateUser({ professional: values });
-      toast({
-        title: "Professional profile updated",
-        description: "Your professional information has been updated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update professional profile. Please try again.",
-        variant: "destructive",
-      });
+      const response = await apiClient.put('/settings/professional/profile', values);
+      await updateUser(response.data.user);
+
+      toast.dismiss(loadingToast);
+      toast.success('Professional profile updated successfully');
+    } catch (error: any) {
+      console.error('Professional profile update error:', error);
+      toast.dismiss(loadingToast);
+      toast.error(
+        error.response?.data?.message || 
+        'Failed to update professional profile. Please try again.'
+      );
     }
   };
+
+  // Show read-only experience info
+  const experienceInfo = (
+    <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="space-y-2">
+        <Label>Years of Experience</Label>
+        <div className="p-2 bg-muted rounded-md">
+          {professionalProfile?.years_of_experience || 0} years
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Hourly Rate</Label>
+        <div className="p-2 bg-muted rounded-md">
+          ₦{professionalProfile?.hourly_rate || 0}/hr
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-6">
-          {/* Basic Information */}
+        <div className="space-y-6">
+          {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Professional Title</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    Professional Title
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="e.g., Senior Developer" />
+                    <Input placeholder="e.g. Senior Software Engineer" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="specialization"
@@ -779,7 +801,10 @@ const ProfessionalProfileForm = () => {
                 <FormItem>
                   <FormLabel>Specialization</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="e.g., Full Stack Development" />
+                    <Input 
+                      placeholder="e.g. Frontend Development" 
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -787,43 +812,8 @@ const ProfessionalProfileForm = () => {
             />
           </div>
 
-          {/* Experience and Rate */}
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="years_of_experience"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Years of Experience</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field} 
-                      onChange={e => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="hourly_rate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Hourly Rate ($)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field} 
-                      onChange={e => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          {/* Experience Info (Read-only) */}
+          {experienceInfo}
 
           {/* Bio */}
           <FormField
@@ -833,8 +823,82 @@ const ProfessionalProfileForm = () => {
               <FormItem>
                 <FormLabel>Professional Bio</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Tell us about your professional journey" />
+                  <Textarea 
+                    placeholder="Tell us about your professional background and expertise..." 
+                    className="resize-none"
+                    rows={4}
+                    {...field} 
+                  />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Expertise Areas */}
+          <FormField
+            control={form.control}
+            name="expertise_areas"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Areas of Expertise</FormLabel>
+                <FormControl>
+                  <TagInput
+                    placeholder="Add expertise (press enter)"
+                    tags={field.value}
+                    className="sm:min-h-[120px]"
+                    onTagsChange={(tags) => field.onChange(tags)}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Enter your key areas of expertise (e.g., React, Node.js, AWS)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Languages */}
+          <FormField
+            control={form.control}
+            name="languages"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Languages</FormLabel>
+                <FormControl>
+                  <TagInput
+                    placeholder="Add languages (press enter)"
+                    tags={field.value}
+                    className="sm:min-h-[120px]"
+                    onTagsChange={(tags) => field.onChange(tags)}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Enter languages you can communicate in (e.g., English, French, Yoruba)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Certifications */}
+          <FormField
+            control={form.control}
+            name="certifications"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Certifications</FormLabel>
+                <FormControl>
+                  <TagInput
+                    placeholder="Add certifications (press enter)"
+                    tags={field.value}
+                    className="sm:min-h-[120px]"
+                    onTagsChange={(tags) => field.onChange(tags)}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Enter any relevant certifications you hold
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -849,12 +913,13 @@ const ProfessionalProfileForm = () => {
                 <FormItem>
                   <FormLabel>LinkedIn Profile</FormLabel>
                   <FormControl>
-                    <Input {...field} type="url" placeholder="https://linkedin.com/in/..." />
+                    <Input placeholder="https://linkedin.com/in/..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="github_url"
@@ -862,12 +927,13 @@ const ProfessionalProfileForm = () => {
                 <FormItem>
                   <FormLabel>GitHub Profile</FormLabel>
                   <FormControl>
-                    <Input {...field} type="url" placeholder="https://github.com/..." />
+                    <Input placeholder="https://github.com/..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="portfolio_url"
@@ -875,7 +941,7 @@ const ProfessionalProfileForm = () => {
                 <FormItem>
                   <FormLabel>Portfolio Website</FormLabel>
                   <FormControl>
-                    <Input {...field} type="url" placeholder="https://..." />
+                    <Input placeholder="https://..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -890,17 +956,16 @@ const ProfessionalProfileForm = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Preferred Contact Method</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select contact method" />
-                  </SelectTrigger>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select contact method" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     <SelectItem value="email">Email</SelectItem>
                     <SelectItem value="phone">Phone</SelectItem>
-                    <SelectItem value="platform">Platform Messages</SelectItem>
+                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -909,12 +974,7 @@ const ProfessionalProfileForm = () => {
           />
         </div>
 
-        <Button 
-          type="submit" 
-          disabled={!form.formState.isDirty || form.formState.isSubmitting}
-        >
-          {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
-        </Button>
+        <Button type="submit">Update Profile</Button>
       </form>
     </Form>
   );
