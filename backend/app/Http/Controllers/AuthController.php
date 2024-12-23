@@ -92,9 +92,10 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out successfully']);
     }
 
-    public function user()
+    public function user(Request $request)
     {
-        $user = auth()->user()->load('businessProfile');
-        return response()->json($user);
+        return response()->json([
+            'user' => $request->user()->load('professional')
+        ]);
     }
 }

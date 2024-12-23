@@ -716,11 +716,26 @@ const BusinessProfileForm = () => {
 
 const ProfessionalProfileForm = () => {
   const { user, updateUser } = useAuthStore();
-  const professionalProfile = user?.professional_profile;
+  // Access the nested user object and then the professional relationship
+  const professionalProfile = user?.user?.professional;
+
+  console.log('Professional Profile Data:', {
+    user,
+    userNested: user?.user,  // Let's see what's in the nested user object
+    professionalProfile,
+    title: professionalProfile?.title,
+    specialization: professionalProfile?.specialization,
+    bio: professionalProfile?.bio,
+    expertise_areas: professionalProfile?.expertise_areas,
+    certifications: professionalProfile?.certifications,
+    linkedin_url: professionalProfile?.linkedin_url,
+    github_url: professionalProfile?.github_url,
+    portfolio_url: professionalProfile?.portfolio_url,
+  });
 
   const form = useForm<z.infer<typeof professionalFormSchema>>({
     resolver: zodResolver(professionalFormSchema),
-    defaultValues: {
+    values: {
       title: professionalProfile?.title || "",
       specialization: professionalProfile?.specialization || "",
       expertise_areas: professionalProfile?.expertise_areas || [],
