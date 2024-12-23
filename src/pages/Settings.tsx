@@ -53,6 +53,7 @@ interface SettingsGroup {
   icon: React.ReactNode;
   description: string;
   items: SettingsItem[];
+  show?: boolean;
 }
 
 interface SettingsItem {
@@ -1272,23 +1273,21 @@ const Settings = () => {
         },
       ]
     },
-    // Show business profile if it exists and is active
-    ...(user?.business_profile?.status === 'active' ? [
-      {
-        id: 'business',
-        title: 'Business Profile',
-        icon: <Building2 className="w-5 h-5" />,
-        description: 'Manage your business information',
-        items: [
-          {
-            id: 'business-info',
-            title: 'Business Information',
-            description: 'Update your business details',
-            component: <BusinessProfileForm />
-          }
-        ]
-      }
-    ] : []),
+    {
+      id: 'business',
+      title: 'Business Profile',
+      icon: <Building2 className="w-5 h-5" />,
+      description: 'Manage your business information',
+      items: [
+        {
+          id: 'business-info',
+          title: 'Business Information',
+          description: 'Update your business details',
+          component: <BusinessProfileForm />
+        }
+      ],
+      show: user?.businessProfile !== undefined
+    },
     {
       id: 'professional',
       title: 'Professional Profile',
@@ -1301,7 +1300,8 @@ const Settings = () => {
           description: 'Update your professional details',
           component: <ProfessionalProfileForm />
         }
-      ]
+      ],
+      show: user?.professional !== undefined
     },
     {
       id: 'security',
@@ -1355,16 +1355,29 @@ const Settings = () => {
         }
       ]
     }
-  ].filter(Boolean);
+  ];
 
-  // Filter settings based on search query
-  const filteredGroups = settingsGroups.filter(group => 
-    group.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    group.items.some(item => 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );
+  // Add debug logs
+  console.log('User Data:', {
+    user,
+    businessProfile: user?.businessProfile,
+    professional: user?.professional,
+    businessStatus: user?.businessProfile?.status,
+    professionalStatus: user?.professional?.status
+  });
+
+  // Filter groups based on show condition and search
+  const filteredGroups = settingsGroups.filter(group => {
+    const showCondition = group.show === undefined || group.show === true;
+    const searchCondition = 
+      group.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.items.some(item => 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    
+    return showCondition && searchCondition;
+  });
 
   // Handle back navigation
   const handleBack = () => {

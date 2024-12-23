@@ -90,6 +90,24 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
     initialData: 0
   });
 
+  const handleProfileSwitch = async (type: 'student' | 'business' | 'professional') => {
+    try {
+      await updateUserType(type);
+      
+      // Close any open menus/sheets
+      setIsSheetOpen(false);
+      
+      // Show success message
+      toast.success(`Switched to ${type} profile`);
+      
+      // Refresh the page to update the dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Failed to switch profile:', error);
+      toast.error('Failed to switch profile');
+    }
+  };
+
   const renderDashboard = () => {
     if (!user) {
       return <div>Loading dashboard...</div>;
@@ -397,29 +415,20 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
               <div className="px-3 py-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start gap-2">
-                      <GraduationCap className="h-4 w-4" />
-                      {user?.account_type === "student" ? "Student" : user?.account_type === "business" ? "Business" : "Professional"}
+                    <Button variant="outline" className="w-full justify-between">
+                      <span className="capitalize">{user?.account_type || 'Select Profile'}</span>
+                      <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem 
-                      disabled={user?.account_type === "student"}
-                      onClick={() => handleProfileSwitch("student")}
-                    >
-                      Switch to Student
+                  <DropdownMenuContent className="w-full">
+                    <DropdownMenuItem onClick={() => handleProfileSwitch('student')}>
+                      Student Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      disabled={user?.account_type === "business"}
-                      onClick={() => handleProfileSwitch("business")}
-                    >
-                      Switch to Business
+                    <DropdownMenuItem onClick={() => handleProfileSwitch('business')}>
+                      Business Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      disabled={user?.account_type === "professional"}
-                      onClick={() => handleProfileSwitch("professional")}
-                    >
-                      Switch to Professional
+                    <DropdownMenuItem onClick={() => handleProfileSwitch('professional')}>
+                      Professional Profile
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

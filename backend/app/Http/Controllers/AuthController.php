@@ -94,15 +94,25 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        $user = $request->user()->load('professional');
+        $user = $request->user()->load(['professional', 'businessProfile']);
         
-        // Add debug log
-        Log::info('User data being sent:', [
-            'user' => $user->toArray(),
-            'account_type' => $user->account_type
+        // Return the user data with all necessary information
+        return response()->json([
+            'id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'avatar' => $user->avatar,
+            'account_type' => $user->account_type,
+            'wallet_balance' => $user->wallet_balance,
+            'dark_mode' => $user->dark_mode,
+            'professional' => $user->professional,
+            'businessProfile' => $user->businessProfile,
+            'preferences' => [
+                'dark_mode' => $user->dark_mode ?? false,
+                'theme' => $user->dark_mode ? 'dark' : 'light'
+            ]
         ]);
-
-        // Return the user data directly, not nested
-        return response()->json($user);
     }
 }
