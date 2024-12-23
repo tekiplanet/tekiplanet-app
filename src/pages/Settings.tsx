@@ -88,6 +88,23 @@ const professionalFormSchema = z.object({
   languages: z.array(z.string()).min(1, "Select at least one language"),
 });
 
+const securityFormSchema = z.object({
+  current_password: z.string().min(8, "Password must be at least 8 characters"),
+  new_password: z.string().min(8, "Password must be at least 8 characters"),
+  confirm_password: z.string().min(8, "Password must be at least 8 characters"),
+}).refine((data) => data.new_password === data.confirm_password, {
+  message: "Passwords don't match",
+  path: ["confirm_password"],
+});
+
+const notificationsFormSchema = z.object({
+  email_notifications: z.boolean(),
+  push_notifications: z.boolean(),
+  marketing_notifications: z.boolean(),
+  profile_visibility: z.enum(['public', 'private', 'friends']),
+  data_collection: z.boolean(),
+});
+
 const AccountSettingsForm = () => {
   const { toast } = useToast();
   const { user, updateUser } = useAuthStore();
@@ -117,16 +134,16 @@ const AccountSettingsForm = () => {
     }
   };
 
-  return (
+    return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Avatar className="h-24 w-24">
+                    <Avatar className="h-24 w-24">
             <AvatarImage src={user?.avatar || ''} />
             <AvatarFallback>{user?.first_name?.[0]}{user?.last_name?.[0]}</AvatarFallback>
-          </Avatar>
+                    </Avatar>
           <Button type="button">Change Avatar</Button>
-        </div>
+                  </div>
         
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
@@ -156,7 +173,7 @@ const AccountSettingsForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                      </div>
           
           <FormField
             control={form.control}
@@ -185,7 +202,7 @@ const AccountSettingsForm = () => {
               </FormItem>
             )}
           />
-        </div>
+                      </div>
 
         <Button 
           type="submit" 
@@ -267,7 +284,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                    </div>
 
           <FormField
             control={form.control}
@@ -310,7 +327,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                    </div>
 
           <FormField
             control={form.control}
@@ -367,7 +384,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                    </div>
 
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -396,8 +413,8 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
-        </div>
+                    </div>
+                  </div>
 
         <Button 
           type="submit" 
@@ -482,7 +499,7 @@ const ProfessionalProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                </div>
 
           {/* Experience and Rate */}
           <div className="grid grid-cols-2 gap-4">
@@ -520,7 +537,7 @@ const ProfessionalProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                    </div>
 
           {/* Bio */}
           <FormField
@@ -538,7 +555,7 @@ const ProfessionalProfileForm = () => {
           />
 
           {/* Professional Links */}
-          <div className="space-y-4">
+                  <div className="space-y-4">
             <FormField
               control={form.control}
               name="linkedin_url"
@@ -578,7 +595,7 @@ const ProfessionalProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                      </div>
 
           {/* Contact Preference */}
           <FormField
@@ -604,7 +621,7 @@ const ProfessionalProfileForm = () => {
               </FormItem>
             )}
           />
-        </div>
+                    </div>
 
         <Button 
           type="submit" 
@@ -612,6 +629,253 @@ const ProfessionalProfileForm = () => {
         >
           {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
         </Button>
+      </form>
+    </Form>
+  );
+};
+
+const SecuritySettingsForm = () => {
+  const { toast } = useToast();
+  const { user, updateUser } = useAuthStore();
+
+  const form = useForm<z.infer<typeof securityFormSchema>>({
+    resolver: zodResolver(securityFormSchema),
+    defaultValues: {
+      current_password: "",
+      new_password: "",
+      confirm_password: "",
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof securityFormSchema>) => {
+    try {
+      await updateUser({ 
+        password: values.new_password,
+        current_password: values.current_password 
+      });
+      toast({
+        title: "Password updated",
+        description: "Your password has been updated successfully.",
+      });
+      form.reset();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update password. Please check your current password.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Two-Factor Authentication */}
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+          <Label className="text-base">Two-Factor Authentication</Label>
+                        <p className="text-sm text-muted-foreground">
+            Add an extra layer of security to your account
+                        </p>
+                      </div>
+                      <Switch 
+          checked={user?.two_factor_enabled}
+          onCheckedChange={async (checked) => {
+            try {
+              await updateUser({ two_factor_enabled: checked });
+              toast({
+                title: "2FA settings updated",
+                description: `Two-factor authentication has been ${checked ? 'enabled' : 'disabled'}.`,
+              });
+            } catch (error) {
+              toast({
+                title: "Error",
+                description: "Failed to update 2FA settings.",
+                variant: "destructive",
+              });
+            }
+          }}
+                      />
+                    </div>
+
+      {/* Password Change Form */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="current_password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Current Password</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="new_password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>New Password</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="confirm_password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm New Password</FormLabel>
+                <FormControl>
+                  <Input type="password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button 
+            type="submit"
+            disabled={!form.formState.isDirty || form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? "Updating..." : "Update Password"}
+          </Button>
+        </form>
+      </Form>
+                    </div>
+  );
+};
+
+const NotificationsForm = () => {
+  const { toast } = useToast();
+  const { user, updateUserPreferences } = useAuthStore();
+
+  const form = useForm<z.infer<typeof notificationsFormSchema>>({
+    resolver: zodResolver(notificationsFormSchema),
+    defaultValues: {
+      email_notifications: user?.email_notifications ?? true,
+      push_notifications: user?.push_notifications ?? true,
+      marketing_notifications: user?.marketing_notifications ?? true,
+      profile_visibility: user?.profile_visibility || 'public',
+      data_collection: true,
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof notificationsFormSchema>) => {
+    try {
+      await updateUserPreferences(values);
+      toast({
+        title: "Preferences updated",
+        description: "Your notification preferences have been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update preferences.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onChange={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="email_notifications"
+            render={({ field }) => (
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">Email Notifications</Label>
+                        <p className="text-sm text-muted-foreground">
+                    Receive email notifications about important updates
+                        </p>
+                      </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                    </div>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="push_notifications"
+            render={({ field }) => (
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">Push Notifications</Label>
+                        <p className="text-sm text-muted-foreground">
+                    Receive push notifications on your devices
+                        </p>
+                      </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                    </div>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="marketing_notifications"
+            render={({ field }) => (
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                  <Label className="text-base">Marketing Communications</Label>
+                        <p className="text-sm text-muted-foreground">
+                    Receive updates about new features and promotions
+                        </p>
+                      </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                    </div>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="profile_visibility"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Profile Visibility</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select visibility" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="public">Public</SelectItem>
+                          <SelectItem value="private">Private</SelectItem>
+                          <SelectItem value="friends">Friends Only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+                    </div>
       </form>
     </Form>
   );
@@ -637,13 +901,13 @@ const Settings = () => {
           title: 'Theme',
           description: 'Toggle between light and dark mode',
           component: (
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
                 <Label className="text-base">Dark Mode</Label>
-                <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                   {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
-                </p>
-              </div>
+                        </p>
+                      </div>
               <Switch 
                 checked={theme === 'dark'}
                 onCheckedChange={() => {
@@ -657,7 +921,7 @@ const Settings = () => {
                   setTheme(newTheme);
                 }}
               />
-            </div>
+      </div>
           )
         },
         // Add more quick settings items
@@ -716,26 +980,7 @@ const Settings = () => {
           id: 'security-settings',
           title: 'Security Settings',
           description: 'Update your security preferences',
-          component: (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base">Two-Factor Authentication</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Add an extra layer of security
-                  </p>
-                </div>
-                <Switch />
-              </div>
-              <div className="space-y-4">
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <Input id="currentPassword" type="password" />
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input id="newPassword" type="password" />
-                <Button>Update Password</Button>
-              </div>
-            </div>
-          )
+          component: <SecuritySettingsForm />
         }
       ]
     },
@@ -749,28 +994,7 @@ const Settings = () => {
           id: 'notification-preferences',
           title: 'Notification Preferences',
           description: 'Control your notification settings',
-          component: (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base">Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive email notifications
-                  </p>
-                </div>
-                <Switch />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base">Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive push notifications
-                  </p>
-                </div>
-                <Switch />
-              </div>
-            </div>
-          )
+          component: <NotificationsForm />
         }
       ]
     }
@@ -796,7 +1020,7 @@ const Settings = () => {
 
   // Render mobile layout
   if (isMobile) {
-    return (
+  return (
       <div className="min-h-screen bg-background">
         <AnimatePresence mode="wait">
           {!activeGroup ? (
@@ -809,7 +1033,7 @@ const Settings = () => {
               <div className="sticky top-0 z-10 bg-background p-4 border-b">
                 <div className="flex items-center space-x-2 mb-4">
                   <h1 className="text-2xl font-bold">Settings</h1>
-                </div>
+      </div>
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -818,8 +1042,8 @@ const Settings = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                </div>
               </div>
+                  </div>
 
               <ScrollArea className="h-[calc(100vh-8rem)]">
                 <div className="p-4 space-y-4">
@@ -833,14 +1057,14 @@ const Settings = () => {
                         <div className="flex-1 flex items-center space-x-4">
                           <div className="p-2 bg-primary/10 rounded-full">
                             {group.icon}
-                          </div>
+                  </div>
                           <div>
                             <h3 className="font-medium">{group.title}</h3>
                             <p className="text-sm text-muted-foreground">
                               {group.description}
                             </p>
-                          </div>
-                        </div>
+                </div>
+                </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </CardContent>
                     </Card>
@@ -874,15 +1098,15 @@ const Settings = () => {
                 <div className="p-4">
                   {activeItem ? (
                     // Render active item component
-                    <div className="space-y-4">
+              <div className="space-y-4">
                       {settingsGroups
                         .find(g => g.id === activeGroup)
                         ?.items.find(i => i.id === activeItem)
                         ?.component}
-                    </div>
+                </div>
                   ) : (
                     // Render items list
-                    <div className="space-y-4">
+              <div className="space-y-4">
                       {settingsGroups
                         .find(g => g.id === activeGroup)
                         ?.items.map((item) => (
@@ -894,22 +1118,22 @@ const Settings = () => {
                             <CardContent className="flex items-center justify-between p-4">
                               <div>
                                 <h3 className="font-medium">{item.title}</h3>
-                                <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                                   {item.description}
-                                </p>
-                              </div>
+                    </p>
+                  </div>
                               <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                            </CardContent>
-                          </Card>
+            </CardContent>
+          </Card>
                         ))}
-                    </div>
+                  </div>
                   )}
                 </div>
               </ScrollArea>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+                </div>
     );
   }
 
@@ -930,8 +1154,8 @@ const Settings = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-              </div>
-            </div>
+                  </div>
+                </div>
             <div className="space-y-2">
               {filteredGroups.map((group) => (
                 <button
@@ -947,9 +1171,9 @@ const Settings = () => {
                   <span>{group.title}</span>
                 </button>
               ))}
-            </div>
-          </div>
-        </div>
+                  </div>
+                </div>
+                  </div>
 
         {/* Main Content */}
         <div className="col-span-9">
@@ -960,12 +1184,12 @@ const Settings = () => {
                 {...pageTransition}
                 className="space-y-6"
               >
-                <Card>
-                  <CardHeader>
+          <Card>
+            <CardHeader>
                     <CardTitle>
                       {settingsGroups.find(g => g.id === activeGroup)?.title}
                     </CardTitle>
-                  </CardHeader>
+            </CardHeader>
                   <CardContent>
                     {settingsGroups
                       .find(g => g.id === activeGroup)
@@ -973,10 +1197,10 @@ const Settings = () => {
                         <div key={item.id} className="mb-8 last:mb-0">
                           <h3 className="text-lg font-semibold mb-4">{item.title}</h3>
                           {item.component}
-                        </div>
+                  </div>
                       ))}
-                  </CardContent>
-                </Card>
+            </CardContent>
+          </Card>
               </motion.div>
             )}
           </AnimatePresence>

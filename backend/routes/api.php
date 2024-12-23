@@ -39,6 +39,9 @@ use App\Http\Controllers\BusinessTransactionController;
 use App\Http\Controllers\ProfessionalDashboardController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\UserSettingsController;
+use App\Http\Controllers\BusinessSettingsController;
+use App\Http\Controllers\ProfessionalSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -174,6 +177,12 @@ Route::prefix('settings')->group(function () {
     Route::get('/', [SettingsController::class, 'index']);
     Route::put('/', [SettingsController::class, 'update']);
     Route::get('/{key}', [SettingsController::class, 'getSetting']);
+
+    // Business Settings Routes
+    Route::put('/business', [BusinessSettingsController::class, 'updateProfile']);
+
+    // Professional Settings Routes
+    Route::put('/professional', [ProfessionalSettingsController::class, 'updateProfile']);
 });
 
 Route::get('/services/categories', [ServiceController::class, 'getCategoriesWithServices'])->middleware(['auth:sanctum']);
@@ -306,5 +315,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [CertificateController::class, 'getUserCertificates']);
         Route::post('/{id}/toggle-featured', [CertificateController::class, 'toggleFeatured']);
         Route::get('/{id}/download', [CertificateController::class, 'download']);
+    });
+});
+
+// User Settings Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('settings')->group(function () {
+        Route::put('/profile', [UserSettingsController::class, 'updateProfile']);
+        Route::put('/password', [UserSettingsController::class, 'updatePassword']);
+        Route::put('/preferences', [UserSettingsController::class, 'updatePreferences']);
     });
 });
