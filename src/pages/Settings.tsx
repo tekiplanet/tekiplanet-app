@@ -224,7 +224,7 @@ const AccountSettingsForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Avatar className="h-24 w-24">
+                    <Avatar className="h-24 w-24">
             <AvatarImage 
               src={previewUrl || avatarUrl || ''} 
               alt={`${user?.first_name} ${user?.last_name}`}
@@ -250,8 +250,8 @@ const AccountSettingsForm = () => {
             <AvatarFallback>
               {user?.first_name?.[0]}{user?.last_name?.[0]}
             </AvatarFallback>
-          </Avatar>
-          <div className="space-y-2">
+                    </Avatar>
+                      <div className="space-y-2">
             <input
               type="file"
               ref={fileInputRef}
@@ -266,12 +266,12 @@ const AccountSettingsForm = () => {
               >
                 Change Avatar
               </Button>
-            </div>
+                      </div>
             <p className="text-sm text-muted-foreground">
               JPG, PNG. Maximum size 2MB.
             </p>
-          </div>
-        </div>
+                      </div>
+                    </div>
 
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
@@ -301,7 +301,7 @@ const AccountSettingsForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                    </div>
 
           <FormField
             control={form.control}
@@ -317,7 +317,7 @@ const AccountSettingsForm = () => {
             )}
           />
 
-          <div className="space-y-2">
+                    <div className="space-y-2">
             <Label>Username</Label>
             <Input 
               value={user?.username || ''} 
@@ -327,8 +327,8 @@ const AccountSettingsForm = () => {
             <p className="text-sm text-muted-foreground">
               Username cannot be changed
             </p>
-          </div>
-        </div>
+                    </div>
+                    </div>
 
         <Button 
           type="submit" 
@@ -413,7 +413,7 @@ const BusinessProfileForm = () => {
         <Button asChild>
           <Link to="/business/setup">Create Business Profile</Link>
         </Button>
-      </div>
+                  </div>
     );
   }
 
@@ -428,7 +428,7 @@ const BusinessProfileForm = () => {
         <Button asChild>
           <Link to="/business/setup">Complete Setup</Link>
         </Button>
-      </div>
+                </div>
     );
   }
 
@@ -511,8 +511,8 @@ const BusinessProfileForm = () => {
                 img.src = '/placeholder-logo.png';
               }}
             />
-          </div>
-          <div className="space-y-2">
+                    </div>
+                    <div className="space-y-2">
             <input
               type="file"
               ref={fileInputRef}
@@ -527,12 +527,12 @@ const BusinessProfileForm = () => {
               >
                 Change Logo
               </Button>
-            </div>
-            <p className="text-sm text-muted-foreground">
+                    </div>
+                        <p className="text-sm text-muted-foreground">
               JPG, PNG. Maximum size 2MB.
-            </p>
-          </div>
-        </div>
+                        </p>
+                      </div>
+                    </div>
 
         <div className="grid gap-6">
           <div className="grid grid-cols-2 gap-4">
@@ -562,7 +562,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                  </div>
 
           <FormField
             control={form.control}
@@ -605,7 +605,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                </div>
 
           <FormField
             control={form.control}
@@ -667,7 +667,7 @@ const BusinessProfileForm = () => {
                 </FormItem>
               )}
             />
-          </div>
+                      </div>
 
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -699,8 +699,8 @@ const BusinessProfileForm = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            />
-          </div>
+                      />
+                    </div>
         </div>
 
         <Button 
@@ -716,20 +716,7 @@ const BusinessProfileForm = () => {
 
 const ProfessionalProfileForm = () => {
   const { user, updateUser } = useAuthStore();
-  console.log('Full user object:', user); // Debug full user object
   const professionalProfile = user?.professional_profile;
-  console.log('Professional Profile:', professionalProfile);
-
-  // Add this to check the structure
-  useEffect(() => {
-    if (user) {
-      console.log('User structure:', {
-        hasProfessional: 'professional_profile' in user,
-        professionalKeys: user.professional_profile ? Object.keys(user.professional_profile) : null,
-        fullProfessional: user.professional_profile
-      });
-    }
-  }, [user]);
 
   const form = useForm<z.infer<typeof professionalFormSchema>>({
     resolver: zodResolver(professionalFormSchema),
@@ -746,24 +733,6 @@ const ProfessionalProfileForm = () => {
       languages: professionalProfile?.languages || ["English"],
     },
   });
-
-  // Add this useEffect to update form values when professionalProfile changes
-  useEffect(() => {
-    if (professionalProfile) {
-      form.reset({
-        title: professionalProfile.title || "",
-        specialization: professionalProfile.specialization || "",
-        expertise_areas: professionalProfile.expertise_areas || [],
-        bio: professionalProfile.bio || "",
-        certifications: professionalProfile.certifications || [],
-        linkedin_url: professionalProfile.linkedin_url || "",
-        github_url: professionalProfile.github_url || "",
-        portfolio_url: professionalProfile.portfolio_url || "",
-        preferred_contact_method: professionalProfile.preferred_contact_method || "email",
-        languages: professionalProfile.languages || ["English"],
-      });
-    }
-  }, [professionalProfile, form]);
 
   const onSubmit = async (values: z.infer<typeof professionalFormSchema>) => {
     const loadingToast = toast.loading('Updating professional profile...');
@@ -787,7 +756,7 @@ const ProfessionalProfileForm = () => {
   // Show read-only experience info
   const experienceInfo = (
     <div className="grid grid-cols-2 gap-4 mb-6">
-      <div className="space-y-2">
+                    <div className="space-y-2">
         <Label>Years of Experience</Label>
         <div className="p-2 bg-muted rounded-md">
           {professionalProfile?.years_of_experience || 0} years
@@ -989,21 +958,21 @@ const ProfessionalProfileForm = () => {
                 <FormLabel>Preferred Contact Method</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                        <SelectTrigger>
                       <SelectValue placeholder="Select contact method" />
-                    </SelectTrigger>
+                        </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                        <SelectContent>
                     <SelectItem value="email">Email</SelectItem>
                     <SelectItem value="phone">Phone</SelectItem>
                     <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                  </SelectContent>
-                </Select>
+                        </SelectContent>
+                      </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
+                    </div>
 
         <Button type="submit">Update Profile</Button>
       </form>
@@ -1125,25 +1094,25 @@ const NotificationsForm = () => {
   return (
     <Form {...form}>
       <form onChange={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-4">
+                  <div className="space-y-4">
           <FormField
             control={form.control}
             name="email_notifications"
             render={({ field }) => (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base">Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">Email Notifications</Label>
+                        <p className="text-sm text-muted-foreground">
                     Receive email notifications about important updates
-                  </p>
-                </div>
+                        </p>
+                      </div>
                 <FormControl>
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
-              </div>
+                    </div>
             )}
           />
 
@@ -1151,20 +1120,20 @@ const NotificationsForm = () => {
             control={form.control}
             name="push_notifications"
             render={({ field }) => (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base">Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">Push Notifications</Label>
+                        <p className="text-sm text-muted-foreground">
                     Receive push notifications on your devices
-                  </p>
-                </div>
+                        </p>
+                      </div>
                 <FormControl>
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
-              </div>
+                    </div>
             )}
           />
 
@@ -1172,20 +1141,20 @@ const NotificationsForm = () => {
             control={form.control}
             name="marketing_notifications"
             render={({ field }) => (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
                   <Label className="text-base">Marketing Communications</Label>
-                  <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                     Receive updates about new features and promotions
-                  </p>
-                </div>
+                        </p>
+                      </div>
                 <FormControl>
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
-              </div>
+                    </div>
             )}
           />
 
@@ -1201,18 +1170,18 @@ const NotificationsForm = () => {
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select visibility" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="private">Private</SelectItem>
-                    <SelectItem value="friends">Friends Only</SelectItem>
-                  </SelectContent>
-                </Select>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="public">Public</SelectItem>
+                          <SelectItem value="private">Private</SelectItem>
+                          <SelectItem value="friends">Friends Only</SelectItem>
+                        </SelectContent>
+                      </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
+                    </div>
       </form>
     </Form>
   );
@@ -1236,18 +1205,18 @@ const ThemeToggle = () => {
   };
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
         <Label className="text-base">Dark Mode</Label>
-        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
           {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
-        </p>
-      </div>
+                        </p>
+                      </div>
       <Switch
         checked={theme === 'dark'}
         onCheckedChange={handleThemeChange}
       />
-    </div>
+                    </div>
   );
 };
 
@@ -1339,10 +1308,10 @@ const Settings = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-base">Two-Factor Authentication</Label>
-                <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                   Protect your account with 2FA
-                </p>
-              </div>
+                      </p>
+                    </div>
               <Switch 
                 checked={false}
                 onCheckedChange={() => {
@@ -1352,7 +1321,7 @@ const Settings = () => {
                   });
                 }}
               />
-            </div>
+                  </div>
           )
         }
       ]
@@ -1393,7 +1362,7 @@ const Settings = () => {
 
   // Render mobile layout
   if (isMobile) {
-    return (
+  return (
       <div className="min-h-screen bg-background">
         <AnimatePresence mode="wait">
           {!activeGroup ? (
@@ -1406,7 +1375,7 @@ const Settings = () => {
               <div className="sticky top-0 z-10 bg-background p-4 border-b">
                 <div className="flex items-center space-x-2 mb-4">
                   <h1 className="text-2xl font-bold">Settings</h1>
-                </div>
+      </div>
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -1415,8 +1384,8 @@ const Settings = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                </div>
               </div>
+                  </div>
 
               <ScrollArea className="h-[calc(100vh-8rem)]">
                 <div className="p-4 space-y-4">
@@ -1430,14 +1399,14 @@ const Settings = () => {
                         <div className="flex-1 flex items-center space-x-4">
                           <div className="p-2 bg-primary/10 rounded-full">
                             {group.icon}
-                          </div>
+                  </div>
                           <div>
                             <h3 className="font-medium">{group.title}</h3>
                             <p className="text-sm text-muted-foreground">
                               {group.description}
                             </p>
-                          </div>
-                        </div>
+                </div>
+                </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </CardContent>
                     </Card>
@@ -1471,15 +1440,15 @@ const Settings = () => {
                 <div className="p-4">
                   {activeItem ? (
                     // Render active item component
-                    <div className="space-y-4">
+              <div className="space-y-4">
                       {settingsGroups
                         .find(g => g.id === activeGroup)
                         ?.items.find(i => i.id === activeItem)
                         ?.component}
-                    </div>
+                </div>
                   ) : (
                     // Render items list
-                    <div className="space-y-4">
+              <div className="space-y-4">
                       {settingsGroups
                         .find(g => g.id === activeGroup)
                         ?.items.map((item) => (
@@ -1491,22 +1460,22 @@ const Settings = () => {
                             <CardContent className="flex items-center justify-between p-4">
                               <div>
                                 <h3 className="font-medium">{item.title}</h3>
-                                <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                                   {item.description}
-                                </p>
-                              </div>
+                    </p>
+                  </div>
                               <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                            </CardContent>
-                          </Card>
+            </CardContent>
+          </Card>
                         ))}
-                    </div>
+                  </div>
                   )}
                 </div>
               </ScrollArea>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+                </div>
     );
   }
 
@@ -1527,8 +1496,8 @@ const Settings = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-              </div>
-            </div>
+                  </div>
+                </div>
             <div className="space-y-2">
               {filteredGroups.map((group) => (
                 <button
@@ -1544,9 +1513,9 @@ const Settings = () => {
                   <span>{group.title}</span>
                 </button>
               ))}
-            </div>
-          </div>
-        </div>
+                  </div>
+                </div>
+                  </div>
 
         {/* Main Content */}
         <div className="col-span-9">
@@ -1557,12 +1526,12 @@ const Settings = () => {
                 {...pageTransition}
                 className="space-y-6"
               >
-                <Card>
-                  <CardHeader>
+          <Card>
+            <CardHeader>
                     <CardTitle>
                       {settingsGroups.find(g => g.id === activeGroup)?.title}
                     </CardTitle>
-                  </CardHeader>
+            </CardHeader>
                   <CardContent>
                     {settingsGroups
                       .find(g => g.id === activeGroup)
@@ -1570,10 +1539,10 @@ const Settings = () => {
                         <div key={item.id} className="mb-8 last:mb-0">
                           <h3 className="text-lg font-semibold mb-4">{item.title}</h3>
                           {item.component}
-                        </div>
+                  </div>
                       ))}
-                  </CardContent>
-                </Card>
+            </CardContent>
+          </Card>
               </motion.div>
             )}
           </AnimatePresence>

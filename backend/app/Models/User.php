@@ -108,11 +108,6 @@ class User extends Authenticatable
         return $this->hasOne(Professional::class);
     }
 
-    public function professionalProfile()
-    {
-        return $this->hasOne(ProfessionalProfile::class);
-    }
-
     // Helper method to check if user has an active business profile
     public function hasActiveBusiness()
     {
