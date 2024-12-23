@@ -466,9 +466,12 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
         {/* Mobile Header and Content */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Mobile Header */}
-          <header className="flex h-16 items-center gap-4 border-b border-border/30 bg-background/30 backdrop-blur-[12px] px-4 md:hidden">
+          <header className={cn(
+            "flex h-16 items-center gap-4 border-b border-border/30 bg-background/30 backdrop-blur-[12px] px-4 md:hidden",
+            location.pathname === "/dashboard/settings" && "hidden"
+          )}>
             <div className="flex-1 flex items-center gap-3">
-              {location.pathname === "/dashboard" && (
+              {location.pathname === "/dashboard" ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
@@ -515,9 +518,7 @@ const Dashboard = ({ children }: { children?: React.ReactNode }) => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              )}
-
-              {location.pathname !== "/dashboard" && (
+              ) : (
                 <Button
                   variant="ghost"
                   size="icon"
