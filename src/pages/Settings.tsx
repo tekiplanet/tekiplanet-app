@@ -93,7 +93,7 @@ const professionalFormSchema = z.object({
   linkedin_url: z.string().url("Invalid LinkedIn URL").optional().or(z.literal('')),
   github_url: z.string().url("Invalid GitHub URL").optional().or(z.literal('')),
   portfolio_url: z.string().url("Invalid Portfolio URL").optional().or(z.literal('')),
-  preferred_contact_method: z.enum(['email', 'phone', 'platform']),
+  preferred_contact_method: z.enum(['email', 'phone', 'whatsapp', 'platform']),
   languages: z.array(z.string()).min(1, "Select at least one language"),
 });
 
@@ -776,6 +776,8 @@ const ProfessionalProfileForm = () => {
         years_of_experience: professionalProfile?.years_of_experience,
         hourly_rate: professionalProfile?.hourly_rate,
         timezone: professionalProfile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+        // Ensure preferred_contact_method is a string
+        preferred_contact_method: String(values.preferred_contact_method)
       };
 
       console.log('Sending data to API:', requestData);
@@ -1009,6 +1011,7 @@ const ProfessionalProfileForm = () => {
                     <SelectItem value="email">Email</SelectItem>
                     <SelectItem value="phone">Phone</SelectItem>
                     <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                    <SelectItem value="platform">Platform Messages</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

@@ -23,7 +23,7 @@ class ProfessionalSettingsController extends Controller
                 'linkedin_url' => 'nullable|url',
                 'github_url' => 'nullable|url',
                 'portfolio_url' => 'nullable|url',
-                'preferred_contact_method' => 'required|in:email,phone,platform',
+                'preferred_contact_method' => 'required|in:email,phone,whatsapp,platform',
                 'timezone' => 'required|string',
                 'languages' => 'required|array|min:1'
             ]);
