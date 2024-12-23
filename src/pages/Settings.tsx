@@ -98,9 +98,14 @@ const professionalFormSchema = z.object({
 });
 
 const securityFormSchema = z.object({
-  current_password: z.string().min(8, "Password must be at least 8 characters"),
-  new_password: z.string().min(8, "Password must be at least 8 characters"),
-  confirm_password: z.string().min(8, "Password must be at least 8 characters"),
+  current_password: z.string().min(1, "Current password is required"),
+  new_password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+  confirm_password: z.string().min(1, "Please confirm your password"),
 }).refine((data) => data.new_password === data.confirm_password, {
   message: "Passwords don't match",
   path: ["confirm_password"],
@@ -1050,8 +1055,20 @@ const SecuritySettingsForm = () => {
       toast.success('Password updated successfully');
       form.reset();
     } catch (error: any) {
+      console.error('Password update error:', error);
       toast.dismiss(loadingToast);
-      toast.error(error.response?.data?.message || 'Failed to update password');
+      
+      // Show validation errors if they exist
+      if (error.response?.data?.errors) {
+        const firstError = Object.values(error.response.data.errors)[0];
+        toast.error(Array.isArray(firstError) ? firstError[0] : firstError);
+      } else {
+        // Show general error message
+        toast.error(
+          error.response?.data?.message || 
+          'Failed to update password. Please try again.'
+        );
+      }
     }
   };
 
@@ -1081,6 +1098,14 @@ const SecuritySettingsForm = () => {
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
+              <FormDescription>
+                Password must:
+                <ul className="list-disc list-inside text-sm">
+                  <li>Be at least 8 characters long</li>
+                  <li>Include uppercase and lowercase letters</li>
+                  <li>Include numbers and special characters</li>
+                </ul>
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
