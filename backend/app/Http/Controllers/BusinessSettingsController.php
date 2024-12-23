@@ -23,7 +23,7 @@ class BusinessSettingsController extends Controller
                 'address' => 'required|string|min:5',
                 'city' => 'required|string|min:2',
                 'state' => 'required|string|min:2',
-                'country' => 'required|string|min:2'
+                'country' => 'required|string|min:2',
             ]);
 
             if ($validator->fails()) {
@@ -33,12 +33,14 @@ class BusinessSettingsController extends Controller
                 ], 422);
             }
 
-            $businessProfile = BusinessProfile::where('user_id', auth()->id())->firstOrFail();
+            $user = auth()->user();
+            $businessProfile = $user->businessProfile;
+
             $businessProfile->update($request->all());
 
             return response()->json([
                 'message' => 'Business profile updated successfully',
-                'profile' => $businessProfile->fresh()
+                'business_profile' => $businessProfile->fresh()
             ]);
 
         } catch (\Exception $e) {

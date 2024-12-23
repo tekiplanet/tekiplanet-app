@@ -32,6 +32,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { apiClient } from '@/lib/axios';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { NIGERIA_STATES } from '@/lib/constants/nigeria-states';
+import { StateSelect } from "@/components/ui/state-selector";
 
 // Animation variants
 const pageTransition = {
@@ -72,7 +74,7 @@ const businessFormSchema = z.object({
   address: z.string().min(5, "Address must be at least 5 characters"),
   city: z.string().min(2, "City must be at least 2 characters"),
   state: z.string().min(2, "State must be at least 2 characters"),
-  country: z.string().min(2, "Country must be at least 2 characters"),
+  country: z.literal('Nigeria')
 });
 
 const professionalFormSchema = z.object({
@@ -337,7 +339,7 @@ const AccountSettingsForm = () => {
 };
 
 const BusinessProfileForm = () => {
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const businessProfile = user?.business_profile;
 
   if (!businessProfile) {
@@ -370,8 +372,6 @@ const BusinessProfileForm = () => {
     );
   }
 
-  const { toast } = useToast();
-
   const form = useForm<z.infer<typeof businessFormSchema>>({
     resolver: zodResolver(businessFormSchema),
     defaultValues: {
@@ -385,23 +385,40 @@ const BusinessProfileForm = () => {
       address: businessProfile?.address || "",
       city: businessProfile?.city || "",
       state: businessProfile?.state || "",
-      country: businessProfile?.country || "",
+      country: "Nigeria"
     },
   });
 
   const onSubmit = async (values: z.infer<typeof businessFormSchema>) => {
+    const loadingToast = toast.loading('Updating business profile...');
+
     try {
-      await updateUser({ business_profile: values });
-      toast({
-        title: "Business profile updated",
-        description: "Your business information has been updated successfully.",
+      const response = await apiClient.put('/settings/business/profile', values);
+      
+      // Update the user state with the new business profile data
+      await updateUser({
+        ...user,
+        business_profile: response.data.business_profile
       });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update business profile. Please try again.",
-        variant: "destructive",
-      });
+
+      toast.dismiss(loadingToast);
+      toast.success('Business profile updated successfully');
+    } catch (error: any) {
+      console.error('Business profile update error:', error);
+      
+      toast.dismiss(loadingToast);
+      
+      // Show the first validation error message if it exists
+      if (error.response?.data?.errors) {
+        const firstError = Object.values(error.response.data.errors)[0];
+        toast.error(Array.isArray(firstError) ? firstError[0] : firstError);
+      } else {
+        // Fallback to the general error message
+        toast.error(
+          error.response?.data?.message || 
+          'Failed to update business profile. Please try again.'
+        );
+      }
     }
   };
 
@@ -546,12 +563,16 @@ const BusinessProfileForm = () => {
                 <FormItem>
                   <FormLabel>State</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <StateSelect 
+                      value={field.value} 
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="country"
@@ -559,7 +580,7 @@ const BusinessProfileForm = () => {
                 <FormItem>
                   <FormLabel>Country</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} disabled value="Nigeria" className="bg-muted" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
